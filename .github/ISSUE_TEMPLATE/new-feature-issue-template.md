@@ -1,5 +1,5 @@
 ---
-name: Custom issue template
+name: New Feature issue template
 about: Describe this issue template's purpose here.
 title: ''
 labels: ''
@@ -33,6 +33,6 @@ assignees: ''
   - [ ] ドキュメントレビュー依頼
   - [ ] テスト結果の確認
 
-## 関連
+## 設計
 <!-- 関連するIssueやPRがあれば記載してください -->
 - ESA: #
