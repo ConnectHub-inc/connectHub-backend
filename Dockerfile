@@ -9,7 +9,7 @@ WORKDIR /app
 
 # 依存関係をコピー
 COPY go.mod ./
-#COPY go.sum ./
+COPY go.sum ./
 
 # 依存関係のインストール
 WORKDIR /app
