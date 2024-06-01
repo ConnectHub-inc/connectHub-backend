@@ -1,0 +1,39 @@
+version: "3"
+
+services:
+  redis:
+    container_name: chat_redis
+    image: redis:5.0
+    ports:
+      - 6379:6379
+
+  mysql:
+    container_name: chat_db
+    image: mysql:5.7
+    platform: linux/amd64
+    ports:
+      - 3306:3306
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - db-data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+
+  back:
+    container_name: chat_back
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    ports:
+      - "8083:8083"
+    volumes:
+      - ./:/app/
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - mysql
+
+volumes:
+  db-data:
+    driver: local
