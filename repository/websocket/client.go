@@ -11,7 +11,6 @@ import (
 
 var (
 	newline = []byte{'\n'}
-	space   = []byte{' '}
 )
 
 type Client struct {
@@ -24,7 +23,7 @@ func NewClient(conn *websocket.Conn, hub *Hub) repository.ClientWebSocketReposit
 	return &Client{
 		conn: conn,
 		hub:  hub,
-		send: make(chan []byte, 256),
+		send: make(chan []byte, config.ChannelBufferSize),
 	}
 }
 
@@ -34,9 +33,17 @@ func (client *Client) ReadPump() {
 	}()
 
 	client.conn.SetReadLimit(config.MaxMessageSize)
-	client.conn.SetReadDeadline(time.Now().Add(config.PongWait))
-	client.conn.SetPongHandler(func(string) error { client.conn.SetReadDeadline(time.Now().Add(config.PongWait)); return nil })
-
+	if err := client.conn.SetReadDeadline(time.Now().Add(config.PongWait)); err != nil {
+		log.Printf("failed to set read deadline: %v", err)
+	}
+	client.conn.SetPongHandler(func(string) error {
+		err := client.conn.SetReadDeadline(time.Now().Add(config.PongWait))
+		if err != nil {
+			log.Printf("Error setting read deadline: %v", err)
+			return err
+		}
+		return nil
+	})
 	// Start endless read loop, waiting for messages from client
 	for {
 		_, jsonMessage, err := client.conn.ReadMessage()
@@ -60,7 +67,9 @@ func (client *Client) WritePump() {
 	for {
 		select {
 		case message, ok := <-client.send:
-			client.conn.SetWriteDeadline(time.Now().Add(config.WriteWait))
+			if err := client.conn.SetWriteDeadline(time.Now().Add(config.WriteWait)); err != nil {
+				return
+			}
 			if !ok {
 				// The Hub closed the channel.
 				client.conn.WriteMessage(websocket.CloseMessage, []byte{})
@@ -71,20 +80,28 @@ func (client *Client) WritePump() {
 			if err != nil {
 				return
 			}
-			w.Write(message)
 
+			if _, err = w.Write(message); err != nil {
+				return
+			}
 			// Attach queued chat messages to the current websocket message.
 			n := len(client.send)
 			for i := 0; i < n; i++ {
-				w.Write(newline)
-				w.Write(<-client.send)
+				if _, err = w.Write(newline); err != nil {
+					return
+				}
+				if _, err = w.Write(<-client.send); err != nil {
+					return
+				}
 			}
 
-			if err := w.Close(); err != nil {
+			if err = w.Close(); err != nil {
 				return
 			}
 		case <-ticker.C:
-			client.conn.SetWriteDeadline(time.Now().Add(config.WriteWait))
+			if err := client.conn.SetWriteDeadline(time.Now().Add(config.WriteWait)); err != nil {
+				return
+			}
 			if err := client.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
 				return
 			}

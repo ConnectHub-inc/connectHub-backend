@@ -5,12 +5,13 @@ import (
 	"net/http"
 
 	"github.com/gorilla/websocket"
+	"github.com/tusmasoma/connectHub-backend/config"
 	"github.com/tusmasoma/connectHub-backend/repository"
 )
 
 var upgrader = websocket.Upgrader{
-	ReadBufferSize:  4096,
-	WriteBufferSize: 4096,
+	ReadBufferSize:  config.BufferSize,
+	WriteBufferSize: config.BufferSize,
 }
 
 type WebsocketHandler struct {

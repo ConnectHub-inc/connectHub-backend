@@ -23,7 +23,6 @@ func NewHub() repository.HubWebSocketRepository {
 func (h *Hub) Run() {
 	for {
 		select {
-
 		case client := <-h.register:
 			h.registerClient(client)
 
@@ -33,7 +32,6 @@ func (h *Hub) Run() {
 		case message := <-h.broadcast:
 			h.broadcastToClients(message)
 		}
-
 	}
 }
 
@@ -42,9 +40,7 @@ func (h *Hub) registerClient(client *Client) {
 }
 
 func (h *Hub) unregisterClient(client *Client) {
-	if _, ok := h.clients[client]; ok {
-		delete(h.clients, client)
-	}
+	delete(h.clients, client)
 }
 
 func (h *Hub) broadcastToClients(message []byte) {
