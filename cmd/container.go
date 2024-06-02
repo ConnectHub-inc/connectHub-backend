@@ -5,8 +5,9 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
-	"github.com/tusmasoma/connectHub-backend/config"
 	"go.uber.org/dig"
+
+	"github.com/tusmasoma/connectHub-backend/config"
 )
 
 func BuildContainer(ctx context.Context) (*dig.Container, error) {

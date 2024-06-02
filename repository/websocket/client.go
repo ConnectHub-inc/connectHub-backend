@@ -5,13 +5,12 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+
 	"github.com/tusmasoma/connectHub-backend/config"
 	"github.com/tusmasoma/connectHub-backend/repository"
 )
 
-var (
-	newline = []byte{'\n'}
-)
+var newline = []byte{'\n'}
 
 type Client struct {
 	conn *websocket.Conn
@@ -58,7 +57,7 @@ func (client *Client) ReadPump() {
 	}
 }
 
-func (client *Client) WritePump() {
+func (client *Client) WritePump() { //nolint: gocognit
 	ticker := time.NewTicker(config.PingPeriod)
 	defer func() {
 		ticker.Stop()
@@ -72,7 +71,7 @@ func (client *Client) WritePump() {
 			}
 			if !ok {
 				// The Hub closed the channel.
-				client.conn.WriteMessage(websocket.CloseMessage, []byte{})
+				client.conn.WriteMessage(websocket.CloseMessage, []byte{}) //nolint: errcheck // Ignore error.
 				return
 			}
 

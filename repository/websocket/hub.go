@@ -19,10 +19,6 @@ func NewHub() repository.HubWebSocketRepository {
 	}
 }
 
-//func (h *Hub) RegisterClient(client *Client) {
-//	h.register <- client
-//}
-
 // Run starts the server and listens for incoming messages
 func (h *Hub) Run() {
 	for {
