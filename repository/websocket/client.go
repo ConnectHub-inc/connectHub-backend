@@ -20,7 +20,11 @@ type Client struct {
 	pubsubRepo repository.PubSubRepository
 }
 
-func NewClient(conn *websocket.Conn, hub *Hub, pubsubRepo repository.PubSubRepository) repository.ClientWebSocketRepository {
+func NewClient(
+	conn *websocket.Conn,
+	hub *Hub,
+	pubsubRepo repository.PubSubRepository,
+) repository.ClientWebSocketRepository {
 	return &Client{
 		conn:       conn,
 		hub:        hub,
@@ -57,7 +61,9 @@ func (client *Client) ReadPump() {
 		}
 
 		// client.hub.broadcast <- jsonMessage
-		client.pubsubRepo.Publish(context.Background(), "channel", jsonMessage)
+		if err = client.pubsubRepo.Publish(context.Background(), "channel", jsonMessage); err != nil {
+			log.Printf("failed to publish message: %v", err)
+		}
 	}
 }
 
