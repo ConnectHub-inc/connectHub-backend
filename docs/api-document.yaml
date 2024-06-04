@@ -1,0 +1,68 @@
+openapi: 3.0.2
+info:
+  title: ConnectHub API
+  description: |-
+    <b>ConnectHub API仕様</b><br>
+  version: 1.0.0
+servers:
+  - url: http://localhost:8083/
+tags:
+  - name: setting
+    description: 設定関連API
+  - name: chat
+    description: チャット関連API
+  - name: user
+    description: ユーザ関連API
+paths:
+  /user/login:
+    post:
+      tags:
+        - user
+      summary: ユーザログインAPI
+      description: |
+        ユーザ情報を作成します。<br>
+        ユーザの名前情報をリクエストで受け取り、ユーザIDと認証用のトークンを生成しデータベースへ保存します。<br>
+        tokenは以降の他のAPIコール時にヘッダに設定をします。
+      requestBody:
+        description: Request Body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreateRequest'
+        required: true
+      responses:
+        200:
+          description: A successful response.
+          headers:
+            Authorization:
+              description: Auth token for the registered user
+              schema:
+                type: string
+      x-codegen-request-body-name: body
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    UserCreateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: ユーザ名
+        password:
+          type: string
+          description: ユーザのパスワード
+    UserCreateResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ユーザID
+        name:
+          type: string
+          description: ユーザ名
+        password:
+          type: string
+          description: ユーザのパスワード
