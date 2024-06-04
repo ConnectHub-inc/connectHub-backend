@@ -1,6 +1,7 @@
 package websocket
 
 import (
+	"context"
 	"log"
 	"time"
 
@@ -13,16 +14,18 @@ import (
 var newline = []byte{'\n'}
 
 type Client struct {
-	conn *websocket.Conn
-	hub  *Hub
-	send chan []byte
+	conn       *websocket.Conn
+	hub        *Hub
+	send       chan []byte
+	pubsubRepo repository.PubSubRepository
 }
 
-func NewClient(conn *websocket.Conn, hub *Hub) repository.ClientWebSocketRepository {
+func NewClient(conn *websocket.Conn, hub *Hub, pubsubRepo repository.PubSubRepository) repository.ClientWebSocketRepository {
 	return &Client{
-		conn: conn,
-		hub:  hub,
-		send: make(chan []byte, config.ChannelBufferSize),
+		conn:       conn,
+		hub:        hub,
+		send:       make(chan []byte, config.ChannelBufferSize),
+		pubsubRepo: pubsubRepo,
 	}
 }
 
@@ -53,7 +56,8 @@ func (client *Client) ReadPump() {
 			break
 		}
 
-		client.hub.broadcast <- jsonMessage
+		// client.hub.broadcast <- jsonMessage
+		client.pubsubRepo.Publish(context.Background(), "channel", jsonMessage)
 	}
 }
 

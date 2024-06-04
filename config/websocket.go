@@ -21,4 +21,7 @@ const (
 
 	// ChannelBufferSize is the buffer size for the channel.
 	ChannelBufferSize = 256
+
+	// PubSubGeneralChannel is the general channel for pubsub.
+	PubSubGeneralChannel = "general"
 )
