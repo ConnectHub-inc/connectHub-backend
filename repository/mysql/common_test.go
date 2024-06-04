@@ -55,7 +55,7 @@ func startMySQL() (*sql.DB, func(), error) {
 		Tag:        "5.7",
 		Env: []string{
 			"MYSQL_ROOT_USERNAME=root",
-			"MYSQL_ROOT_PASSWORD=connnecthub",
+			"MYSQL_ROOT_PASSWORD=connecthub",
 			"MYSQL_DATABASE=connecthubdb",
 		},
 		Cmd: []string{
