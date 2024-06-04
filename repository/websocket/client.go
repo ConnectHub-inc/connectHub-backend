@@ -1,19 +1,22 @@
 package websocket
 
 import (
-	"context"
+	"encoding/json"
 	"log"
 	"time"
 
 	"github.com/gorilla/websocket"
 
 	"github.com/tusmasoma/connectHub-backend/config"
+	"github.com/tusmasoma/connectHub-backend/entity"
 	"github.com/tusmasoma/connectHub-backend/repository"
 )
 
 var newline = []byte{'\n'}
 
 type Client struct {
+	ID         string
+	Name       string
 	conn       *websocket.Conn
 	hub        *Hub
 	send       chan []byte
@@ -60,10 +63,7 @@ func (client *Client) ReadPump() {
 			break
 		}
 
-		// client.hub.broadcast <- jsonMessage
-		if err = client.pubsubRepo.Publish(context.Background(), "channel", jsonMessage); err != nil {
-			log.Printf("failed to publish message: %v", err)
-		}
+		client.handleNewMessage(jsonMessage)
 	}
 }
 
@@ -122,4 +122,22 @@ func (client *Client) disconnect() {
 	client.hub.unregister <- client
 	close(client.send)
 	client.conn.Close()
+}
+
+func (client *Client) handleNewMessage(jsonMessage []byte) {
+	var message entity.Message
+	if err := json.Unmarshal(jsonMessage, &message); err != nil {
+		log.Printf("Error on unmarshalling JSON message: %v", err)
+		return
+	}
+
+	message.SenderID = client.ID // TODO: clientのIDでなく、userのIDに変更する
+
+	switch message.Action { //nolint: gocritic // This switch statement is fine.
+	case config.SendMessageAction:
+		roomID := message.TargetID
+		if room := client.hub.findRoomByID(roomID); room != nil {
+			room.broadcast <- &message
+		}
+	}
 }

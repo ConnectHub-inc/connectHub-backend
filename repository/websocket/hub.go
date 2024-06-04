@@ -9,6 +9,7 @@ import (
 
 type Hub struct {
 	clients    map[*Client]bool
+	rooms      map[*Room]bool
 	register   chan *Client
 	unregister chan *Client
 	broadcast  chan []byte
@@ -67,4 +68,13 @@ func (h *Hub) listenPubSubChannel(ctx context.Context) {
 	for msg := range ch {
 		h.broadcastToClients([]byte(msg.Payload))
 	}
+}
+
+func (h *Hub) findRoomByID(id string) *Room {
+	for room := range h.rooms {
+		if room.ID == id {
+			return room
+		}
+	}
+	return nil
 }

@@ -24,4 +24,18 @@ const (
 
 	// PubSubGeneralChannel is the general channel for pubsub.
 	PubSubGeneralChannel = "general"
+
+	// PubSubRoomPrefix is the prefix for the room channel.
+	WelcomeMessage = "%s joined the room"
+	GoodbyeMessage = "%s left the room"
+)
+
+const (
+	SendMessageAction     = "send_message"
+	JoinRoomAction        = "join_room"
+	LeaveRoomAction       = "leave_room"
+	UserJoinedAction      = "user_joined"
+	UserLeftAction        = "user_left"
+	JoinRoomPrivateAction = "join_room_private"
+	RoomJoinedAction      = "room_joined"
 )
