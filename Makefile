@@ -52,7 +52,7 @@ lint: $(BIN)/golangci-lint-$(GOLANGCI_LINT_VERSION)
 .PHONY: lint-diff
 lint-diff: PKG ?= ./...
 lint-diff: $(BIN)/golangci-lint-$(GOLANGCI_LINT_VERSION)
-	$(BIN)/golangci-lint run -c ./.golangci.yml $(PKG) | reviewdog -f=golangci-lint -diff="git diff origin/develop"
+	$(BIN)/golangci-lint run -c ./.golangci.yml $(PKG) | reviewdog -f=golangci-lint -diff="git diff origin/main"
 
 .PHONY: fmt
 fmt: $(BIN)/goimports-$(GOIMPORTS_VERSION) $(BIN)/gofumpt-$(GOFUMPT_VERSION)
@@ -63,7 +63,7 @@ fmt: $(BIN)/goimports-$(GOIMPORTS_VERSION) $(BIN)/gofumpt-$(GOFUMPT_VERSION)
 .PHONY: generate
 generate: generate-deps
 	@for dir in $$(find . -type d | sed '1,1d' | sed 's@./@@') ; do \
-		if [ -n "$$(git diff --name-only origin/develop "$${dir}")" ]; then \
+		if [ -n "$$(git diff --name-only origin/main "$${dir}")" ]; then \
 			echo "go generate ./$${dir}/..." && \
 			(cd "$${dir}" && PATH="$(BIN):$(PATH)" ${GO_ENV} ${GO} generate ./...) || exit 1; \
 		fi; \
