@@ -7,14 +7,11 @@ import (
 
 	"github.com/doug-martin/goqu/v9"
 
+	"github.com/tusmasoma/connectHub-backend/repository"
+
 	// Register MySQL dialect for goqu
 	_ "github.com/doug-martin/goqu/v9/dialect/mysql"
 )
-
-type QueryCondition struct {
-	Field string
-	Value any
-}
 
 type base[T any] struct {
 	db        *sql.DB
@@ -67,7 +64,7 @@ func (b *base[T]) structScanRows(rows *sql.Rows) ([]T, error) {
 	return entitys, nil
 }
 
-func (b *base[T]) List(ctx context.Context, qcs []QueryCondition) ([]T, error) {
+func (b *base[T]) List(ctx context.Context, qcs []repository.QueryCondition) ([]T, error) {
 	var whereClauses []goqu.Expression
 	for _, qc := range qcs {
 		whereClauses = append(whereClauses, goqu.C(qc.Field).Eq(qc.Value))
@@ -143,7 +140,7 @@ func (b *base[T]) Delete(ctx context.Context, id string) error {
 	return err
 }
 
-func (b *base[T]) CreateOrUpdate(ctx context.Context, id string, qcs []QueryCondition, entity T) error {
+func (b *base[T]) CreateOrUpdate(ctx context.Context, id string, qcs []repository.QueryCondition, entity T) error {
 	// TODO: アンチパターン(CreateOrUpdateは現状使わないこと)
 	entitys, err := b.List(ctx, qcs)
 	if err != nil {

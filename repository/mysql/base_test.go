@@ -11,6 +11,8 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/google/uuid"
+
+	"github.com/tusmasoma/connectHub-backend/repository"
 )
 
 type Item struct {
@@ -56,7 +58,7 @@ func TestBase(t *testing.T) {
 	}
 
 	// list
-	qcs := []QueryCondition{
+	qcs := []repository.QueryCondition{
 		{
 			Field: "Text",
 			Value: "baz",
