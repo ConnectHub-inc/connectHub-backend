@@ -11,7 +11,7 @@ type messageRepository struct {
 	*base[entity.Message]
 }
 
-func NewUserRepository(client *redis.Client) repository.MessageCacheRepository {
+func NewMessageRepository(client *redis.Client) repository.MessageCacheRepository {
 	return &messageRepository{
 		base: newBase[entity.Message](client),
 	}
