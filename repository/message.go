@@ -15,3 +15,11 @@ type MessageRepository interface {
 	Delete(ctx context.Context, id string) error
 	CreateOrUpdate(ctx context.Context, id string, qcs []QueryCondition, message entity.Message) error
 }
+
+type MessageCacheRepository interface {
+	Set(ctx context.Context, key string, message entity.Message) error
+	Get(ctx context.Context, key string) (*entity.Message, error)
+	Delete(ctx context.Context, key string) error
+	Exists(ctx context.Context, key string) bool
+	Scan(ctx context.Context, match string) ([]string, error)
+}
