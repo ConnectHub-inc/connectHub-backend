@@ -19,6 +19,7 @@ type Client struct {
 	Name       string
 	conn       *websocket.Conn
 	hub        *Hub
+	rooms      map[*Room]bool
 	send       chan []byte
 	pubsubRepo repository.PubSubRepository
 }
@@ -133,11 +134,32 @@ func (client *Client) handleNewMessage(jsonMessage []byte) {
 
 	message.SenderID = client.ID // TODO: clientのIDでなく、userのIDに変更する
 
-	switch message.Action { //nolint: gocritic // This switch statement is fine.
+	switch message.Action {
 	case config.SendMessageAction:
 		roomID := message.TargetID
 		if room := client.hub.findRoomByID(roomID); room != nil {
 			room.broadcast <- &message
 		}
+	case config.CreateRoomAction:
+		client.handleCreateRoomMessage(message)
 	}
+}
+
+func (client *Client) handleCreateRoomMessage(message entity.Message) {
+	room := client.hub.createRoom(message.Content, false)
+	if room == nil {
+		return
+	}
+
+	if !client.isInRoom(room) {
+		client.rooms[room] = true
+		room.register <- client
+	}
+}
+
+func (client *Client) isInRoom(room *Room) bool {
+	if _, ok := client.rooms[room]; ok {
+		return true
+	}
+	return false
 }

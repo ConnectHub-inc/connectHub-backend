@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/tusmasoma/connectHub-backend/config"
+	"github.com/tusmasoma/connectHub-backend/entity"
 	"github.com/tusmasoma/connectHub-backend/repository"
 )
 
@@ -14,6 +15,7 @@ type Hub struct {
 	unregister chan *Client
 	broadcast  chan []byte
 	pubsubRepo repository.PubSubRepository
+	roomRepo   repository.RoomRepository
 }
 
 // NewWebsocketServer creates a new Hub type
@@ -77,4 +79,20 @@ func (h *Hub) findRoomByID(id string) *Room {
 		}
 	}
 	return nil
+}
+
+func (h *Hub) createRoom(name string, private bool) *Room {
+	room := NewRoom(name, private, h.pubsubRepo)
+
+	if err := h.roomRepo.Create(context.Background(), entity.Room{
+		ID:      room.ID,
+		Name:    room.Name,
+		Private: room.Private,
+	}); err != nil {
+		return nil
+	}
+
+	go room.Run(context.Background())
+	h.rooms[room] = true
+	return room
 }
