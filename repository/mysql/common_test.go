@@ -74,11 +74,6 @@ func startMySQL() (*sql.DB, func(), error) {
 			hc.Mounts = []docker.HostMount{
 				{
 					Type:   "bind",
-					Source: pwd + "/init/ddl.sql",
-					Target: "/docker-entrypoint-initdb.d/ddl.sql",
-				},
-				{
-					Type:   "bind",
 					Source: pwd + "/init/my.cnf",
 					Target: "/etc/mysql/my.cnf",
 				},
