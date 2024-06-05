@@ -20,7 +20,7 @@ type Item struct {
 	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
 }
 
-func TestBase(t *testing.T) {
+func Test_Base(t *testing.T) {
 	ctx := context.Background()
 	userID := uuid.NewString()
 	items := []Item{

@@ -24,7 +24,7 @@ type Item struct {
 	UpdatedAt time.Time `db:"updated_at"`
 }
 
-func TestBase(t *testing.T) {
+func Test_Base(t *testing.T) {
 	dialect := goqu.Dialect("mysql")
 	ctx := context.Background()
 	userID := uuid.NewString()
