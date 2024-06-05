@@ -9,13 +9,14 @@ import (
 )
 
 type Hub struct {
-	clients    map[*Client]bool
-	rooms      map[*Room]bool
-	register   chan *Client
-	unregister chan *Client
-	broadcast  chan []byte
-	pubsubRepo repository.PubSubRepository
-	roomRepo   repository.RoomRepository
+	clients          map[*Client]bool
+	rooms            map[*Room]bool
+	register         chan *Client
+	unregister       chan *Client
+	broadcast        chan []byte
+	pubsubRepo       repository.PubSubRepository
+	roomRepo         repository.RoomRepository
+	messageCacheRepo repository.MessageCacheRepository
 }
 
 // NewWebsocketServer creates a new Hub type
@@ -82,7 +83,7 @@ func (h *Hub) findRoomByID(id string) *Room {
 }
 
 func (h *Hub) createRoom(name string, private bool) *Room {
-	room := NewRoom(name, private, h.pubsubRepo)
+	room := NewRoom(name, private, h.pubsubRepo, h.messageCacheRepo)
 
 	if err := h.roomRepo.Create(context.Background(), entity.Room{
 		ID:      room.ID,

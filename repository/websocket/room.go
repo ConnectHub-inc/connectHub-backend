@@ -13,26 +13,33 @@ import (
 )
 
 type Room struct {
-	ID         string `json:"id"`
-	Name       string `json:"name"`
-	Private    bool   `json:"private"`
-	clients    map[*Client]bool
-	register   chan *Client
-	unregister chan *Client
-	broadcast  chan *entity.Message
-	pubsubRepo repository.PubSubRepository
+	ID               string `json:"id"`
+	Name             string `json:"name"`
+	Private          bool   `json:"private"`
+	clients          map[*Client]bool
+	register         chan *Client
+	unregister       chan *Client
+	broadcast        chan *entity.Message
+	pubsubRepo       repository.PubSubRepository
+	messageCacheRepo repository.MessageCacheRepository
 }
 
-func NewRoom(name string, private bool, pubsubRepo repository.PubSubRepository) *Room {
+func NewRoom(
+	name string,
+	private bool,
+	pubsubRepo repository.PubSubRepository,
+	messageCacheRepo repository.MessageCacheRepository,
+) *Room {
 	return &Room{
-		ID:         uuid.New().String(),
-		Name:       name,
-		Private:    private,
-		clients:    make(map[*Client]bool),
-		register:   make(chan *Client),
-		unregister: make(chan *Client),
-		broadcast:  make(chan *entity.Message),
-		pubsubRepo: pubsubRepo,
+		ID:               uuid.New().String(),
+		Name:             name,
+		Private:          private,
+		clients:          make(map[*Client]bool),
+		register:         make(chan *Client),
+		unregister:       make(chan *Client),
+		broadcast:        make(chan *entity.Message),
+		pubsubRepo:       pubsubRepo,
+		messageCacheRepo: messageCacheRepo,
 	}
 }
 
@@ -48,7 +55,7 @@ func (room *Room) Run(ctx context.Context) {
 			room.unregisterClientInRoom(client)
 
 		case message := <-room.broadcast:
-			room.publishRoomMessage(ctx, message.Encode())
+			room.publishRoomMessage(ctx, message)
 		}
 	}
 }
@@ -80,9 +87,11 @@ func (room *Room) broadcastToClientsInRoom(message []byte) {
 	}
 }
 
-func (room *Room) publishRoomMessage(ctx context.Context, message []byte) {
-	err := room.pubsubRepo.Publish(ctx, room.ID, message)
-	if err != nil {
+func (room *Room) publishRoomMessage(ctx context.Context, message *entity.Message) {
+	if err := room.pubsubRepo.Publish(ctx, room.ID, *message); err != nil {
+		log.Print(err)
+	}
+	if err := room.messageCacheRepo.Set(ctx, room.ID, *message); err != nil {
 		log.Print(err)
 	}
 }
@@ -93,6 +102,6 @@ func (room *Room) subscribeToRoomMessages(ctx context.Context) {
 	ch := pubsub.Channel()
 
 	for msg := range ch {
-		room.broadcastToClientsInRoom([]byte(msg.Payload))
+		room.broadcastToClientsInRoom([]byte(msg.Payload)) // ここもentity.Messageに変更する？
 	}
 }
