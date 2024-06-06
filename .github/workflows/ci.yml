@@ -75,14 +75,14 @@ jobs:
           name: app
           path: ./
 
-      #- name: Create Private and Public Keys
-      #  run: |
-      #    mkdir -p .certificate
-      #    echo "${{ secrets.PRIVATE_KEY }}" > .certificate/private_key.pem
-      #    echo "${{ secrets.PUBLIC_KEY }}" > .certificate/public_key.pem
-      #  env:
-      #    PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
-      #    PUBLIC_KEY: ${{ secrets.PUBLIC_KEY }}
+      - name: Create Private and Public Keys
+        run: |
+          mkdir -p .certificate
+          echo "${{ secrets.PRIVATE_KEY }}" > .certificate/private_key.pem
+          echo "${{ secrets.PUBLIC_KEY }}" > .certificate/public_key.pem
+        env:
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          PUBLIC_KEY: ${{ secrets.PUBLIC_KEY }}
 
       - name: Test
         run: go test -v -coverprofile=coverage.txt ./...
