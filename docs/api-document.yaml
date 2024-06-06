@@ -14,7 +14,16 @@ tags:
   - name: user
     description: ユーザ関連API
 paths:
-  /user/login:
+  /ws/:
+    get:
+      tags:
+        - chat
+      summary: WebSocket通信エンドポイント
+      description: WebSocket接続を確立するためのエンドポイント
+      responses:
+        101:
+          description: WebSocketプロトコルを使用して接続が確立されました。
+  /api/user/login:
     post:
       tags:
         - user
@@ -28,7 +37,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserCreateRequest'
+              $ref: '#/components/schemas/LoginRequest'
         required: true
       responses:
         200:
@@ -38,19 +47,67 @@ paths:
               description: Auth token for the registered user
               schema:
                 type: string
-      x-codegen-request-body-name: body
+  /api/user/signup:
+    post:
+      tags:
+        - user
+      summary: ユーザサインアップAPI
+      description: |
+        新規ユーザを作成します。<br>
+        ユーザの名前とパスワードをリクエストで受け取り、新しいユーザアカウントを作成します。
+      requestBody:
+        description: Request Body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+        required: true
+      responses:
+        201:
+          description: ユーザアカウントが正常に作成されました。
+          headers:
+            Authorization:
+              description: Auth token for the created user
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserCreateResponse'
+  /api/user/logout:
+    post:
+      tags:
+        - user
+      summary: ユーザログアウトAPI
+      description: |
+        ユーザをログアウトします。<br>
+        クライアントからトークンを無効化します。
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: ログアウトが正常に完了しました。
 components:
   securitySchemes:
     BearerAuth:
       type: http
       scheme: bearer
   schemas:
-    UserCreateRequest:
+    CreateUserRequest:
       type: object
       properties:
-        name:
+        email:
           type: string
-          description: ユーザ名
+          description: ユーザのメールアドレス
+        password:
+          type: string
+          description: ユーザのパスワード
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          description: ユーザのメールアドレス
         password:
           type: string
           description: ユーザのパスワード
@@ -60,9 +117,6 @@ components:
         id:
           type: string
           description: ユーザID
-        name:
+        email:
           type: string
-          description: ユーザ名
-        password:
-          type: string
-          description: ユーザのパスワード
+          description: ユーザのメールアドレス
