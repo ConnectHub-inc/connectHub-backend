@@ -9,10 +9,8 @@ import (
 )
 
 func Test_JWTToken(t *testing.T) {
-	t.Skip("Skip: JWTToken test")
-
-	privateKeyPath := "../../../../.certificate/private_key.pem"
-	publicKeyPath := "../../../../.certificate/public_key.pem"
+	privateKeyPath := "../../.certificate/private_key.pem"
+	publicKeyPath := "../../.certificate/public_key.pem"
 	t.Setenv("PRIVATE_KEY_PATH", privateKeyPath)
 	t.Setenv("PUBLIC_KEY_PATH", publicKeyPath)
 
