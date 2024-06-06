@@ -1,4 +1,4 @@
-package websocket
+package ws
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 type Hub struct {
 	clients          map[*Client]bool
 	rooms            map[*Room]bool
-	register         chan *Client
+	Register         chan *Client
 	unregister       chan *Client
 	broadcast        chan []byte
 	pubsubRepo       repository.PubSubRepository
@@ -20,10 +20,10 @@ type Hub struct {
 }
 
 // NewWebsocketServer creates a new Hub type
-func NewHub(pubsubRepo repository.PubSubRepository) repository.HubWebSocketRepository {
+func NewHub(pubsubRepo repository.PubSubRepository) *Hub {
 	return &Hub{
 		clients:    make(map[*Client]bool),
-		register:   make(chan *Client),
+		Register:   make(chan *Client),
 		unregister: make(chan *Client),
 		broadcast:  make(chan []byte),
 		pubsubRepo: pubsubRepo,
@@ -37,7 +37,7 @@ func (h *Hub) Run() {
 
 	for {
 		select {
-		case client := <-h.register:
+		case client := <-h.Register:
 			h.registerClient(client)
 
 		case client := <-h.unregister:
