@@ -7,6 +7,7 @@ import (
 	"github.com/gorilla/websocket"
 
 	"github.com/tusmasoma/connectHub-backend/config"
+	"github.com/tusmasoma/connectHub-backend/interfaces/ws"
 	"github.com/tusmasoma/connectHub-backend/repository"
 )
 
@@ -16,32 +17,26 @@ var upgrader = websocket.Upgrader{
 }
 
 type WebsocketHandler struct {
-	hub    repository.HubWebSocketRepository
-	client repository.ClientWebSocketRepository
+	pubsubRepo repository.PubSubRepository
 }
 
-func NewWebsocketHandler(
-	hub repository.HubWebSocketRepository,
-	client repository.ClientWebSocketRepository,
-) *WebsocketHandler {
+func NewWebsocketHandler(pubsub repository.PubSubRepository) *WebsocketHandler {
 	return &WebsocketHandler{
-		hub:    hub,
-		client: client,
+		pubsubRepo: pubsub,
 	}
 }
 
-func (ws *WebsocketHandler) WebSocket(w http.ResponseWriter, r *http.Request) {
-	_, err := upgrader.Upgrade(w, r, nil) // conn is *websocket.Conn
+func (wsh *WebsocketHandler) WebSocket(hub *ws.Hub, w http.ResponseWriter, r *http.Request) {
+	conn, err := upgrader.Upgrade(w, r, nil) // conn is *websocket.Conn
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
-	// TODO: clientの初期化
+	client := ws.NewClient(conn, hub, wsh.pubsubRepo)
 
-	go ws.client.WritePump()
-	go ws.client.ReadPump()
+	go client.WritePump()
+	go client.ReadPump()
 
-	// TODO: hubにclientを登録
-	// ws.hub.register <- client
+	hub.Register <- client
 }

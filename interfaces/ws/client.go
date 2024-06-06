@@ -1,4 +1,4 @@
-package websocket
+package ws
 
 import (
 	"encoding/json"
@@ -28,7 +28,7 @@ func NewClient(
 	conn *websocket.Conn,
 	hub *Hub,
 	pubsubRepo repository.PubSubRepository,
-) repository.ClientWebSocketRepository {
+) *Client {
 	return &Client{
 		conn:       conn,
 		hub:        hub,
