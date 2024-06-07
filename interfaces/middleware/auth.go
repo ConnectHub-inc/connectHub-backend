@@ -1,4 +1,3 @@
-//go:generate mockgen -source=$GOFILE -package=mock -destination=./mock/$GOFILE
 package middleware
 
 import (
