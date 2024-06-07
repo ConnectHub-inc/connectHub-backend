@@ -42,8 +42,8 @@ func BuildContainer(ctx context.Context) (*dig.Container, error) {
 		ws.NewHub,
 		func(
 			serverConfig *config.ServerConfig,
-			wsHandler handler.WebsocketHandler,
-			hub ws.Hub,
+			wsHandler *handler.WebsocketHandler,
+			hub *ws.Hub,
 		) *chi.Mux {
 			r := chi.NewRouter()
 			r.Use(cors.Handler(cors.Options{
@@ -58,7 +58,7 @@ func BuildContainer(ctx context.Context) (*dig.Container, error) {
 			go hub.Run()
 
 			r.Get("/ws", func(w http.ResponseWriter, r *http.Request) {
-				wsHandler.WebSocket(&hub, w, r)
+				wsHandler.WebSocket(hub, w, r)
 			})
 
 			return r
