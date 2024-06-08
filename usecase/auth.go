@@ -4,10 +4,10 @@ package usecase
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/tusmasoma/connectHub-backend/config"
 	"github.com/tusmasoma/connectHub-backend/entity"
+	"github.com/tusmasoma/connectHub-backend/internal/log"
 	"github.com/tusmasoma/connectHub-backend/repository"
 )
 
@@ -29,12 +29,12 @@ func (auc *authUseCase) GetUserFromContext(ctx context.Context) (*entity.User, e
 	userIDValue := ctx.Value(config.ContextUserIDKey)
 	userID, ok := userIDValue.(string)
 	if !ok {
-		log.Printf("Failed to retrieve userId from context")
+		log.Warn("Failed to retrieve userId from context")
 		return nil, fmt.Errorf("user name not found in request context")
 	}
 	user, err := auc.ur.Get(ctx, userID)
 	if err != nil {
-		log.Printf("Failed to get UserInfo from db: %v", userID)
+		log.Error("Failed to retrieve user from repository", log.Fstring("userID", userID))
 		return nil, err
 	}
 	return user, nil

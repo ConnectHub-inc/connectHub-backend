@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"github.com/sethvargo/go-envconfig"
+
+	"github.com/tusmasoma/connectHub-backend/internal/log"
 )
 
 const (
@@ -39,6 +41,7 @@ func NewDBConfig(ctx context.Context) (*DBConfig, error) {
 	conf := &DBConfig{}
 	pl := envconfig.PrefixLookuper(dbPrefix, envconfig.OsLookuper())
 	if err := envconfig.ProcessWith(ctx, conf, pl); err != nil {
+		log.Error("Failed to load database config", log.Ferror(err))
 		return nil, err
 	}
 	return conf, nil
@@ -48,6 +51,7 @@ func NewCacheConfig(ctx context.Context) (*CacheConfig, error) {
 	conf := &CacheConfig{}
 	pl := envconfig.PrefixLookuper(cachePrefix, envconfig.OsLookuper())
 	if err := envconfig.ProcessWith(ctx, conf, pl); err != nil {
+		log.Error("Failed to load cache config", log.Ferror(err))
 		return nil, err
 	}
 	return conf, nil
@@ -57,6 +61,7 @@ func NewServerConfig(ctx context.Context) (*ServerConfig, error) {
 	conf := &ServerConfig{}
 	pl := envconfig.PrefixLookuper(serverPrefix, envconfig.OsLookuper())
 	if err := envconfig.ProcessWith(ctx, conf, pl); err != nil {
+		log.Error("Failed to load server config", log.Ferror(err))
 		return nil, err
 	}
 	return conf, nil

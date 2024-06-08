@@ -30,8 +30,10 @@ var (
 var logger *slog.Logger
 
 // Slack webhook URL and environment.
-var environment = os.Getenv("ENVIRONMENT")
-var slackWebhookURL = os.Getenv("SLACK_WEBHOOK_URL")
+var (
+	environment     = os.Getenv("ENVIRONMENT")
+	slackWebhookURL = os.Getenv("SLACK_WEBHOOK_URL")
+)
 
 // init initializes the logger.
 //

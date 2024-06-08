@@ -2,7 +2,8 @@ package entity
 
 import (
 	"encoding/json"
-	"log"
+
+	"github.com/tusmasoma/connectHub-backend/internal/log"
 )
 
 type Message struct {
@@ -15,7 +16,7 @@ type Message struct {
 func (message *Message) Encode() []byte {
 	json, err := json.Marshal(message)
 	if err != nil {
-		log.Println(err)
+		log.Error("Failed to encode message", log.Ferror(err))
 	}
 	return json
 }

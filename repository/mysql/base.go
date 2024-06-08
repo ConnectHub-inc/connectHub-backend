@@ -7,6 +7,7 @@ import (
 
 	"github.com/doug-martin/goqu/v9"
 
+	"github.com/tusmasoma/connectHub-backend/internal/log"
 	"github.com/tusmasoma/connectHub-backend/repository"
 
 	// Register MySQL dialect for goqu
@@ -38,6 +39,7 @@ func (b *base[T]) structScanRow(entity *T, row *sql.Row) error {
 	}
 
 	if err := row.Scan(fields...); err != nil {
+		log.Error("Failed to scan row", log.Ferror(err))
 		return err
 	}
 
@@ -46,7 +48,7 @@ func (b *base[T]) structScanRow(entity *T, row *sql.Row) error {
 
 // structScanRowsは、複数行の結果をスキャンするためのメソッドです。
 func (b *base[T]) structScanRows(rows *sql.Rows) ([]T, error) {
-	var entitys []T
+	var entities []T
 	for rows.Next() {
 		var entity T
 		v := reflect.ValueOf(&entity).Elem()
@@ -57,11 +59,16 @@ func (b *base[T]) structScanRows(rows *sql.Rows) ([]T, error) {
 			fields[i] = v.Field(i).Addr().Interface()
 		}
 		if err := rows.Scan(fields...); err != nil {
+			log.Error("Failed to scan rows", log.Ferror(err))
 			return nil, err
 		}
-		entitys = append(entitys, entity)
+		entities = append(entities, entity)
 	}
-	return entitys, nil
+	if err := rows.Err(); err != nil {
+		log.Error("Rows iteration error", log.Ferror(err))
+		return nil, err
+	}
+	return entities, nil
 }
 
 func (b *base[T]) List(ctx context.Context, qcs []repository.QueryCondition) ([]T, error) {
@@ -72,29 +79,29 @@ func (b *base[T]) List(ctx context.Context, qcs []repository.QueryCondition) ([]
 
 	query, _, err := b.dialect.From(b.tableName).Select("*").Where(whereClauses...).ToSQL()
 	if err != nil {
+		log.Error("Failed to generate SQL query", log.Ferror(err))
 		return nil, err
 	}
 
 	rows, err := b.db.QueryContext(ctx, query)
 	if err != nil {
+		log.Error("Failed to execute query", log.Ferror(err))
 		return nil, err
 	}
 	defer rows.Close()
 
-	entitys, err := b.structScanRows(rows)
+	entities, err := b.structScanRows(rows)
 	if err != nil {
 		return nil, err
 	}
-	if err = rows.Err(); err != nil {
-		return nil, err
-	}
-	return entitys, nil
+	return entities, nil
 }
 
 func (b *base[T]) Get(ctx context.Context, id string) (*T, error) {
 	var entity T
 	query, _, err := b.dialect.From(b.tableName).Select("*").Where(goqu.C("id").Eq(id)).ToSQL()
 	if err != nil {
+		log.Error("Failed to generate SQL query", log.Ferror(err))
 		return nil, err
 	}
 	row := b.db.QueryRowContext(ctx, query)
@@ -107,46 +114,66 @@ func (b *base[T]) Get(ctx context.Context, id string) (*T, error) {
 func (b *base[T]) Create(ctx context.Context, entity T) error {
 	query, _, err := b.dialect.Insert(b.tableName).Rows(entity).ToSQL()
 	if err != nil {
+		log.Error("Failed to generate SQL query", log.Ferror(err))
 		return err
 	}
 	_, err = b.db.ExecContext(ctx, query)
-	return err
+	if err != nil {
+		log.Error("Failed to execute query", log.Ferror(err))
+		return err
+	}
+	return nil
 }
 
-func (b *base[T]) BatchCreate(ctx context.Context, entitys []T) error {
-	query, _, err := b.dialect.Insert(b.tableName).Rows(entitys).ToSQL()
+func (b *base[T]) BatchCreate(ctx context.Context, entities []T) error {
+	query, _, err := b.dialect.Insert(b.tableName).Rows(entities).ToSQL()
 	if err != nil {
+		log.Error("Failed to generate SQL query", log.Ferror(err))
 		return err
 	}
 	_, err = b.db.ExecContext(ctx, query)
-	return err
+	if err != nil {
+		log.Error("Failed to execute query", log.Ferror(err))
+		return err
+	}
+	return nil
 }
 
 func (b *base[T]) Update(ctx context.Context, id string, entity T) error {
 	query, _, err := b.dialect.Update(b.tableName).Set(entity).Where(goqu.C("id").Eq(id)).ToSQL()
 	if err != nil {
+		log.Error("Failed to generate SQL query", log.Ferror(err))
 		return err
 	}
 	_, err = b.db.ExecContext(ctx, query)
-	return err
+	if err != nil {
+		log.Error("Failed to execute query", log.Ferror(err))
+		return err
+	}
+	return nil
 }
 
 func (b *base[T]) Delete(ctx context.Context, id string) error {
 	query, _, err := b.dialect.Delete(b.tableName).Where(goqu.C("id").Eq(id)).ToSQL()
 	if err != nil {
+		log.Error("Failed to generate SQL query", log.Ferror(err))
 		return err
 	}
 	_, err = b.db.ExecContext(ctx, query)
-	return err
+	if err != nil {
+		log.Error("Failed to execute query", log.Ferror(err))
+		return err
+	}
+	return nil
 }
 
 func (b *base[T]) CreateOrUpdate(ctx context.Context, id string, qcs []repository.QueryCondition, entity T) error {
 	// TODO: アンチパターン(CreateOrUpdateは現状使わないこと)
-	entitys, err := b.List(ctx, qcs)
+	entities, err := b.List(ctx, qcs)
 	if err != nil {
 		return err
 	}
-	if len(entitys) > 0 {
+	if len(entities) > 0 {
 		return b.Update(ctx, id, entity)
 	}
 	return b.Create(ctx, entity)

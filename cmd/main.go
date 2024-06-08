@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"flag"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -14,12 +13,13 @@ import (
 	"github.com/joho/godotenv"
 
 	"github.com/tusmasoma/connectHub-backend/config"
+	"github.com/tusmasoma/connectHub-backend/internal/log"
 )
 
 func main() {
 	// .envファイルから環境変数を読み込む
 	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found")
+		log.Info("No .env file found", log.Ferror(err))
 	}
 
 	var addr string
@@ -31,7 +31,7 @@ func main() {
 
 	container, err := BuildContainer(mainCtx)
 	if err != nil {
-		log.Printf("Failed to build container: %v", err)
+		log.Panic("Failed to build container", log.Ferror(err))
 		return
 	}
 
@@ -45,32 +45,31 @@ func main() {
 			IdleTimeout:  config.IdleTimeout,
 		}
 		/* ===== サーバの起動 ===== */
-		log.SetFlags(0)
-		log.Println("Server running...")
+		log.Info("Server running...")
 
 		signalCtx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, os.Interrupt, os.Kill)
 		defer stop()
 
 		go func() {
 			if err = srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-				log.Printf("Server failed: %v", err)
+				log.Error("Server failed", log.Ferror(err))
 				return
 			}
 		}()
 
 		<-signalCtx.Done()
-		log.Println("Server stopping...")
+		log.Info("Server stopping...")
 
 		tctx, cancelShutdown := context.WithTimeout(context.Background(), config.GracefulShutdownTimeout)
 		defer cancelShutdown()
 
 		if err = srv.Shutdown(tctx); err != nil {
-			log.Println("failed to shutdown http server", err)
+			log.Error("Failed to shutdown http server", log.Ferror(err))
 		}
-		log.Println("Server exited")
+		log.Info("Server exited")
 	})
 	if err != nil {
-		log.Printf("Failed to start server: %v", err)
+		log.Panic("Failed to start server", log.Ferror(err))
 		return
 	}
 }

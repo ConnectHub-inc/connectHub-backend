@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/doug-martin/goqu/v9"
@@ -12,6 +13,7 @@ import (
 	"github.com/tusmasoma/connectHub-backend/config"
 	"github.com/tusmasoma/connectHub-backend/interfaces/handler"
 	"github.com/tusmasoma/connectHub-backend/interfaces/ws"
+	"github.com/tusmasoma/connectHub-backend/internal/log"
 	"github.com/tusmasoma/connectHub-backend/repository/mysql"
 	"github.com/tusmasoma/connectHub-backend/repository/redis"
 )
@@ -22,6 +24,7 @@ func BuildContainer(ctx context.Context) (*dig.Container, error) {
 	if err := container.Provide(func() context.Context {
 		return ctx
 	}); err != nil {
+		log.Error("Failed to provide context")
 		return nil, err
 	}
 
@@ -67,10 +70,12 @@ func BuildContainer(ctx context.Context) (*dig.Container, error) {
 
 	for _, provider := range providers {
 		if err := container.Provide(provider); err != nil {
+			log.Fatal("Failed to provide dependency", log.Fstring("provider", fmt.Sprintf("%T", provider)))
 			return nil, err
 		}
 	}
 
+	log.Info("Container built successfully")
 	return container, nil
 }
 

@@ -4,9 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log"
 
 	_ "github.com/go-sql-driver/mysql" // This blank import is used for its init function
+
+	"github.com/tusmasoma/connectHub-backend/internal/log"
 )
 
 func NewDB() (*sql.DB, error) {
@@ -14,7 +15,7 @@ func NewDB() (*sql.DB, error) {
 
 	conf, err := NewDBConfig(ctx)
 	if err != nil {
-		log.Printf("Failed to load database config: %s\n", err)
+		log.Error("Failed to load database config", log.Ferror(err))
 		return nil, err
 	}
 
@@ -23,13 +24,15 @@ func NewDB() (*sql.DB, error) {
 
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
-		log.Printf("Database connection failed: %s\n", err)
+		log.Error("Failed to connect to database", log.Fstring("dsn", dsn), log.Ferror(err))
 		return nil, err
 	}
 
 	if err = db.Ping(); err != nil {
+		log.Error("Failed to ping database", log.Ferror(err))
 		return nil, err
 	}
 
+	log.Info("Successfully connected to database", log.Fstring("dsn", dsn))
 	return db, nil
 }
