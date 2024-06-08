@@ -9,15 +9,20 @@ import (
 	"github.com/slack-go/slack"
 )
 
-//nolint:gochecknoglobals
+const (
+	NoticeLevel   = 2
+	CriticalLevel = 4
+)
+
+//nolint:gochecknoglobals // logger is a global variable.
 var (
 	SeverityDefault  = slog.LevelInfo
 	SeverityDebug    = slog.LevelDebug
 	SeverityInfo     = slog.LevelInfo
-	SeverityNotice   = slog.Level(2)
+	SeverityNotice   = slog.Level(NoticeLevel)
 	SeverityWarning  = slog.LevelWarn
 	SeverityError    = slog.LevelError
-	SeverityCritical = slog.Level(4)
+	SeverityCritical = slog.Level(CriticalLevel)
 )
 
 // logger is the global logger.
@@ -28,6 +33,8 @@ var logger *slog.Logger
 var slackWebhookURL = os.Getenv("SLACK_WEBHOOK_URL")
 
 // init initializes the logger.
+//
+//nolint:gochecknoinits // init is used for logger initialization.
 func init() {
 	logFormat := os.Getenv("LOG_FORMAT")
 	handler := newHandler(logFormat)
@@ -35,6 +42,8 @@ func init() {
 }
 
 // newHandler returns a slog.Handler based on the given format.
+//
+//nolint:gocritic // switch is used for future extensibility.
 func newHandler(format string) slog.Handler {
 	switch format {
 	case "json":
@@ -51,7 +60,7 @@ func newHandler(format string) slog.Handler {
 }
 
 // attrReplacerForDefault is default attribute replacer.
-func attrReplacerForDefault(groups []string, attr slog.Attr) slog.Attr {
+func attrReplacerForDefault(_ []string, attr slog.Attr) slog.Attr {
 	level, ok := attr.Value.Any().(slog.Level)
 	if ok {
 		attr.Value = toLogLevel(level)
@@ -60,8 +69,10 @@ func attrReplacerForDefault(groups []string, attr slog.Attr) slog.Attr {
 }
 
 // toLogLevel converts a slog.Level to a slog.Value.
+//
+//nolint:exhaustive // switch is used for future extensibility.
 func toLogLevel(level slog.Level) slog.Value {
-	ls := "DEFAULT"
+	var ls string
 
 	switch level {
 	case SeverityDebug:
@@ -76,6 +87,8 @@ func toLogLevel(level slog.Level) slog.Value {
 		ls = "ERROR"
 	case SeverityCritical:
 		ls = "CRITICAL"
+	default:
+		ls = "DEFAULT"
 	}
 
 	return slog.StringValue(ls)
@@ -94,7 +107,7 @@ func sendSlackNotification(level, msg string, attrs ...any) {
 		Text: text,
 	})
 	if err != nil {
-		fmt.Printf("Failed to send Slack notification: %v\n", err)
+		Warn("Failed to send Slack notification", slog.Any("error", err))
 	}
 }
 
