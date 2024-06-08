@@ -29,7 +29,8 @@ var (
 // it is initialized by init() and should not be modified.
 var logger *slog.Logger
 
-// Slack webhook URL
+// Slack webhook URL and environment.
+var environment = os.Getenv("ENVIRONMENT")
 var slackWebhookURL = os.Getenv("SLACK_WEBHOOK_URL")
 
 // init initializes the logger.
@@ -96,6 +97,9 @@ func toLogLevel(level slog.Level) slog.Value {
 
 // sendSlackNotification sends a message to the configured Slack webhook URL.
 func sendSlackNotification(level, msg string, attrs ...any) {
+	if environment == "local" {
+		return
+	}
 	if slackWebhookURL == "" {
 		return
 	}
