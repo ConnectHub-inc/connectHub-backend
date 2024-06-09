@@ -3,12 +3,12 @@ package ws
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/google/uuid"
 
 	"github.com/tusmasoma/connectHub-backend/config"
 	"github.com/tusmasoma/connectHub-backend/entity"
+	"github.com/tusmasoma/connectHub-backend/internal/log"
 	"github.com/tusmasoma/connectHub-backend/repository"
 )
 
@@ -89,10 +89,10 @@ func (room *Room) broadcastToClientsInRoom(message []byte) {
 
 func (room *Room) publishRoomMessage(ctx context.Context, message *entity.Message) {
 	if err := room.pubsubRepo.Publish(ctx, room.ID, *message); err != nil {
-		log.Print(err)
+		log.Error("Failed to publish message", log.Ferror(err))
 	}
 	if err := room.messageCacheRepo.Set(ctx, room.ID, *message); err != nil {
-		log.Print(err)
+		log.Error("Failed to cache message", log.Ferror(err))
 	}
 }
 

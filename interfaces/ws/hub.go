@@ -5,6 +5,7 @@ import (
 
 	"github.com/tusmasoma/connectHub-backend/config"
 	"github.com/tusmasoma/connectHub-backend/entity"
+	"github.com/tusmasoma/connectHub-backend/internal/log"
 	"github.com/tusmasoma/connectHub-backend/repository"
 )
 
@@ -90,6 +91,7 @@ func (h *Hub) createRoom(name string, private bool) *Room {
 		Name:    room.Name,
 		Private: room.Private,
 	}); err != nil {
+		log.Error("Failed to create room", log.Fstring("name", name))
 		return nil
 	}
 
