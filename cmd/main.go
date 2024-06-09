@@ -31,7 +31,7 @@ func main() {
 
 	container, err := BuildContainer(mainCtx)
 	if err != nil {
-		log.Panic("Failed to build container", log.Ferror(err))
+		log.Critical("Failed to build container", log.Ferror(err))
 		return
 	}
 
@@ -69,7 +69,7 @@ func main() {
 		log.Info("Server exited")
 	})
 	if err != nil {
-		log.Panic("Failed to start server", log.Ferror(err))
+		log.Critical("Failed to start server", log.Ferror(err))
 		return
 	}
 }

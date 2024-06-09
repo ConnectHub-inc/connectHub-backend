@@ -73,7 +73,7 @@ func BuildContainer(ctx context.Context) (*dig.Container, error) {
 
 	for _, provider := range providers {
 		if err := container.Provide(provider); err != nil {
-			log.Fatal("Failed to provide dependency", log.Fstring("provider", fmt.Sprintf("%T", provider)))
+			log.Critical("Failed to provide dependency", log.Fstring("provider", fmt.Sprintf("%T", provider)))
 			return nil, err
 		}
 	}

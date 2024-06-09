@@ -21,7 +21,7 @@ func NewClient() *redis.Client {
 	// TODO: test fail because not integretion test
 	// _, err = client.Ping(ctx).Result()
 	// if err != nil {
-	//     log.Error("Failed to connect to Redis", log.Ferror(err), log.Fstring("addr", conf.Addr))
+	//     log.Critical("Failed to connect to Redis", log.Ferror(err), log.Fstring("addr", conf.Addr))
 	//	   return nil
 	// }
 

@@ -24,12 +24,12 @@ func NewDB() (*sql.DB, error) {
 
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
-		log.Error("Failed to connect to database", log.Fstring("dsn", dsn), log.Ferror(err))
+		log.Critical("Failed to connect to database", log.Fstring("dsn", dsn), log.Ferror(err))
 		return nil, err
 	}
 
 	if err = db.Ping(); err != nil {
-		log.Error("Failed to ping database", log.Ferror(err))
+		log.Critical("Failed to ping database", log.Ferror(err))
 		return nil, err
 	}
 
