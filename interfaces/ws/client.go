@@ -154,17 +154,21 @@ func (client *Client) handleNewMessage(jsonMessage []byte) {
 
 	switch message.Action {
 	case config.SendMessageAction:
-		roomID := message.TargetID
-		if room := client.hub.findRoomByID(roomID); room != nil {
-			log.Info("Broadcasting message", log.Fstring("roomID", roomID), log.Fstring("messageID", message.ID))
-			room.broadcast <- &message
-		} else {
-			log.Warn("Room not found", log.Fstring("roomID", roomID))
-		}
+		client.handleSendMessage(message)
 	case config.CreateRoomAction:
 		client.handleCreateRoomMessage(message)
 	default:
 		log.Warn("Unknown message action", log.Fstring("action", message.Action))
+	}
+}
+
+func (client *Client) handleSendMessage(message entity.Message) {
+	roomID := message.TargetID
+	if room := client.hub.findRoomByID(roomID); room != nil {
+		log.Info("Broadcasting message", log.Fstring("roomID", roomID), log.Fstring("messageID", message.ID))
+		room.broadcast <- &message
+	} else {
+		log.Warn("Room not found", log.Fstring("roomID", roomID))
 	}
 }
 
