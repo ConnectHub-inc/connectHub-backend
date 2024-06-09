@@ -1,4 +1,4 @@
-package config
+package mysql
 
 import (
 	"context"
@@ -7,13 +7,14 @@ import (
 
 	_ "github.com/go-sql-driver/mysql" // This blank import is used for its init function
 
+	"github.com/tusmasoma/connectHub-backend/config"
 	"github.com/tusmasoma/connectHub-backend/internal/log"
 )
 
-func NewDB() (*sql.DB, error) {
+func NewMySQLDB() (*sql.DB, error) {
 	ctx := context.Background()
 
-	conf, err := NewDBConfig(ctx)
+	conf, err := config.NewDBConfig(ctx)
 	if err != nil {
 		log.Error("Failed to load database config", log.Ferror(err))
 		return nil, err

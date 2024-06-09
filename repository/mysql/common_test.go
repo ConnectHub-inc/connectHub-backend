@@ -13,13 +13,16 @@ import (
 	_ "github.com/go-sql-driver/mysql" // This blank import is used for its init function
 )
 
-var db *sql.DB
+var (
+	db        *sql.DB
+	mysqlPort string
+)
 
 func TestMain(m *testing.M) {
 	var closeMySQL func()
 	var err error
 
-	db, closeMySQL, err = startMySQL()
+	db, mysqlPort, closeMySQL, err = startMySQL()
 	defer closeMySQL()
 	if err != nil {
 		log.Println(err)
@@ -29,7 +32,7 @@ func TestMain(m *testing.M) {
 }
 
 // startMySQL はDockerを使用してMySQLコンテナを起動し、データベース接続を確立する関数です。
-func startMySQL() (*sql.DB, func(), error) {
+func startMySQL() (*sql.DB, string, func(), error) {
 	pwd, err := os.Getwd()
 	if err != nil {
 		log.Fatalf("Failed to get current directory: %s", err)
@@ -39,14 +42,14 @@ func startMySQL() (*sql.DB, func(), error) {
 	pool, err := dockertest.NewPool("")
 	if err != nil {
 		log.Printf("Could not construct pool: %s\n", err)
-		return nil, nil, err
+		return nil, "", nil, err
 	}
 
 	// Dockerに接続を試みる
 	err = pool.Client.Ping()
 	if err != nil {
 		log.Printf("Could not connect to Docker: %s", err)
-		return nil, nil, err
+		return nil, "", nil, err
 	}
 
 	// Dockerコンテナを起動する際に指定する設定定義
@@ -92,7 +95,7 @@ func startMySQL() (*sql.DB, func(), error) {
 	)
 	if err != nil {
 		log.Printf("Could not start resource: %s", err)
-		return nil, nil, err
+		return nil, "", nil, err
 	}
 
 	port := resource.GetPort("3306/tcp")
@@ -108,13 +111,13 @@ func startMySQL() (*sql.DB, func(), error) {
 	})
 	if err != nil {
 		log.Printf("Could not connect to docker: %s", err)
-		return nil, nil, err
+		return nil, "", nil, err
 	}
 
 	log.Println("start MySQL container🐳")
 
 	// データベース接続とクリーンアップ関数を返却
-	return db, func() { closeMySQL(db, pool, resource) }, nil
+	return db, port, func() { closeMySQL(db, pool, resource) }, nil
 }
 
 // closeMySQL はMySQLデータベースの接続を閉じ、Dockerコンテナを停止・削除する関数
