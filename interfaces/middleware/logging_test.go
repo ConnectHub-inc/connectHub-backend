@@ -2,11 +2,12 @@ package middleware
 
 import (
 	"bytes"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/tusmasoma/connectHub-backend/internal/log"
 )
 
 func Test_Logging(t *testing.T) {
@@ -62,11 +63,11 @@ func Test_Logging(t *testing.T) {
 
 			// ログの出力を確認
 			logOutput := logBuf.String()
-			if tt.expectAccessLog && !strings.Contains(logOutput, "[ACCESS]") {
+			if tt.expectAccessLog && !strings.Contains(logOutput, "Access log") {
 				t.Errorf("expected access log, got %s", logOutput)
 			}
 
-			if tt.expectErrorLog && !strings.Contains(logOutput, "[ERROR]") {
+			if tt.expectErrorLog && !strings.Contains(logOutput, "Error log") {
 				t.Errorf("expected error log, got %s", logOutput)
 			}
 

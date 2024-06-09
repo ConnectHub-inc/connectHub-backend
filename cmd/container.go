@@ -12,6 +12,7 @@ import (
 
 	"github.com/tusmasoma/connectHub-backend/config"
 	"github.com/tusmasoma/connectHub-backend/interfaces/handler"
+	"github.com/tusmasoma/connectHub-backend/interfaces/middleware"
 	"github.com/tusmasoma/connectHub-backend/interfaces/ws"
 	"github.com/tusmasoma/connectHub-backend/internal/log"
 	"github.com/tusmasoma/connectHub-backend/repository/mysql"
@@ -57,6 +58,8 @@ func BuildContainer(ctx context.Context) (*dig.Container, error) {
 				AllowCredentials: false,
 				MaxAge:           serverConfig.PreflightCacheDurationSec,
 			}))
+
+			r.Use(middleware.Logging)
 
 			go hub.Run()
 

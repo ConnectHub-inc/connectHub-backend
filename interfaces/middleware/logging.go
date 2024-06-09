@@ -1,9 +1,10 @@
 package middleware
 
 import (
-	"log"
 	"net/http"
 	"time"
+
+	"github.com/tusmasoma/connectHub-backend/internal/log"
 )
 
 type loggingResponseWriter struct {
@@ -24,13 +25,22 @@ func Logging(next http.Handler) http.Handler {
 
 		next.ServeHTTP(lrw, r)
 		// アクセスログ
-		log.Printf("[ACCESS] Date: %s, URL: %s, IP: %s, StatusCode: %d",
-			time.Now().Format("2006-01-02 15:04:05"), r.URL, r.RemoteAddr, lrw.statusCode)
+		log.Info(
+			"Access log",
+			log.Ftime("Date", time.Now()),
+			log.Fstring("URL", r.URL.String()),
+			log.Fstring("IP", r.RemoteAddr),
+			log.Fint("StatusCode", lrw.statusCode),
+		)
 
 		// エラーログ (StatusCodeが400以上の場合)
 		if lrw.statusCode >= StatusCodeBadRequest {
-			log.Printf("[ERROR] Date: %s, URL: %s, StatusCode: %d",
-				time.Now().Format("2006-01-02 15:04:05"), r.URL, lrw.statusCode)
+			log.Error(
+				"Error log",
+				log.Ftime("Date", time.Now()),
+				log.Fstring("URL", r.URL.String()),
+				log.Fint("StatusCode", lrw.statusCode),
+			)
 		}
 	})
 }

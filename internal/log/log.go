@@ -3,6 +3,7 @@ package log
 import (
 	"context"
 	"fmt"
+	"io"
 	"log/slog"
 	"os"
 
@@ -115,6 +116,11 @@ func sendSlackNotification(level, msg string, attrs ...any) {
 	if err != nil {
 		Warn("Failed to send Slack notification", slog.Any("error", err))
 	}
+}
+
+// SetOutput sets the logger output.
+func SetOutput(w io.Writer) {
+	logger = slog.New(slog.NewTextHandler(w, &slog.HandlerOptions{Level: slog.LevelInfo}))
 }
 
 // Debug logs a debug message.
