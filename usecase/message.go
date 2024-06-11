@@ -13,7 +13,7 @@ import (
 type MessageUseCase interface {
 	CreateMessage(ctx context.Context, message entity.Message) error
 	UpdateMessage(ctx context.Context, message entity.Message, userID string) error
-	DeleteMessage(ctx context.Context, content entity.MessageContent, userID string) error
+	DeleteMessage(ctx context.Context, content entity.Message, userID string) error
 }
 
 type messageUseCase struct {
@@ -49,11 +49,11 @@ func (muc *messageUseCase) UpdateMessage(ctx context.Context, message entity.Mes
 		return err
 	}
 
-	if !user.IsAdmin && user.ID != message.Content.UserID {
+	if !user.IsAdmin && user.ID != message.UserID {
 		log.Warn(
 			"User don't have permission to update msg",
-			log.Fstring("userID", message.Content.UserID),
-			log.Fstring("msgID", message.Content.MessageID),
+			log.Fstring("userID", message.UserID),
+			log.Fstring("msgID", message.ID),
 		)
 		return fmt.Errorf("don't have permission to update msg")
 	}
@@ -65,24 +65,24 @@ func (muc *messageUseCase) UpdateMessage(ctx context.Context, message entity.Mes
 	return nil
 }
 
-func (muc *messageUseCase) DeleteMessage(ctx context.Context, content entity.MessageContent, userID string) error {
+func (muc *messageUseCase) DeleteMessage(ctx context.Context, message entity.Message, userID string) error {
 	user, err := muc.ur.Get(ctx, userID)
 	if err != nil {
 		log.Error("Failed to get user", log.Fstring("userID", userID))
 		return err
 	}
 
-	if !user.IsAdmin && user.ID != content.UserID {
+	if !user.IsAdmin && user.ID != message.UserID {
 		log.Warn(
 			"User don't have permission to delete msg",
-			log.Fstring("userID", content.UserID),
-			log.Fstring("msgID", content.MessageID),
+			log.Fstring("userID", message.UserID),
+			log.Fstring("msgID", message.ID),
 		)
 		return fmt.Errorf("don't have permission to delete msg")
 	}
 
-	if err = muc.mcr.Delete(ctx, content.MessageID); err != nil {
-		log.Error("Failed to delete msg from cache", log.Fstring("msgID", content.MessageID))
+	if err = muc.mcr.Delete(ctx, message.ID); err != nil {
+		log.Error("Failed to delete msg from cache", log.Fstring("msgID", message.ID))
 		return err
 	}
 	return nil

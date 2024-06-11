@@ -14,8 +14,8 @@ import (
 func TestMessageUseCase_CreateMessage(t *testing.T) {
 	t.Parallel()
 	message := entity.Message{
-		ID:      "31894386-3e60-45a8-bc67-f46b72b42554",
-		Content: entity.MessageContent{Text: "test message"},
+		ID:   "31894386-3e60-45a8-bc67-f46b72b42554",
+		Text: "test message",
 	}
 
 	patterns := []struct {
@@ -84,11 +84,9 @@ func TestMessageUseCase_UpdateMessage(t *testing.T) {
 	userID := "f6db2530-cd9b-4ac1-8dc1-38c795e6eec2"
 	msgID := "31894386-3e60-45a8-bc67-f46b72b42554"
 	message := entity.Message{
-		ID: msgID,
-		Content: entity.MessageContent{
-			UserID: userID,
-			Text:   "test message",
-		},
+		ID:     msgID,
+		UserID: userID,
+		Text:   "test message",
 	}
 
 	patterns := []struct {
@@ -227,7 +225,7 @@ func TestMessageUseCase_DeleteMessage(t *testing.T) {
 		)
 		arg struct {
 			ctx     context.Context
-			content entity.MessageContent
+			message entity.Message
 			userID  string
 		}
 		wantErr error
@@ -249,13 +247,13 @@ func TestMessageUseCase_DeleteMessage(t *testing.T) {
 			},
 			arg: struct {
 				ctx     context.Context
-				content entity.MessageContent
+				message entity.Message
 				userID  string
 			}{
 				ctx: context.Background(),
-				content: entity.MessageContent{
-					UserID:    userID,
-					MessageID: msgID,
+				message: entity.Message{
+					ID:     msgID,
+					UserID: userID,
 				},
 				userID: userID,
 			},
@@ -278,13 +276,13 @@ func TestMessageUseCase_DeleteMessage(t *testing.T) {
 			},
 			arg: struct {
 				ctx     context.Context
-				content entity.MessageContent
+				message entity.Message
 				userID  string
 			}{
 				ctx: context.Background(),
-				content: entity.MessageContent{
-					UserID:    userID,
-					MessageID: msgID,
+				message: entity.Message{
+					ID:     msgID,
+					UserID: userID,
 				},
 				userID: "f6db2530-cd9b-4ac1-8dc1-38c795e61234",
 			},
@@ -306,13 +304,13 @@ func TestMessageUseCase_DeleteMessage(t *testing.T) {
 			},
 			arg: struct {
 				ctx     context.Context
-				content entity.MessageContent
+				message entity.Message
 				userID  string
 			}{
 				ctx: context.Background(),
-				content: entity.MessageContent{
-					UserID:    userID,
-					MessageID: msgID,
+				message: entity.Message{
+					ID:     msgID,
+					UserID: userID,
 				},
 				userID: "f6db2530-cd9b-4ac1-8dc1-38c795e61234",
 			},
@@ -336,7 +334,7 @@ func TestMessageUseCase_DeleteMessage(t *testing.T) {
 
 			err := usecase.DeleteMessage(
 				tt.arg.ctx,
-				tt.arg.content,
+				tt.arg.message,
 				tt.arg.userID,
 			)
 

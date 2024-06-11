@@ -153,7 +153,7 @@ func (client *Client) disconnect() {
 }
 
 func (client *Client) handleNewMessage(jsonMessage []byte) {
-	var message entity.Message
+	var message entity.WSMessage
 	if err := json.Unmarshal(jsonMessage, &message); err != nil {
 		log.Error("Error unmarshalling JSON message", log.Ferror(err))
 		return
@@ -175,22 +175,22 @@ func (client *Client) handleNewMessage(jsonMessage []byte) {
 	}
 }
 
-func (client *Client) handleSendMessage(message entity.Message) {
-	if err := client.muc.CreateMessage(context.Background(), message); err != nil {
+func (client *Client) handleSendMessage(message entity.WSMessage) {
+	if err := client.muc.CreateMessage(context.Background(), message.Content); err != nil {
 		log.Error("Failed to create message", log.Ferror(err))
 		return
 	}
 
 	roomID := message.TargetID
 	if room := client.hub.findRoomByID(roomID); room != nil {
-		log.Info("Broadcasting message", log.Fstring("roomID", roomID), log.Fstring("messageID", message.ID))
+		log.Info("Broadcasting message", log.Fstring("roomID", roomID), log.Fstring("messageID", message.Content.ID))
 		room.broadcast <- &message
 	} else {
 		log.Warn("Room not found", log.Fstring("roomID", roomID))
 	}
 }
 
-func (client *Client) handleDeleteMessage(message entity.Message) {
+func (client *Client) handleDeleteMessage(message entity.WSMessage) {
 	if err := client.muc.DeleteMessage(context.Background(), message.Content, client.ID); err != nil {
 		log.Error("Failed to delete message", log.Ferror(err))
 		return
@@ -198,29 +198,29 @@ func (client *Client) handleDeleteMessage(message entity.Message) {
 
 	roomID := message.TargetID
 	if room := client.hub.findRoomByID(roomID); room != nil {
-		log.Info("Broadcasting message", log.Fstring("roomID", roomID), log.Fstring("messageID", message.ID))
+		log.Info("Broadcasting message", log.Fstring("roomID", roomID), log.Fstring("messageID", message.Content.ID))
 		room.broadcast <- &message
 	} else {
 		log.Warn("Room not found", log.Fstring("roomID", roomID))
 	}
 }
 
-func (client *Client) handleEditMessage(message entity.Message) {
-	if err := client.muc.UpdateMessage(context.Background(), message, client.ID); err != nil {
+func (client *Client) handleEditMessage(message entity.WSMessage) {
+	if err := client.muc.UpdateMessage(context.Background(), message.Content, client.ID); err != nil {
 		log.Error("Failed to update message", log.Ferror(err))
 		return
 	}
 
 	roomID := message.TargetID
 	if room := client.hub.findRoomByID(roomID); room != nil {
-		log.Info("Broadcasting message", log.Fstring("roomID", roomID), log.Fstring("messageID", message.ID))
+		log.Info("Broadcasting message", log.Fstring("roomID", roomID), log.Fstring("messageID", message.Content.ID))
 		room.broadcast <- &message
 	} else {
 		log.Warn("Room not found", log.Fstring("roomID", roomID))
 	}
 }
 
-func (client *Client) handleCreateRoomMessage(message entity.Message) {
+func (client *Client) handleCreateRoomMessage(message entity.WSMessage) {
 	roomName := message.Content.Text
 	room := client.hub.createRoom(roomName, false)
 	if room == nil {

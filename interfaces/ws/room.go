@@ -20,7 +20,7 @@ type Room struct {
 	clients      map[*Client]bool
 	register     chan *Client
 	unregister   chan *Client
-	broadcast    chan *entity.Message
+	broadcast    chan *entity.WSMessage
 	pubsubRepo   repository.PubSubRepository
 	msgCacheRepo repository.MessageCacheRepository
 }
@@ -38,7 +38,7 @@ func NewRoom(
 		clients:      make(map[*Client]bool),
 		register:     make(chan *Client),
 		unregister:   make(chan *Client),
-		broadcast:    make(chan *entity.Message),
+		broadcast:    make(chan *entity.WSMessage),
 		pubsubRepo:   pubsubRepo,
 		msgCacheRepo: msgCacheRepo,
 	}
@@ -73,13 +73,13 @@ func (room *Room) unregisterClientInRoom(client *Client) {
 }
 
 func (room *Room) notifyClientJoined(client *Client) {
-	message := &entity.Message{
+	message := &entity.WSMessage{
 		Action: config.SendMessageAction,
-		Content: entity.MessageContent{
-			UserID:    client.ID,
-			MessageID: uuid.New().String(),
-			Text:      fmt.Sprintf(config.WelcomeMessage, client.Name),
-			Created:   time.Now(),
+		Content: entity.Message{
+			ID:      uuid.New().String(),
+			UserID:  client.ID,
+			Text:    fmt.Sprintf(config.WelcomeMessage, client.Name),
+			Created: time.Now(),
 		},
 		TargetID: room.ID,
 		SenderID: client.ID,
@@ -93,7 +93,7 @@ func (room *Room) broadcastToClientsInRoom(message []byte) {
 	}
 }
 
-func (room *Room) publishRoomMessage(ctx context.Context, message *entity.Message) {
+func (room *Room) publishRoomMessage(ctx context.Context, message *entity.WSMessage) {
 	if err := room.pubsubRepo.Publish(ctx, room.ID, *message); err != nil {
 		log.Error("Failed to publish message", log.Ferror(err))
 	}

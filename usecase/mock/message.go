@@ -51,7 +51,7 @@ func (mr *MockMessageUseCaseMockRecorder) CreateMessage(ctx, message interface{}
 }
 
 // DeleteMessage mocks base method.
-func (m *MockMessageUseCase) DeleteMessage(ctx context.Context, content entity.MessageContent, userID string) error {
+func (m *MockMessageUseCase) DeleteMessage(ctx context.Context, content entity.Message, userID string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteMessage", ctx, content, userID)
 	ret0, _ := ret[0].(error)
