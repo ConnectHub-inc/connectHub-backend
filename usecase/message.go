@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/tusmasoma/connectHub-backend/entity"
@@ -12,7 +11,7 @@ import (
 
 type MessageUseCase interface {
 	CreateMessage(ctx context.Context, message entity.Message) error
-	DeleteMessage(ctx context.Context, contentStr string, userID string) error
+	DeleteMessage(ctx context.Context, content entity.MessageContent, userID string) error
 }
 
 type messageUseCase struct {
@@ -46,15 +45,7 @@ type DeleteMessageContent struct {
 	MessageID string `json:"messageID"`
 }
 
-func (muc *messageUseCase) DeleteMessage(ctx context.Context, contentStr string, userID string) error {
-	var content DeleteMessageContent
-
-	err := json.Unmarshal([]byte(contentStr), &content)
-	if err != nil {
-		log.Error("Failed to unmarshal content", log.Fstring("content", contentStr))
-		return err
-	}
-
+func (muc *messageUseCase) DeleteMessage(ctx context.Context, content entity.MessageContent, userID string) error {
 	user, err := muc.ur.Get(ctx, userID)
 	if err != nil {
 		log.Error("Failed to get user", log.Fstring("userID", userID))

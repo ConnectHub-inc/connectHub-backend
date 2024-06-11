@@ -3,6 +3,7 @@ package ws
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -73,8 +74,13 @@ func (room *Room) unregisterClientInRoom(client *Client) {
 
 func (room *Room) notifyClientJoined(client *Client) {
 	message := &entity.Message{
-		Action:   config.SendMessageAction,
-		Content:  fmt.Sprintf(config.WelcomeMessage, client.Name),
+		Action: config.SendMessageAction,
+		Content: entity.MessageContent{
+			UserID:    client.ID,
+			MessageID: uuid.New().String(),
+			Text:      fmt.Sprintf(config.WelcomeMessage, client.Name),
+			Created:   time.Now(),
+		},
 		TargetID: room.ID,
 		SenderID: client.ID,
 	}

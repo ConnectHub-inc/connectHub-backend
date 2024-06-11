@@ -210,9 +210,10 @@ func (client *Client) handleEditMessage(_ entity.Message) {
 }
 
 func (client *Client) handleCreateRoomMessage(message entity.Message) {
-	room := client.hub.createRoom(message.Content, false)
+	roomName := message.Content.Text
+	room := client.hub.createRoom(roomName, false)
 	if room == nil {
-		log.Error("Failed to create room", log.Fstring("content", message.Content))
+		log.Error("Failed to create room", log.Fstring("roomName", roomName))
 		return
 	}
 
