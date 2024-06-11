@@ -63,7 +63,7 @@ func TestMessageUseCase_CreateMessage(t *testing.T) {
 				tt.setup(ur, mr, mcr)
 			}
 
-			usecase := NewCommentUseCase(ur, mr, mcr)
+			usecase := NewMessageUseCase(ur, mr, mcr)
 
 			err := usecase.CreateMessage(
 				tt.arg.ctx,
@@ -196,7 +196,7 @@ func TestMessageUseCase_UpdateMessage(t *testing.T) {
 				tt.setup(ur, mr, mcr)
 			}
 
-			usecase := NewCommentUseCase(ur, mr, mcr)
+			usecase := NewMessageUseCase(ur, mr, mcr)
 
 			err := usecase.UpdateMessage(
 				tt.arg.ctx,
@@ -332,7 +332,7 @@ func TestMessageUseCase_DeleteMessage(t *testing.T) {
 				tt.setup(ur, mr, mcr)
 			}
 
-			usecase := NewCommentUseCase(ur, mr, mcr)
+			usecase := NewMessageUseCase(ur, mr, mcr)
 
 			err := usecase.DeleteMessage(
 				tt.arg.ctx,

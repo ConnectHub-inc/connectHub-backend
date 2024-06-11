@@ -17,6 +17,7 @@ import (
 	"github.com/tusmasoma/connectHub-backend/internal/log"
 	"github.com/tusmasoma/connectHub-backend/repository/mysql"
 	"github.com/tusmasoma/connectHub-backend/repository/redis"
+	"github.com/tusmasoma/connectHub-backend/usecase"
 )
 
 func BuildContainer(ctx context.Context) (*dig.Container, error) {
@@ -42,6 +43,8 @@ func BuildContainer(ctx context.Context) (*dig.Container, error) {
 		redis.NewUserRepository,
 		redis.NewMessageRepository,
 		redis.NewPubSubRepository,
+		usecase.NewUserUseCase,
+		usecase.NewMessageUseCase,
 		handler.NewWebsocketHandler,
 		handler.NewUserHandler,
 		middleware.NewAuthMiddleware,

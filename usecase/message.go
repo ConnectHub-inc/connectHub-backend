@@ -22,7 +22,7 @@ type messageUseCase struct {
 	mcr repository.MessageCacheRepository
 }
 
-func NewCommentUseCase(
+func NewMessageUseCase(
 	ur repository.UserRepository,
 	mr repository.MessageRepository,
 	mcr repository.MessageCacheRepository,
