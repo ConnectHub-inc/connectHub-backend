@@ -7,8 +7,8 @@ on:
     branches: [ "main" ]
   #  branches-ignore:
   #    - main
-  # pull_request:
-  # branches: [ "develop" ]
+  pull_request:
+    branches: [ "main" ]
   workflow_call:
     secrets:
       PRIVATE_KEY:
