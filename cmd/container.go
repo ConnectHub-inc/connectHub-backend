@@ -67,8 +67,11 @@ func BuildContainer(ctx context.Context) (*dig.Container, error) {
 
 			go hub.Run()
 
-			r.Get("/ws", func(w http.ResponseWriter, r *http.Request) {
-				wsHandler.WebSocket(hub, w, r)
+			r.Group(func(r chi.Router) {
+				r.Use(authMiddleware.Authenticate)
+				r.Get("/ws", func(w http.ResponseWriter, r *http.Request) {
+					wsHandler.WebSocket(hub, w, r)
+				})
 			})
 
 			r.Route("/api", func(r chi.Router) {

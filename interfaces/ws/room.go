@@ -13,33 +13,33 @@ import (
 )
 
 type Room struct {
-	ID               string `json:"id"`
-	Name             string `json:"name"`
-	Private          bool   `json:"private"`
-	clients          map[*Client]bool
-	register         chan *Client
-	unregister       chan *Client
-	broadcast        chan *entity.Message
-	pubsubRepo       repository.PubSubRepository
-	messageCacheRepo repository.MessageCacheRepository
+	ID           string `json:"id"`
+	Name         string `json:"name"`
+	Private      bool   `json:"private"`
+	clients      map[*Client]bool
+	register     chan *Client
+	unregister   chan *Client
+	broadcast    chan *entity.Message
+	pubsubRepo   repository.PubSubRepository
+	msgCacheRepo repository.MessageCacheRepository
 }
 
 func NewRoom(
 	name string,
 	private bool,
 	pubsubRepo repository.PubSubRepository,
-	messageCacheRepo repository.MessageCacheRepository,
+	msgCacheRepo repository.MessageCacheRepository,
 ) *Room {
 	return &Room{
-		ID:               uuid.New().String(),
-		Name:             name,
-		Private:          private,
-		clients:          make(map[*Client]bool),
-		register:         make(chan *Client),
-		unregister:       make(chan *Client),
-		broadcast:        make(chan *entity.Message),
-		pubsubRepo:       pubsubRepo,
-		messageCacheRepo: messageCacheRepo,
+		ID:           uuid.New().String(),
+		Name:         name,
+		Private:      private,
+		clients:      make(map[*Client]bool),
+		register:     make(chan *Client),
+		unregister:   make(chan *Client),
+		broadcast:    make(chan *entity.Message),
+		pubsubRepo:   pubsubRepo,
+		msgCacheRepo: msgCacheRepo,
 	}
 }
 
@@ -90,9 +90,6 @@ func (room *Room) broadcastToClientsInRoom(message []byte) {
 func (room *Room) publishRoomMessage(ctx context.Context, message *entity.Message) {
 	if err := room.pubsubRepo.Publish(ctx, room.ID, *message); err != nil {
 		log.Error("Failed to publish message", log.Ferror(err))
-	}
-	if err := room.messageCacheRepo.Set(ctx, room.ID, *message); err != nil {
-		log.Error("Failed to cache message", log.Ferror(err))
 	}
 }
 

@@ -1,6 +1,7 @@
 package ws
 
 import (
+	"context"
 	"encoding/json"
 	"time"
 
@@ -10,30 +11,38 @@ import (
 	"github.com/tusmasoma/connectHub-backend/entity"
 	"github.com/tusmasoma/connectHub-backend/internal/log"
 	"github.com/tusmasoma/connectHub-backend/repository"
+	"github.com/tusmasoma/connectHub-backend/usecase"
 )
 
 var newline = []byte{'\n'}
 
 type Client struct {
-	ID         string
-	Name       string
-	conn       *websocket.Conn
-	hub        *Hub
-	rooms      map[*Room]bool
-	send       chan []byte
-	pubsubRepo repository.PubSubRepository
+	ID    string
+	Name  string
+	conn  *websocket.Conn
+	hub   *Hub
+	rooms map[*Room]bool
+	send  chan []byte
+	psr   repository.PubSubRepository
+	muc   usecase.MessageUseCase
 }
 
 func NewClient(
+	id string,
+	name string,
 	conn *websocket.Conn,
 	hub *Hub,
-	pubsubRepo repository.PubSubRepository,
+	psr repository.PubSubRepository,
+	muc usecase.MessageUseCase,
 ) *Client {
 	return &Client{
-		conn:       conn,
-		hub:        hub,
-		send:       make(chan []byte, config.ChannelBufferSize),
-		pubsubRepo: pubsubRepo,
+		ID:   id,
+		Name: name,
+		conn: conn,
+		hub:  hub,
+		send: make(chan []byte, config.ChannelBufferSize),
+		psr:  psr,
+		muc:  muc,
 	}
 }
 
@@ -150,11 +159,15 @@ func (client *Client) handleNewMessage(jsonMessage []byte) {
 		return
 	}
 
-	message.SenderID = client.ID // TODO: clientのIDでなく、userのIDに変更する
+	message.SenderID = client.ID
 
 	switch message.Action {
 	case config.SendMessageAction:
 		client.handleSendMessage(message)
+	case config.DeleteMessageAction:
+		client.handleDeleteMessage(message)
+	case config.EditMessageAction:
+		client.handleEditMessage(message)
 	case config.CreateRoomAction:
 		client.handleCreateRoomMessage(message)
 	default:
@@ -163,6 +176,11 @@ func (client *Client) handleNewMessage(jsonMessage []byte) {
 }
 
 func (client *Client) handleSendMessage(message entity.Message) {
+	if err := client.muc.CreateMessage(context.Background(), message); err != nil {
+		log.Error("Failed to create message", log.Ferror(err))
+		return
+	}
+
 	roomID := message.TargetID
 	if room := client.hub.findRoomByID(roomID); room != nil {
 		log.Info("Broadcasting message", log.Fstring("roomID", roomID), log.Fstring("messageID", message.ID))
@@ -170,6 +188,25 @@ func (client *Client) handleSendMessage(message entity.Message) {
 	} else {
 		log.Warn("Room not found", log.Fstring("roomID", roomID))
 	}
+}
+
+func (client *Client) handleDeleteMessage(message entity.Message) {
+	if err := client.muc.DeleteMessage(context.Background(), message.Content, client.ID); err != nil {
+		log.Error("Failed to delete message", log.Ferror(err))
+		return
+	}
+
+	roomID := message.TargetID
+	if room := client.hub.findRoomByID(roomID); room != nil {
+		log.Info("Broadcasting message", log.Fstring("roomID", roomID), log.Fstring("messageID", message.ID))
+		room.broadcast <- &message
+	} else {
+		log.Warn("Room not found", log.Fstring("roomID", roomID))
+	}
+}
+
+func (client *Client) handleEditMessage(_ entity.Message) {
+	// TODO: Implement message editing
 }
 
 func (client *Client) handleCreateRoomMessage(message entity.Message) {
