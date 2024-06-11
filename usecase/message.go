@@ -1,3 +1,4 @@
+//go:generate mockgen -source=$GOFILE -package=mock -destination=./mock/$GOFILE
 package usecase
 
 import (
@@ -11,6 +12,7 @@ import (
 
 type MessageUseCase interface {
 	CreateMessage(ctx context.Context, message entity.Message) error
+	UpdateMessage(ctx context.Context, message entity.Message, userID string) error
 	DeleteMessage(ctx context.Context, content entity.MessageContent, userID string) error
 }
 
@@ -35,6 +37,29 @@ func NewCommentUseCase(
 func (muc *messageUseCase) CreateMessage(ctx context.Context, message entity.Message) error {
 	if err := muc.mcr.Set(ctx, message.ID, message); err != nil {
 		log.Error("Failed to cache message", log.Ferror(err))
+		return err
+	}
+	return nil
+}
+
+func (muc *messageUseCase) UpdateMessage(ctx context.Context, message entity.Message, userID string) error {
+	user, err := muc.ur.Get(ctx, userID)
+	if err != nil {
+		log.Error("Failed to get user", log.Fstring("userID", userID))
+		return err
+	}
+
+	if !user.IsAdmin && user.ID != message.Content.UserID {
+		log.Warn(
+			"User don't have permission to update msg",
+			log.Fstring("userID", message.Content.UserID),
+			log.Fstring("msgID", message.Content.MessageID),
+		)
+		return fmt.Errorf("don't have permission to update msg")
+	}
+
+	if err = muc.mcr.Set(ctx, message.ID, message); err != nil {
+		log.Error("Failed to update msg in cache", log.Fstring("msgID", message.ID))
 		return err
 	}
 	return nil

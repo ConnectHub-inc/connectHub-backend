@@ -205,8 +205,19 @@ func (client *Client) handleDeleteMessage(message entity.Message) {
 	}
 }
 
-func (client *Client) handleEditMessage(_ entity.Message) {
-	// TODO: Implement message editing
+func (client *Client) handleEditMessage(message entity.Message) {
+	if err := client.muc.UpdateMessage(context.Background(), message, client.ID); err != nil {
+		log.Error("Failed to update message", log.Ferror(err))
+		return
+	}
+
+	roomID := message.TargetID
+	if room := client.hub.findRoomByID(roomID); room != nil {
+		log.Info("Broadcasting message", log.Fstring("roomID", roomID), log.Fstring("messageID", message.ID))
+		room.broadcast <- &message
+	} else {
+		log.Warn("Room not found", log.Fstring("roomID", roomID))
+	}
 }
 
 func (client *Client) handleCreateRoomMessage(message entity.Message) {
