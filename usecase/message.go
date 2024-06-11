@@ -40,11 +40,6 @@ func (muc *messageUseCase) CreateMessage(ctx context.Context, message entity.Mes
 	return nil
 }
 
-type DeleteMessageContent struct {
-	UserID    string `json:"userID"`
-	MessageID string `json:"messageID"`
-}
-
 func (muc *messageUseCase) DeleteMessage(ctx context.Context, content entity.MessageContent, userID string) error {
 	user, err := muc.ur.Get(ctx, userID)
 	if err != nil {
