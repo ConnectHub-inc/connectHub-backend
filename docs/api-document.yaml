@@ -1,8 +1,7 @@
 openapi: 3.0.2
 info:
   title: ConnectHub API
-  description: |-
-    <b>ConnectHub API仕様</b><br>
+  description: <b>ConnectHub API仕様</b><br>
   version: 1.0.0
 servers:
   - url: http://localhost:8083/
@@ -20,6 +19,8 @@ paths:
         - chat
       summary: WebSocket通信エンドポイント
       description: WebSocket接続を確立するためのエンドポイント
+      security:
+        - BearerAuth: []
       responses:
         101:
           description: WebSocketプロトコルを使用して接続が確立されました。
@@ -63,17 +64,13 @@ paths:
               $ref: '#/components/schemas/CreateUserRequest'
         required: true
       responses:
-        201:
-          description: ユーザアカウントが正常に作成されました。
+        200:
+          description: A successful response.
           headers:
             Authorization:
-              description: Auth token for the created user
+              description: Auth token for the registered user
               schema:
                 type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserCreateResponse'
   /api/user/logout:
     post:
       tags:
@@ -111,12 +108,9 @@ components:
         password:
           type: string
           description: ユーザのパスワード
-    UserCreateResponse:
+    AuthTokenResponse:
       type: object
       properties:
-        id:
+        token:
           type: string
-          description: ユーザID
-        email:
-          type: string
-          description: ユーザのメールアドレス
+          description: 認証トークン
