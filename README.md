@@ -1,4 +1,4 @@
-# connectHub-backend 🚀🚀🚀
+# connectHub-backend
 
 ## Development
 ### Format
