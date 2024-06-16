@@ -8,11 +8,11 @@ import (
 )
 
 type Message struct {
-	ID      string    `json:"id"`
-	UserID  string    `json:"userID"`
-	Text    string    `json:"text"`
-	Created time.Time `json:"created"`
-	Updated time.Time `json:"updated"`
+	ID        string    `json:"id"`
+	UserID    string    `json:"userID"`
+	Text      string    `json:"text"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type WSMessage struct {

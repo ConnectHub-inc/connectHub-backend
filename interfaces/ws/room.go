@@ -76,10 +76,10 @@ func (room *Room) notifyClientJoined(client *Client) {
 	message := &entity.WSMessage{
 		Action: config.SendMessageAction,
 		Content: entity.Message{
-			ID:      uuid.New().String(),
-			UserID:  client.ID,
-			Text:    fmt.Sprintf(config.WelcomeMessage, client.Name),
-			Created: time.Now(),
+			ID:        uuid.New().String(),
+			UserID:    client.ID,
+			Text:      fmt.Sprintf(config.WelcomeMessage, client.Name),
+			CreatedAt: time.Now(),
 		},
 		TargetID: room.ID,
 		SenderID: client.ID,

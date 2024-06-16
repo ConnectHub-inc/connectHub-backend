@@ -163,11 +163,11 @@ func (client *Client) handleNewMessage(jsonMessage []byte) {
 
 	switch message.Action {
 	case config.SendMessageAction:
-		client.handleSendMessage(message)
+		client.handleCreateMessage(message)
 	case config.DeleteMessageAction:
 		client.handleDeleteMessage(message)
 	case config.EditMessageAction:
-		client.handleEditMessage(message)
+		client.handleUpdateMessage(message)
 	case config.CreateRoomAction:
 		client.handleCreateRoomMessage(message)
 	default:
@@ -175,7 +175,7 @@ func (client *Client) handleNewMessage(jsonMessage []byte) {
 	}
 }
 
-func (client *Client) handleSendMessage(message entity.WSMessage) {
+func (client *Client) handleCreateMessage(message entity.WSMessage) {
 	if err := client.muc.CreateMessage(context.Background(), message.Content); err != nil {
 		log.Error("Failed to create message", log.Ferror(err))
 		return
@@ -205,7 +205,7 @@ func (client *Client) handleDeleteMessage(message entity.WSMessage) {
 	}
 }
 
-func (client *Client) handleEditMessage(message entity.WSMessage) {
+func (client *Client) handleUpdateMessage(message entity.WSMessage) {
 	if err := client.muc.UpdateMessage(context.Background(), message.Content, client.ID); err != nil {
 		log.Error("Failed to update message", log.Ferror(err))
 		return
