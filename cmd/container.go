@@ -43,10 +43,14 @@ func BuildContainer(ctx context.Context) (*dig.Container, error) {
 		redis.NewMessageRepository,
 		redis.NewPubSubRepository,
 		handler.NewWebsocketHandler,
+		handler.NewUserHandler,
+		middleware.NewAuthMiddleware,
 		ws.NewHub,
 		func(
 			serverConfig *config.ServerConfig,
 			wsHandler *handler.WebsocketHandler,
+			userHandler handler.UserHandler,
+			authMiddleware middleware.AuthMiddleware,
 			hub *ws.Hub,
 		) *chi.Mux {
 			r := chi.NewRouter()
@@ -65,6 +69,17 @@ func BuildContainer(ctx context.Context) (*dig.Container, error) {
 
 			r.Get("/ws", func(w http.ResponseWriter, r *http.Request) {
 				wsHandler.WebSocket(hub, w, r)
+			})
+
+			r.Route("/api", func(r chi.Router) {
+				r.Route("/user", func(r chi.Router) {
+					r.Post("/create", userHandler.CreateUser)
+					r.Post("/login", userHandler.Login)
+					r.Group(func(r chi.Router) {
+						r.Use(authMiddleware.Authenticate)
+						r.Get("/api/user/logout", userHandler.Logout)
+					})
+				})
 			})
 
 			return r
