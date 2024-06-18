@@ -97,7 +97,7 @@ func (room *Room) publishRoomMessage(ctx context.Context, message *entity.Messag
 }
 
 func (room *Room) subscribeToRoomMessages(ctx context.Context) {
-	pubsub := room.pubsubRepo.Subscribe(ctx, room.Name)
+	pubsub := room.pubsubRepo.Subscribe(ctx, room.ID)
 
 	ch := pubsub.Channel()
 
