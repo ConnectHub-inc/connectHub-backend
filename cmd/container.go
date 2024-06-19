@@ -84,6 +84,7 @@ func BuildContainer(ctx context.Context) (*dig.Container, error) {
 					r.Group(func(r chi.Router) {
 						r.Use(authMiddleware.Authenticate)
 						r.Get("/get", userHandler.GetUser)
+						r.Put("/update", userHandler.UpdateUser)
 						r.Get("/logout", userHandler.Logout)
 					})
 				})

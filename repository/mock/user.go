@@ -96,17 +96,17 @@ func (mr *MockUserRepositoryMockRecorder) List(ctx, qcs interface{}) *gomock.Cal
 }
 
 // Update mocks base method.
-func (m *MockUserRepository) Update(ctx context.Context, id string, spot entity.User) error {
+func (m *MockUserRepository) Update(ctx context.Context, id string, user entity.User) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", ctx, id, spot)
+	ret := m.ctrl.Call(m, "Update", ctx, id, user)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Update indicates an expected call of Update.
-func (mr *MockUserRepositoryMockRecorder) Update(ctx, id, spot interface{}) *gomock.Call {
+func (mr *MockUserRepositoryMockRecorder) Update(ctx, id, user interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockUserRepository)(nil).Update), ctx, id, spot)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockUserRepository)(nil).Update), ctx, id, user)
 }
 
 // MockUserCacheRepository is a mock of UserCacheRepository interface.

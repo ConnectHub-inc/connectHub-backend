@@ -11,6 +11,7 @@ import (
 	"github.com/golang/mock/gomock"
 
 	"github.com/tusmasoma/connectHub-backend/entity"
+	"github.com/tusmasoma/connectHub-backend/usecase"
 	"github.com/tusmasoma/connectHub-backend/usecase/mock"
 )
 
@@ -131,6 +132,98 @@ func TestUserHandler_CreateUser(t *testing.T) {
 				if token := recorder.Header().Get("Authorization"); token == "" || strings.TrimPrefix(token, "Bearer ") == "" {
 					t.Fatalf("Expected Authorization header to be set")
 				}
+			}
+		})
+	}
+}
+
+func TestUserHandler_UpdateUser(t *testing.T) {
+	userID := "f6db2530-cd9b-4ac1-8dc1-38c795e6eec2"
+	user := entity.User{
+		ID:              userID,
+		Name:            "test",
+		Email:           "test@gmail.com",
+		Password:        "password123",
+		ProfileImageURL: "https://test.com",
+	}
+	patterns := []struct {
+		name  string
+		setup func(
+			m *mock.MockUserUseCase,
+			m1 *mock.MockAuthUseCase,
+		)
+		in         func() *http.Request
+		wantStatus int
+	}{
+		{
+			name: "success",
+			setup: func(m *mock.MockUserUseCase, m1 *mock.MockAuthUseCase) {
+				m1.EXPECT().GetUserFromContext(gomock.Any()).Return(
+					&user,
+					nil,
+				)
+				m.EXPECT().UpdateUser(
+					gomock.Any(),
+					&usecase.UpdateUserParams{
+						ID:              userID,
+						Name:            "updated_test",
+						Email:           "test@gmail.com",
+						ProfileImageURL: "https://test.com",
+					},
+					user,
+				).Return(nil)
+			},
+			in: func() *http.Request {
+				userUpdateReq := UpdateUserRequest{
+					ID:              userID,
+					Name:            "updated_test",
+					Email:           "test@gmail.com",
+					ProfileImageURL: "https://test.com",
+				}
+				reqBody, _ := json.Marshal(userUpdateReq)
+				req, _ := http.NewRequest(http.MethodPut, "/api/user/update", bytes.NewBuffer(reqBody))
+				req.Header.Set("Content-Type", "application/json")
+				return req
+			},
+			wantStatus: http.StatusOK,
+		},
+		{
+			name: "Fail: invalid request",
+			setup: func(m *mock.MockUserUseCase, m1 *mock.MockAuthUseCase) {
+				m1.EXPECT().GetUserFromContext(gomock.Any()).Return(
+					&user,
+					nil,
+				)
+			},
+			in: func() *http.Request {
+				userUpdateReq := UpdateUserRequest{
+					ID: userID,
+				}
+				reqBody, _ := json.Marshal(userUpdateReq)
+				req, _ := http.NewRequest(http.MethodPut, "/api/user/update", bytes.NewBuffer(reqBody))
+				req.Header.Set("Content-Type", "application/json")
+				return req
+			},
+			wantStatus: http.StatusBadRequest,
+		},
+	}
+	for _, tt := range patterns {
+		t.Run(tt.name, func(t *testing.T) {
+			tt := tt
+			ctrl := gomock.NewController(t)
+			uuc := mock.NewMockUserUseCase(ctrl)
+			auc := mock.NewMockAuthUseCase(ctrl)
+
+			if tt.setup != nil {
+				tt.setup(uuc, auc)
+			}
+
+			handler := NewUserHandler(uuc, auc)
+			recorder := httptest.NewRecorder()
+			handler.UpdateUser(recorder, tt.in())
+
+			if status := recorder.Code; status != tt.wantStatus {
+				t.Fatalf("handler returned wrong status code: got %v want %v", status, tt.wantStatus)
 			}
 		})
 	}

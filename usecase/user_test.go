@@ -19,6 +19,12 @@ type CreateUserAndGenerateTokenArg struct {
 	passward string
 }
 
+type UpdateUserArg struct {
+	ctx    context.Context
+	params *UpdateUserParams
+	user   entity.User
+}
+
 func TestUserUseCase_CreateUserAndGenerateToken(t *testing.T) {
 	patterns := []struct {
 		name  string
@@ -88,6 +94,90 @@ func TestUserUseCase_CreateUserAndGenerateToken(t *testing.T) {
 
 			if tt.wantErr == nil && jwt == "" {
 				t.Error("Failed to generate token")
+			}
+		})
+	}
+}
+
+func TestUserUseCase_UpdateUser(t *testing.T) {
+	userID := "f6db2530-cd9b-4ac1-8dc1-38c795e6eec2"
+	user := entity.User{
+		ID:              userID,
+		Name:            "test",
+		Email:           "test@gmail.com",
+		Password:        "password123",
+		ProfileImageURL: "https://test.com",
+	}
+
+	patterns := []struct {
+		name  string
+		setup func(
+			m *mock.MockUserRepository,
+			m1 *mock.MockUserCacheRepository,
+		)
+		arg     UpdateUserArg
+		wantErr error
+	}{
+		{
+			name: "success",
+			setup: func(m *mock.MockUserRepository, m1 *mock.MockUserCacheRepository) {
+				m.EXPECT().Update(
+					gomock.Any(),
+					userID,
+					entity.User{
+						ID:              userID,
+						Name:            "update_test",
+						Email:           "test@gmail.com",
+						Password:        "password123",
+						ProfileImageURL: "https://test.com",
+					},
+				).Return(nil)
+			},
+			arg: UpdateUserArg{
+				ctx: context.Background(),
+				params: &UpdateUserParams{
+					ID:              userID,
+					Name:            "update_test",
+					Email:           "test@gmail.com",
+					ProfileImageURL: "https://test.com",
+				},
+				user: user,
+			},
+			wantErr: nil,
+		},
+		{
+			name: "Fail: don't have permission to update user",
+			arg: UpdateUserArg{
+				ctx: context.Background(),
+				params: &UpdateUserParams{
+					ID:              "f6db2530-cd9b-4ac1-8dc1-38c795e6eec3",
+					Name:            "update_test",
+					Email:           "test@gmail.com",
+					ProfileImageURL: "https://test.com",
+				},
+				user: user,
+			},
+			wantErr: fmt.Errorf("don't have permission to update user"),
+		},
+	}
+	for _, tt := range patterns {
+		t.Run(tt.name, func(t *testing.T) {
+			tt := tt
+			ctrl := gomock.NewController(t)
+			ur := mock.NewMockUserRepository(ctrl)
+			cr := mock.NewMockUserCacheRepository(ctrl)
+
+			if tt.setup != nil {
+				tt.setup(ur, cr)
+			}
+
+			usecase := NewUserUseCase(ur, cr)
+			err := usecase.UpdateUser(tt.arg.ctx, tt.arg.params, tt.arg.user)
+
+			if (err != nil) != (tt.wantErr != nil) {
+				t.Errorf("UpdateUser() error = %v, wantErr %v", err, tt.wantErr)
+			} else if err != nil && tt.wantErr != nil && err.Error() != tt.wantErr.Error() {
+				t.Errorf("UpdateUser() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

@@ -13,6 +13,7 @@ import (
 type UserHandler interface {
 	GetUser(w http.ResponseWriter, r *http.Request)
 	CreateUser(w http.ResponseWriter, r *http.Request)
+	UpdateUser(w http.ResponseWriter, r *http.Request)
 	Login(w http.ResponseWriter, r *http.Request)
 	Logout(w http.ResponseWriter, r *http.Request)
 }
@@ -32,6 +33,13 @@ func NewUserHandler(uur usecase.UserUseCase, auc usecase.AuthUseCase) UserHandle
 type CreateUserRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
+}
+
+type UpdateUserRequest struct {
+	ID              string `json:"id"`
+	Name            string `json:"name"`
+	Email           string `json:"email"`
+	ProfileImageURL string `json:"profile_image_url"`
 }
 
 type LoginRequest struct {
@@ -90,6 +98,56 @@ func isValidCreateUserRequest(body io.ReadCloser, requestBody *CreateUserRequest
 		return false
 	}
 	return true
+}
+
+func (uh *userHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	user, err := uh.auc.GetUserFromContext(ctx)
+	if err != nil {
+		log.Error("Failed to get UserInfo from context", log.Ferror(err))
+		http.Error(w, fmt.Sprintf("Failed to get UserInfo from context: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	var requestBody UpdateUserRequest
+	if ok := isValidUpdateUserRequest(r.Body, &requestBody); !ok {
+		log.Info("Invalid user udpate request", log.Fstring("method", r.Method), log.Fstring("url", r.URL.String()))
+		http.Error(w, "Invalid user update request", http.StatusBadRequest)
+		return
+	}
+	defer r.Body.Close()
+
+	params := convertUpdateUserReqeuestToParams(requestBody)
+	if err = uh.uur.UpdateUser(ctx, params, *user); err != nil {
+		log.Error("Failed to update user", log.Ferror(err))
+		http.Error(w, "Failed to update user", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+func isValidUpdateUserRequest(body io.ReadCloser, requestBody *UpdateUserRequest) bool {
+	if err := json.NewDecoder(body).Decode(requestBody); err != nil {
+		log.Error("Invalid request body", log.Ferror(err))
+		return false
+	}
+	if requestBody.Name == "" ||
+		requestBody.Email == "" ||
+		requestBody.ProfileImageURL == "" {
+		log.Info("Missing required fields", log.Fstring("email", requestBody.Email))
+		return false
+	}
+	return true
+}
+
+func convertUpdateUserReqeuestToParams(req UpdateUserRequest) *usecase.UpdateUserParams {
+	return &usecase.UpdateUserParams{
+		ID:              req.ID,
+		Name:            req.Name,
+		Email:           req.Email,
+		ProfileImageURL: req.ProfileImageURL,
+	}
 }
 
 func (uh *userHandler) Login(w http.ResponseWriter, r *http.Request) {
