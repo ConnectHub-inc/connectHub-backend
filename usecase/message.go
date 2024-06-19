@@ -11,6 +11,7 @@ import (
 )
 
 type MessageUseCase interface {
+	ListMessages(ctx context.Context, roomID string) ([]entity.Message, error)
 	CreateMessage(ctx context.Context, message entity.Message) error
 	UpdateMessage(ctx context.Context, message entity.Message, userID string) error
 	DeleteMessage(ctx context.Context, content entity.Message, userID string) error
@@ -32,6 +33,16 @@ func NewMessageUseCase(
 		mr:  mr,
 		mcr: mcr,
 	}
+}
+
+func (muc *messageUseCase) ListMessages(ctx context.Context, roomID string) ([]entity.Message, error) {
+	// TODO: Change to Redis
+	messages, err := muc.mr.List(ctx, []repository.QueryCondition{{Field: "RoomID", Value: roomID}})
+	if err != nil {
+		log.Error("Failed to get messages", log.Ferror(err))
+		return nil, err
+	}
+	return messages, nil
 }
 
 func (muc *messageUseCase) CreateMessage(ctx context.Context, message entity.Message) error {

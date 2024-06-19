@@ -64,6 +64,21 @@ func (mr *MockMessageUseCaseMockRecorder) DeleteMessage(ctx, content, userID int
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteMessage", reflect.TypeOf((*MockMessageUseCase)(nil).DeleteMessage), ctx, content, userID)
 }
 
+// ListMessages mocks base method.
+func (m *MockMessageUseCase) ListMessages(ctx context.Context, roomID string) ([]entity.Message, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListMessages", ctx, roomID)
+	ret0, _ := ret[0].([]entity.Message)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListMessages indicates an expected call of ListMessages.
+func (mr *MockMessageUseCaseMockRecorder) ListMessages(ctx, roomID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListMessages", reflect.TypeOf((*MockMessageUseCase)(nil).ListMessages), ctx, roomID)
+}
+
 // UpdateMessage mocks base method.
 func (m *MockMessageUseCase) UpdateMessage(ctx context.Context, message entity.Message, userID string) error {
 	m.ctrl.T.Helper()

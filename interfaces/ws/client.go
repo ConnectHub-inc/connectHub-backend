@@ -162,6 +162,8 @@ func (client *Client) handleNewMessage(jsonMessage []byte) {
 	message.SenderID = client.ID
 
 	switch message.Action {
+	case config.ListMessagesAction:
+		client.handleListMessages(message)
 	case config.SendMessageAction:
 		client.handleCreateMessage(message)
 	case config.DeleteMessageAction:
@@ -173,6 +175,22 @@ func (client *Client) handleNewMessage(jsonMessage []byte) {
 	default:
 		log.Warn("Unknown message action", log.Fstring("action", message.Action))
 	}
+}
+
+func (client *Client) handleListMessages(message entity.WSMessage) {
+	roomID := message.TargetID
+	msgs, err := client.muc.ListMessages(context.Background(), roomID)
+	if err != nil {
+		log.Error("Failed to list messages", log.Ferror(err))
+		return
+	}
+
+	response := entity.WSMessages{
+		Action:   config.ListMessagesAction,
+		TargetID: roomID,
+		Contents: msgs,
+	}
+	client.send <- response.Encode()
 }
 
 func (client *Client) handleCreateMessage(message entity.WSMessage) {

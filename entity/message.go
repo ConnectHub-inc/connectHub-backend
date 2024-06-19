@@ -29,3 +29,18 @@ func (message *WSMessage) Encode() []byte {
 	}
 	return json
 }
+
+type WSMessages struct {
+	Action   string    `json:"action"`
+	Contents []Message `json:"content"`
+	TargetID string    `json:"target"` // TargetID is the ID of the room or user the message is intended for
+	SenderID string    `json:"sender"` // SenderID is the ID of the user who sent the message
+}
+
+func (messages *WSMessages) Encode() []byte {
+	json, err := json.Marshal(messages)
+	if err != nil {
+		log.Error("Failed to encode messages", log.Ferror(err))
+	}
+	return json
+}
