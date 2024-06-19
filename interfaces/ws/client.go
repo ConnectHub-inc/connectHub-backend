@@ -1,6 +1,7 @@
 package ws
 
 import (
+	"context"
 	"encoding/json"
 	"time"
 
@@ -10,30 +11,38 @@ import (
 	"github.com/tusmasoma/connectHub-backend/entity"
 	"github.com/tusmasoma/connectHub-backend/internal/log"
 	"github.com/tusmasoma/connectHub-backend/repository"
+	"github.com/tusmasoma/connectHub-backend/usecase"
 )
 
 var newline = []byte{'\n'}
 
 type Client struct {
-	ID         string
-	Name       string
-	conn       *websocket.Conn
-	hub        *Hub
-	rooms      map[*Room]bool
-	send       chan []byte
-	pubsubRepo repository.PubSubRepository
+	ID    string
+	Name  string
+	conn  *websocket.Conn
+	hub   *Hub
+	rooms map[*Room]bool
+	send  chan []byte
+	psr   repository.PubSubRepository
+	muc   usecase.MessageUseCase
 }
 
 func NewClient(
+	id string,
+	name string,
 	conn *websocket.Conn,
 	hub *Hub,
-	pubsubRepo repository.PubSubRepository,
+	psr repository.PubSubRepository,
+	muc usecase.MessageUseCase,
 ) *Client {
 	return &Client{
-		conn:       conn,
-		hub:        hub,
-		send:       make(chan []byte, config.ChannelBufferSize),
-		pubsubRepo: pubsubRepo,
+		ID:   id,
+		Name: name,
+		conn: conn,
+		hub:  hub,
+		send: make(chan []byte, config.ChannelBufferSize),
+		psr:  psr,
+		muc:  muc,
 	}
 }
 
@@ -144,17 +153,21 @@ func (client *Client) disconnect() {
 }
 
 func (client *Client) handleNewMessage(jsonMessage []byte) {
-	var message entity.Message
+	var message entity.WSMessage
 	if err := json.Unmarshal(jsonMessage, &message); err != nil {
 		log.Error("Error unmarshalling JSON message", log.Ferror(err))
 		return
 	}
 
-	message.SenderID = client.ID // TODO: clientのIDでなく、userのIDに変更する
+	message.SenderID = client.ID
 
 	switch message.Action {
 	case config.SendMessageAction:
-		client.handleSendMessage(message)
+		client.handleCreateMessage(message)
+	case config.DeleteMessageAction:
+		client.handleDeleteMessage(message)
+	case config.EditMessageAction:
+		client.handleUpdateMessage(message)
 	case config.CreateRoomAction:
 		client.handleCreateRoomMessage(message)
 	default:
@@ -162,20 +175,56 @@ func (client *Client) handleNewMessage(jsonMessage []byte) {
 	}
 }
 
-func (client *Client) handleSendMessage(message entity.Message) {
+func (client *Client) handleCreateMessage(message entity.WSMessage) {
+	if err := client.muc.CreateMessage(context.Background(), message.Content); err != nil {
+		log.Error("Failed to create message", log.Ferror(err))
+		return
+	}
+
 	roomID := message.TargetID
 	if room := client.hub.findRoomByID(roomID); room != nil {
-		log.Info("Broadcasting message", log.Fstring("roomID", roomID), log.Fstring("messageID", message.ID))
+		log.Info("Broadcasting message", log.Fstring("roomID", roomID), log.Fstring("messageID", message.Content.ID))
 		room.broadcast <- &message
 	} else {
 		log.Warn("Room not found", log.Fstring("roomID", roomID))
 	}
 }
 
-func (client *Client) handleCreateRoomMessage(message entity.Message) {
-	room := client.hub.createRoom(message.Content, false)
+func (client *Client) handleDeleteMessage(message entity.WSMessage) {
+	if err := client.muc.DeleteMessage(context.Background(), message.Content, client.ID); err != nil {
+		log.Error("Failed to delete message", log.Ferror(err))
+		return
+	}
+
+	roomID := message.TargetID
+	if room := client.hub.findRoomByID(roomID); room != nil {
+		log.Info("Broadcasting message", log.Fstring("roomID", roomID), log.Fstring("messageID", message.Content.ID))
+		room.broadcast <- &message
+	} else {
+		log.Warn("Room not found", log.Fstring("roomID", roomID))
+	}
+}
+
+func (client *Client) handleUpdateMessage(message entity.WSMessage) {
+	if err := client.muc.UpdateMessage(context.Background(), message.Content, client.ID); err != nil {
+		log.Error("Failed to update message", log.Ferror(err))
+		return
+	}
+
+	roomID := message.TargetID
+	if room := client.hub.findRoomByID(roomID); room != nil {
+		log.Info("Broadcasting message", log.Fstring("roomID", roomID), log.Fstring("messageID", message.Content.ID))
+		room.broadcast <- &message
+	} else {
+		log.Warn("Room not found", log.Fstring("roomID", roomID))
+	}
+}
+
+func (client *Client) handleCreateRoomMessage(message entity.WSMessage) {
+	roomName := message.Content.Text
+	room := client.hub.createRoom(roomName, false)
 	if room == nil {
-		log.Error("Failed to create room", log.Fstring("content", message.Content))
+		log.Error("Failed to create room", log.Fstring("roomName", roomName))
 		return
 	}
 

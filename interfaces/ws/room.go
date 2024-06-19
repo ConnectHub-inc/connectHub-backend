@@ -3,6 +3,7 @@ package ws
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -13,33 +14,33 @@ import (
 )
 
 type Room struct {
-	ID               string `json:"id"`
-	Name             string `json:"name"`
-	Private          bool   `json:"private"`
-	clients          map[*Client]bool
-	register         chan *Client
-	unregister       chan *Client
-	broadcast        chan *entity.Message
-	pubsubRepo       repository.PubSubRepository
-	messageCacheRepo repository.MessageCacheRepository
+	ID           string `json:"id"`
+	Name         string `json:"name"`
+	Private      bool   `json:"private"`
+	clients      map[*Client]bool
+	register     chan *Client
+	unregister   chan *Client
+	broadcast    chan *entity.WSMessage
+	pubsubRepo   repository.PubSubRepository
+	msgCacheRepo repository.MessageCacheRepository
 }
 
 func NewRoom(
 	name string,
 	private bool,
 	pubsubRepo repository.PubSubRepository,
-	messageCacheRepo repository.MessageCacheRepository,
+	msgCacheRepo repository.MessageCacheRepository,
 ) *Room {
 	return &Room{
-		ID:               uuid.New().String(),
-		Name:             name,
-		Private:          private,
-		clients:          make(map[*Client]bool),
-		register:         make(chan *Client),
-		unregister:       make(chan *Client),
-		broadcast:        make(chan *entity.Message),
-		pubsubRepo:       pubsubRepo,
-		messageCacheRepo: messageCacheRepo,
+		ID:           uuid.New().String(),
+		Name:         name,
+		Private:      private,
+		clients:      make(map[*Client]bool),
+		register:     make(chan *Client),
+		unregister:   make(chan *Client),
+		broadcast:    make(chan *entity.WSMessage),
+		pubsubRepo:   pubsubRepo,
+		msgCacheRepo: msgCacheRepo,
 	}
 }
 
@@ -72,9 +73,14 @@ func (room *Room) unregisterClientInRoom(client *Client) {
 }
 
 func (room *Room) notifyClientJoined(client *Client) {
-	message := &entity.Message{
-		Action:   config.SendMessageAction,
-		Content:  fmt.Sprintf(config.WelcomeMessage, client.Name),
+	message := &entity.WSMessage{
+		Action: config.SendMessageAction,
+		Content: entity.Message{
+			ID:        uuid.New().String(),
+			UserID:    client.ID,
+			Text:      fmt.Sprintf(config.WelcomeMessage, client.Name),
+			CreatedAt: time.Now(),
+		},
 		TargetID: room.ID,
 		SenderID: client.ID,
 	}
@@ -87,12 +93,9 @@ func (room *Room) broadcastToClientsInRoom(message []byte) {
 	}
 }
 
-func (room *Room) publishRoomMessage(ctx context.Context, message *entity.Message) {
+func (room *Room) publishRoomMessage(ctx context.Context, message *entity.WSMessage) {
 	if err := room.pubsubRepo.Publish(ctx, room.ID, *message); err != nil {
 		log.Error("Failed to publish message", log.Ferror(err))
-	}
-	if err := room.messageCacheRepo.Set(ctx, room.ID, *message); err != nil {
-		log.Error("Failed to cache message", log.Ferror(err))
 	}
 }
 

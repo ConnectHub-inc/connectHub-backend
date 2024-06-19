@@ -31,6 +31,8 @@ const (
 )
 
 const (
-	SendMessageAction = "send_message"
-	CreateRoomAction  = "create_room"
+	SendMessageAction   = "SEND_MESSAGE"
+	DeleteMessageAction = "DELETE_MESSAGE"
+	EditMessageAction   = "EDIT_MESSAGE"
+	CreateRoomAction    = "CREATE_ROOM"
 )
