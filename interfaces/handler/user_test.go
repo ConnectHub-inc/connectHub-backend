@@ -10,8 +10,61 @@ import (
 
 	"github.com/golang/mock/gomock"
 
+	"github.com/tusmasoma/connectHub-backend/entity"
 	"github.com/tusmasoma/connectHub-backend/usecase/mock"
 )
+
+func TestUserHandler_GetUser(t *testing.T) {
+	patterns := []struct {
+		name  string
+		setup func(
+			m *mock.MockUserUseCase,
+			m1 *mock.MockAuthUseCase,
+		)
+		in         func() *http.Request
+		wantStatus int
+	}{
+		{
+			name: "success",
+			setup: func(m *mock.MockUserUseCase, m1 *mock.MockAuthUseCase) {
+				m1.EXPECT().GetUserFromContext(gomock.Any()).Return(
+					&entity.User{
+						ID:       "f6db2530-cd9b-4ac1-8dc1-38c795e6eec2",
+						Name:     "test",
+						Email:    "test@gmail.com",
+						Password: "password123",
+					},
+					nil,
+				)
+			},
+			in: func() *http.Request {
+				req, _ := http.NewRequest(http.MethodGet, "/api/user", nil)
+				return req
+			},
+			wantStatus: http.StatusOK,
+		},
+	}
+	for _, tt := range patterns {
+		t.Run(tt.name, func(t *testing.T) {
+			tt := tt
+			ctrl := gomock.NewController(t)
+			uuc := mock.NewMockUserUseCase(ctrl)
+			auc := mock.NewMockAuthUseCase(ctrl)
+
+			if tt.setup != nil {
+				tt.setup(uuc, auc)
+			}
+
+			handler := NewUserHandler(uuc, auc)
+			recorder := httptest.NewRecorder()
+			handler.GetUser(recorder, tt.in())
+
+			if status := recorder.Code; status != tt.wantStatus {
+				t.Fatalf("handler returned wrong status code: got %v want %v", status, tt.wantStatus)
+			}
+		})
+	}
+}
 
 func TestUserHandler_CreateUser(t *testing.T) {
 	patterns := []struct {

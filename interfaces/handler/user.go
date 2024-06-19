@@ -11,6 +11,7 @@ import (
 )
 
 type UserHandler interface {
+	GetUser(w http.ResponseWriter, r *http.Request)
 	CreateUser(w http.ResponseWriter, r *http.Request)
 	Login(w http.ResponseWriter, r *http.Request)
 	Logout(w http.ResponseWriter, r *http.Request)
@@ -36,6 +37,24 @@ type CreateUserRequest struct {
 type LoginRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
+}
+
+func (uh *userHandler) GetUser(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	user, err := uh.auc.GetUserFromContext(ctx)
+	if err != nil {
+		log.Error("Failed to get UserInfo from context", log.Ferror(err))
+		http.Error(w, fmt.Sprintf("Failed to get UserInfo from context: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err = json.NewEncoder(w).Encode(user); err != nil {
+		log.Error("Failed to encode user to JSON", log.Ferror(err))
+		http.Error(w, "Failed to encode user to JSON", http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 }
 
 func (uh *userHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
