@@ -7,6 +7,7 @@ package mock
 import (
 	context "context"
 	reflect "reflect"
+	time "time"
 
 	gomock "github.com/golang/mock/gomock"
 
@@ -160,18 +161,32 @@ func (m *MockMessageCacheRepository) EXPECT() *MockMessageCacheRepositoryMockRec
 	return m.recorder
 }
 
-// Delete mocks base method.
-func (m *MockMessageCacheRepository) Delete(ctx context.Context, key string) error {
+// Create mocks base method.
+func (m *MockMessageCacheRepository) Create(ctx context.Context, channelID string, message entity.Message) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", ctx, key)
+	ret := m.ctrl.Call(m, "Create", ctx, channelID, message)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Create indicates an expected call of Create.
+func (mr *MockMessageCacheRepositoryMockRecorder) Create(ctx, channelID, message interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockMessageCacheRepository)(nil).Create), ctx, channelID, message)
+}
+
+// Delete mocks base method.
+func (m *MockMessageCacheRepository) Delete(ctx context.Context, channelID, messageID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", ctx, channelID, messageID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Delete indicates an expected call of Delete.
-func (mr *MockMessageCacheRepositoryMockRecorder) Delete(ctx, key interface{}) *gomock.Call {
+func (mr *MockMessageCacheRepositoryMockRecorder) Delete(ctx, channelID, messageID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockMessageCacheRepository)(nil).Delete), ctx, key)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockMessageCacheRepository)(nil).Delete), ctx, channelID, messageID)
 }
 
 // Exists mocks base method.
@@ -189,18 +204,33 @@ func (mr *MockMessageCacheRepositoryMockRecorder) Exists(ctx, key interface{}) *
 }
 
 // Get mocks base method.
-func (m *MockMessageCacheRepository) Get(ctx context.Context, key string) (*entity.Message, error) {
+func (m *MockMessageCacheRepository) Get(ctx context.Context, id string) (*entity.Message, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Get", ctx, key)
+	ret := m.ctrl.Call(m, "Get", ctx, id)
 	ret0, _ := ret[0].(*entity.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Get indicates an expected call of Get.
-func (mr *MockMessageCacheRepositoryMockRecorder) Get(ctx, key interface{}) *gomock.Call {
+func (mr *MockMessageCacheRepositoryMockRecorder) Get(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockMessageCacheRepository)(nil).Get), ctx, key)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockMessageCacheRepository)(nil).Get), ctx, id)
+}
+
+// List mocks base method.
+func (m *MockMessageCacheRepository) List(ctx context.Context, channelID string, start, end time.Time) ([]entity.Message, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "List", ctx, channelID, start, end)
+	ret0, _ := ret[0].([]entity.Message)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// List indicates an expected call of List.
+func (mr *MockMessageCacheRepositoryMockRecorder) List(ctx, channelID, start, end interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockMessageCacheRepository)(nil).List), ctx, channelID, start, end)
 }
 
 // Scan mocks base method.
@@ -230,4 +260,18 @@ func (m *MockMessageCacheRepository) Set(ctx context.Context, key string, messag
 func (mr *MockMessageCacheRepositoryMockRecorder) Set(ctx, key, message interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockMessageCacheRepository)(nil).Set), ctx, key, message)
+}
+
+// Update mocks base method.
+func (m *MockMessageCacheRepository) Update(ctx context.Context, message entity.Message) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", ctx, message)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockMessageCacheRepositoryMockRecorder) Update(ctx, message interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockMessageCacheRepository)(nil).Update), ctx, message)
 }

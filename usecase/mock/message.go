@@ -7,6 +7,7 @@ package mock
 import (
 	context "context"
 	reflect "reflect"
+	time "time"
 
 	gomock "github.com/golang/mock/gomock"
 
@@ -37,31 +38,46 @@ func (m *MockMessageUseCase) EXPECT() *MockMessageUseCaseMockRecorder {
 }
 
 // CreateMessage mocks base method.
-func (m *MockMessageUseCase) CreateMessage(ctx context.Context, message entity.Message) error {
+func (m *MockMessageUseCase) CreateMessage(ctx context.Context, channelID string, message entity.Message) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateMessage", ctx, message)
+	ret := m.ctrl.Call(m, "CreateMessage", ctx, channelID, message)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CreateMessage indicates an expected call of CreateMessage.
-func (mr *MockMessageUseCaseMockRecorder) CreateMessage(ctx, message interface{}) *gomock.Call {
+func (mr *MockMessageUseCaseMockRecorder) CreateMessage(ctx, channelID, message interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMessage", reflect.TypeOf((*MockMessageUseCase)(nil).CreateMessage), ctx, message)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMessage", reflect.TypeOf((*MockMessageUseCase)(nil).CreateMessage), ctx, channelID, message)
 }
 
 // DeleteMessage mocks base method.
-func (m *MockMessageUseCase) DeleteMessage(ctx context.Context, content entity.Message, userID string) error {
+func (m *MockMessageUseCase) DeleteMessage(ctx context.Context, message entity.Message, channelID, userID string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteMessage", ctx, content, userID)
+	ret := m.ctrl.Call(m, "DeleteMessage", ctx, message, channelID, userID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteMessage indicates an expected call of DeleteMessage.
-func (mr *MockMessageUseCaseMockRecorder) DeleteMessage(ctx, content, userID interface{}) *gomock.Call {
+func (mr *MockMessageUseCaseMockRecorder) DeleteMessage(ctx, message, channelID, userID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteMessage", reflect.TypeOf((*MockMessageUseCase)(nil).DeleteMessage), ctx, content, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteMessage", reflect.TypeOf((*MockMessageUseCase)(nil).DeleteMessage), ctx, message, channelID, userID)
+}
+
+// ListMessages mocks base method.
+func (m *MockMessageUseCase) ListMessages(ctx context.Context, channelID string, start, end time.Time) ([]entity.Message, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListMessages", ctx, channelID, start, end)
+	ret0, _ := ret[0].([]entity.Message)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListMessages indicates an expected call of ListMessages.
+func (mr *MockMessageUseCaseMockRecorder) ListMessages(ctx, channelID, start, end interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListMessages", reflect.TypeOf((*MockMessageUseCase)(nil).ListMessages), ctx, channelID, start, end)
 }
 
 // UpdateMessage mocks base method.

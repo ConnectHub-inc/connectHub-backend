@@ -31,6 +31,7 @@ const (
 )
 
 const (
+	ListMessagesAction  = "LIST_MESSAGES"
 	SendMessageAction   = "SEND_MESSAGE"
 	DeleteMessageAction = "DELETE_MESSAGE"
 	EditMessageAction   = "EDIT_MESSAGE"
