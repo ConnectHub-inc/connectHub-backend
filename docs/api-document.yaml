@@ -84,6 +84,44 @@ paths:
       responses:
         200:
           description: ログアウトが正常に完了しました。
+  /api/user/get:
+    get:
+      tags:
+        - user
+      summary: ユーザ情報取得API
+      description: |
+        ユーザ情報を取得します。<br>
+        トークンを含めたリクエストで受け取り、ユーザー情報を返します。
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserGetResponse'
+  /user/update:
+    put:
+      tags:
+        - user
+      summary: ユーザ情報更新API
+      description: |
+        ユーザ情報の更新をします。
+        emailは更新できません。
+        passwardは更新できません。
+      security:
+        - BearerAuth: []
+      requestBody:
+        description: Request Body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdateRequest'
+        required: true
+      responses:
+        200:
+          description: A successful response.
 components:
   securitySchemes:
     BearerAuth:
@@ -114,3 +152,27 @@ components:
         token:
           type: string
           description: 認証トークン
+    UserGetResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ユーザID
+        email:
+          type: string
+          description: ユーザのメールアドレス
+        name:
+          type: string
+          description: ユーザの名前
+        profile_image_url:
+          type: string
+          description: ユーザのプロフィール画像
+    UserUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: ユーザの名前
+        profile_image_url:
+          type: string
+          description: ユーザのプロフィール画像
