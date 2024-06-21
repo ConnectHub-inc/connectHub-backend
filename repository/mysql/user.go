@@ -23,7 +23,7 @@ func NewUserRepository(db *sql.DB, dialect *goqu.DialectWrapper) repository.User
 
 func (ur *userRepository) ListWorkspaceUsers(ctx context.Context, workspaceID string) ([]entity.User, error) {
 	query := `
-	SELECT Users.id, Users.name
+	SELECT Users.id, Users.name, Users.email, Users.profile_image_url
 	FROM Users
 	JOIN User_Workspaces ON Users.id = User_Workspaces.user_id
 	WHERE User_Workspaces.workspace_id = ?;
@@ -43,7 +43,7 @@ func (ur *userRepository) ListWorkspaceUsers(ctx context.Context, workspaceID st
 			&user.ID,
 			&user.Name,
 			&user.Email,
-			&user.Password,
+			&user.ProfileImageURL,
 		)
 		if err != nil {
 			log.Error("Failed to scan user", log.Ferror(err))
@@ -53,6 +53,7 @@ func (ur *userRepository) ListWorkspaceUsers(ctx context.Context, workspaceID st
 	}
 
 	if err = rows.Err(); err != nil {
+		log.Error("Failed to iterate over rows", log.Ferror(err))
 		return nil, err
 	}
 
