@@ -19,6 +19,7 @@ on:
 
 jobs:
   commitlint:
+    if: github.ref != 'refs/heads/main' # TODO: Remove this line when ready to enforce commitlint on main branch
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repository
