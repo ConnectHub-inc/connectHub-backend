@@ -13,6 +13,7 @@ import (
 
 type UserUseCase interface {
 	CreateUserAndGenerateToken(ctx context.Context, email string, passward string) (string, error)
+	UpdateUser(ctx context.Context, params *UpdateUserParams, user entity.User) error
 	LoginAndGenerateToken(ctx context.Context, email string, passward string) (string, error)
 	LogoutUser(ctx context.Context, userID string) error
 }
@@ -71,6 +72,30 @@ func (uuc *userUseCase) CreateUser(ctx context.Context, email string, passward s
 		return nil, err
 	}
 	return &user, nil
+}
+
+type UpdateUserParams struct {
+	ID              string `json:"id"`
+	Name            string `json:"name"`
+	Email           string `json:"email"`
+	ProfileImageURL string `json:"profile_image_url"`
+}
+
+func (uuc *userUseCase) UpdateUser(ctx context.Context, params *UpdateUserParams, user entity.User) error {
+	if user.ID != params.ID {
+		log.Warn("User don't have permission to update user", log.Fstring("userID", user.ID))
+		return fmt.Errorf("don't have permission to update user")
+	}
+
+	user.Name = params.Name
+	user.Email = params.Email
+	user.ProfileImageURL = params.ProfileImageURL
+
+	if err := uuc.ur.Update(ctx, user.ID, user); err != nil {
+		log.Error("Failed to update user", log.Fstring("userID", user.ID))
+		return err
+	}
+	return nil
 }
 
 func (uuc *userUseCase) LoginAndGenerateToken(ctx context.Context, email string, passward string) (string, error) {

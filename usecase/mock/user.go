@@ -9,6 +9,9 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+
+	entity "github.com/tusmasoma/connectHub-backend/entity"
+	usecase "github.com/tusmasoma/connectHub-backend/usecase"
 )
 
 // MockUserUseCase is a mock of UserUseCase interface.
@@ -76,4 +79,18 @@ func (m *MockUserUseCase) LogoutUser(ctx context.Context, userID string) error {
 func (mr *MockUserUseCaseMockRecorder) LogoutUser(ctx, userID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LogoutUser", reflect.TypeOf((*MockUserUseCase)(nil).LogoutUser), ctx, userID)
+}
+
+// UpdateUser mocks base method.
+func (m *MockUserUseCase) UpdateUser(ctx context.Context, params *usecase.UpdateUserParams, user entity.User) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateUser", ctx, params, user)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateUser indicates an expected call of UpdateUser.
+func (mr *MockUserUseCaseMockRecorder) UpdateUser(ctx, params, user interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUser", reflect.TypeOf((*MockUserUseCase)(nil).UpdateUser), ctx, params, user)
 }
