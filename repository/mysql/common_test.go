@@ -55,11 +55,11 @@ func startMySQL() (*sql.DB, string, func(), error) {
 	// Dockerコンテナを起動する際に指定する設定定義
 	runOptions := &dockertest.RunOptions{
 		Repository: "mysql",
-		Tag:        "5.7",
+		Tag:        "8.0",
 		Env: []string{
 			"MYSQL_ROOT_USERNAME=root",
 			"MYSQL_ROOT_PASSWORD=connecthub",
-			"MYSQL_DATABASE=connecthubTestDB",
+			"MYSQL_DATABASE=connecthubdb",
 		},
 		Cmd: []string{
 			"--character-set-server=utf8mb4",
@@ -102,7 +102,7 @@ func startMySQL() (*sql.DB, string, func(), error) {
 
 	// データベース接続が成功するまで定期的に接続試行を行うことを試みる(待機)
 	err = pool.Retry(func() error {
-		dsn := fmt.Sprintf("root:connecthub@(localhost:%s)/connecthubTestDB?charset=utf8mb4&parseTime=true", port)
+		dsn := fmt.Sprintf("root:connecthub@(localhost:%s)/connecthubdb?charset=utf8mb4&parseTime=true", port)
 		db, err = sql.Open("mysql", dsn)
 		if err != nil {
 			return err

@@ -1,8 +1,8 @@
 -- Description: テスト用のDDLを記述します
-CREATE DATABASE IF NOT EXISTS `connecthubTestDB` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+CREATE DATABASE IF NOT EXISTS `connecthubdb` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 -- テーブル作成
-USE `connecthubTestDB` ;
+USE `connecthubdb` ;
 
 -- base.goのテスト用のテーブル
 DROP TABLE IF EXISTS TestItems CASCADE;

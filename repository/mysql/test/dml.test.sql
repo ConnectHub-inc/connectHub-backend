@@ -1,5 +1,5 @@
 -- dml.test.sql
-USE `connecthubTestDB`;
+USE `connecthubdb`;
 
 -- ワークスペースデータを挿入
 INSERT INTO Workspaces (id, name, description) VALUES
