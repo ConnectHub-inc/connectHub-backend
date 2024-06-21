@@ -83,7 +83,7 @@ func TestUserUseCase_ListWorkspaceUsers(t *testing.T) {
 			}
 
 			usecase := NewUserUseCase(ur, cr)
-			users, err := usecase.ListWorkspaceUsers(context.Background(), tt.arg)
+			getUsers, err := usecase.ListWorkspaceUsers(context.Background(), tt.arg)
 
 			if (err != nil) != (tt.wantErr != nil) {
 				t.Errorf("ListWorkspaceUsers() error = %v, wantErr %v", err, tt.wantErr)
@@ -91,8 +91,8 @@ func TestUserUseCase_ListWorkspaceUsers(t *testing.T) {
 				t.Errorf("ListWorkspaceUsers() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
-			if err == nil && len(users) != len(tt.want) {
-				t.Errorf("ListWorkspaceUsers() = %v, want %v", users, tt.want)
+			if err == nil && len(getUsers) != len(tt.want) {
+				t.Errorf("ListWorkspaceUsers() = %v, want %v", getUsers, tt.want)
 			}
 		})
 	}
