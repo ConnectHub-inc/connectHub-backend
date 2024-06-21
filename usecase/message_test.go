@@ -4,12 +4,95 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/golang/mock/gomock"
 
 	"github.com/tusmasoma/connectHub-backend/entity"
 	"github.com/tusmasoma/connectHub-backend/repository/mock"
 )
+
+func TestMessageUseCase_ListMessages(t *testing.T) {
+	t.Parallel()
+	channelID := "f6bd2530-cd9b-4ac1-8dc1-38c697e6cce2"
+	start := time.Now().Add(-1 * time.Hour)
+	end := time.Now().Add(1 * time.Hour)
+
+	patterns := []struct {
+		name  string
+		setup func(
+			mur *mock.MockUserRepository,
+			mmr *mock.MockMessageRepository,
+			mcr *mock.MockMessageCacheRepository,
+		)
+		arg struct {
+			ctx       context.Context
+			channelID string
+			start     time.Time
+			end       time.Time
+		}
+		wantErr error
+	}{
+		{
+			name: "success",
+			setup: func(
+				mur *mock.MockUserRepository,
+				mmr *mock.MockMessageRepository,
+				mcr *mock.MockMessageCacheRepository,
+			) {
+				mcr.EXPECT().List(gomock.Any(), channelID, start, end).Return([]entity.Message{
+					{
+						ID:        "31894386-3e60-45a8-bc67-f46b72b42554",
+						UserID:    "f6db2530-cd9b-4ac1-8dc1-38c795e6eec2",
+						Text:      "test message",
+						CreatedAt: time.Now(),
+					},
+				}, nil)
+			},
+			arg: struct {
+				ctx       context.Context
+				channelID string
+				start     time.Time
+				end       time.Time
+			}{
+				ctx:       context.Background(),
+				channelID: channelID,
+				start:     start,
+				end:       end,
+			},
+			wantErr: nil,
+		},
+	}
+	for _, tt := range patterns {
+		t.Run(tt.name, func(t *testing.T) {
+			tt := tt
+			t.Parallel()
+			ctrl := gomock.NewController(t)
+			ur := mock.NewMockUserRepository(ctrl)
+			mr := mock.NewMockMessageRepository(ctrl)
+			mcr := mock.NewMockMessageCacheRepository(ctrl)
+
+			if tt.setup != nil {
+				tt.setup(ur, mr, mcr)
+			}
+
+			usecase := NewMessageUseCase(ur, mr, mcr)
+
+			_, err := usecase.ListMessages(
+				tt.arg.ctx,
+				tt.arg.channelID,
+				tt.arg.start,
+				tt.arg.end,
+			)
+
+			if (err != nil) != (tt.wantErr != nil) {
+				t.Errorf("MessageList() error = %v, wantErr %v", err, tt.wantErr)
+			} else if err != nil && tt.wantErr != nil && err.Error() != tt.wantErr.Error() {
+				t.Errorf("MessageList() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
 
 func TestMessageUseCase_CreateMessage(t *testing.T) {
 	t.Parallel()
