@@ -13,6 +13,7 @@ import (
 
 func TestMessageUseCase_CreateMessage(t *testing.T) {
 	t.Parallel()
+	channelID := "f6bd2530-cd9b-4ac1-8dc1-38c697e6cce2"
 	message := entity.Message{
 		ID:   "31894386-3e60-45a8-bc67-f46b72b42554",
 		Text: "test message",
@@ -26,8 +27,9 @@ func TestMessageUseCase_CreateMessage(t *testing.T) {
 			mcr *mock.MockMessageCacheRepository,
 		)
 		arg struct {
-			ctx     context.Context
-			message entity.Message
+			ctx       context.Context
+			channelID string
+			message   entity.Message
 		}
 		wantErr error
 	}{
@@ -38,14 +40,16 @@ func TestMessageUseCase_CreateMessage(t *testing.T) {
 				mmr *mock.MockMessageRepository,
 				mcr *mock.MockMessageCacheRepository,
 			) {
-				mcr.EXPECT().Set(gomock.Any(), message.ID, message).Return(nil)
+				mcr.EXPECT().Create(gomock.Any(), channelID, message).Return(nil)
 			},
 			arg: struct {
-				ctx     context.Context
-				message entity.Message
+				ctx       context.Context
+				channelID string
+				message   entity.Message
 			}{
-				ctx:     context.Background(),
-				message: message,
+				ctx:       context.Background(),
+				channelID: channelID,
+				message:   message,
 			},
 			wantErr: nil,
 		},
@@ -67,6 +71,7 @@ func TestMessageUseCase_CreateMessage(t *testing.T) {
 
 			err := usecase.CreateMessage(
 				tt.arg.ctx,
+				tt.arg.channelID,
 				tt.arg.message,
 			)
 
@@ -116,7 +121,7 @@ func TestMessageUseCase_UpdateMessage(t *testing.T) {
 						Name:    "test",
 						IsAdmin: false,
 					}, nil)
-				mcr.EXPECT().Set(gomock.Any(), msgID, message).Return(nil)
+				mcr.EXPECT().Update(gomock.Any(), message).Return(nil)
 			},
 			arg: struct {
 				ctx     context.Context
@@ -142,7 +147,7 @@ func TestMessageUseCase_UpdateMessage(t *testing.T) {
 						Name:    "super_test",
 						IsAdmin: true,
 					}, nil)
-				mcr.EXPECT().Set(gomock.Any(), msgID, message).Return(nil)
+				mcr.EXPECT().Update(gomock.Any(), message).Return(nil)
 			},
 			arg: struct {
 				ctx     context.Context

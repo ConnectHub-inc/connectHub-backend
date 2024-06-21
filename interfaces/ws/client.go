@@ -179,7 +179,9 @@ func (client *Client) handleNewMessage(jsonMessage []byte) {
 
 func (client *Client) handleListMessages(message entity.WSMessage) {
 	roomID := message.TargetID
-	msgs, err := client.muc.ListMessages(context.Background(), roomID)
+	start := time.Unix(0, 0)                       // Unixエポックの開始
+	end := time.Unix(1<<63-62135596801, 999999999) // 最大のタイムスタンプ
+	msgs, err := client.muc.ListMessages(context.Background(), roomID, start, end)
 	if err != nil {
 		log.Error("Failed to list messages", log.Ferror(err))
 		return
@@ -194,12 +196,13 @@ func (client *Client) handleListMessages(message entity.WSMessage) {
 }
 
 func (client *Client) handleCreateMessage(message entity.WSMessage) {
-	if err := client.muc.CreateMessage(context.Background(), message.Content); err != nil {
+	roomID := message.TargetID
+
+	if err := client.muc.CreateMessage(context.Background(), roomID, message.Content); err != nil {
 		log.Error("Failed to create message", log.Ferror(err))
 		return
 	}
 
-	roomID := message.TargetID
 	if room := client.hub.findRoomByID(roomID); room != nil {
 		log.Info("Broadcasting message", log.Fstring("roomID", roomID), log.Fstring("messageID", message.Content.ID))
 		room.broadcast <- &message
