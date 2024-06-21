@@ -12,6 +12,7 @@ import (
 )
 
 type UserUseCase interface {
+	ListWorkspaceUsers(ctx context.Context, workspaceID string) ([]entity.User, error)
 	CreateUserAndGenerateToken(ctx context.Context, email string, passward string) (string, error)
 	UpdateUser(ctx context.Context, params *UpdateUserParams, user entity.User) error
 	LoginAndGenerateToken(ctx context.Context, email string, passward string) (string, error)
@@ -28,6 +29,15 @@ func NewUserUseCase(ur repository.UserRepository, cr repository.UserCacheReposit
 		ur: ur,
 		cr: cr,
 	}
+}
+
+func (uuc *userUseCase) ListWorkspaceUsers(ctx context.Context, workspaceID string) ([]entity.User, error) {
+	users, err := uuc.ur.ListWorkspaceUsers(ctx, workspaceID)
+	if err != nil {
+		log.Error("Failed to list workspace users", log.Fstring("workspaceID", workspaceID))
+		return nil, err
+	}
+	return users, nil
 }
 
 func (uuc *userUseCase) CreateUserAndGenerateToken(ctx context.Context, email string, passward string) (string, error) {

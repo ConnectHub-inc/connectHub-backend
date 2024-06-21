@@ -6,12 +6,15 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/go-chi/chi/v5"
+
 	"github.com/tusmasoma/connectHub-backend/internal/log"
 	"github.com/tusmasoma/connectHub-backend/usecase"
 )
 
 type UserHandler interface {
 	GetUser(w http.ResponseWriter, r *http.Request)
+	ListWorkspaceUsers(w http.ResponseWriter, r *http.Request)
 	CreateUser(w http.ResponseWriter, r *http.Request)
 	UpdateUser(w http.ResponseWriter, r *http.Request)
 	Login(w http.ResponseWriter, r *http.Request)
@@ -60,6 +63,26 @@ func (uh *userHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	if err = json.NewEncoder(w).Encode(user); err != nil {
 		log.Error("Failed to encode user to JSON", log.Ferror(err))
 		http.Error(w, "Failed to encode user to JSON", http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
+func (uh *userHandler) ListWorkspaceUsers(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	workspaceID := chi.URLParam(r, "workspace_id")
+	users, err := uh.uur.ListWorkspaceUsers(ctx, workspaceID)
+	if err != nil {
+		log.Error("Failed to list workspace users", log.Ferror(err))
+		http.Error(w, "Failed to list workspace users", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err = json.NewEncoder(w).Encode(users); err != nil {
+		log.Error("Failed to encode users to JSON", log.Ferror(err))
+		http.Error(w, "Failed to encode users to JSON", http.StatusInternalServerError)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

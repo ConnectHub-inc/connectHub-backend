@@ -3,11 +3,13 @@ package handler
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/golang/mock/gomock"
 
 	"github.com/tusmasoma/connectHub-backend/entity"
@@ -59,6 +61,68 @@ func TestUserHandler_GetUser(t *testing.T) {
 			handler := NewUserHandler(uuc, auc)
 			recorder := httptest.NewRecorder()
 			handler.GetUser(recorder, tt.in())
+
+			if status := recorder.Code; status != tt.wantStatus {
+				t.Fatalf("handler returned wrong status code: got %v want %v", status, tt.wantStatus)
+			}
+		})
+	}
+}
+
+func TestUserHandler_ListWorkspaceUsers(t *testing.T) {
+	workspaceID := "f6db2530-cd9b-4ac1-8dc1-38c795e6eec2"
+	patterns := []struct {
+		name  string
+		setup func(
+			m *mock.MockUserUseCase,
+			m1 *mock.MockAuthUseCase,
+		)
+		in         func() *http.Request
+		wantStatus int
+	}{
+		{
+			name: "success",
+			setup: func(m *mock.MockUserUseCase, m1 *mock.MockAuthUseCase) {
+				m.EXPECT().ListWorkspaceUsers(
+					gomock.Any(),
+					workspaceID,
+				).Return(
+					[]entity.User{
+						{
+							ID:              "f6db2530-cd9b-4ac1-8dc1-38c795e6eec2",
+							Name:            "test",
+							Email:           "test@gmail.com",
+							ProfileImageURL: "https://test.com",
+						},
+					},
+					nil,
+				)
+			},
+			in: func() *http.Request {
+				url := fmt.Sprintf("/api/workspaces/%s/users", workspaceID)
+				req, _ := http.NewRequest(http.MethodGet, url, nil)
+				return req
+			},
+			wantStatus: http.StatusOK,
+		},
+	}
+	for _, tt := range patterns {
+		t.Run(tt.name, func(t *testing.T) {
+			tt := tt
+			ctrl := gomock.NewController(t)
+			uuc := mock.NewMockUserUseCase(ctrl)
+			auc := mock.NewMockAuthUseCase(ctrl)
+
+			if tt.setup != nil {
+				tt.setup(uuc, auc)
+			}
+
+			handler := NewUserHandler(uuc, auc)
+			recorder := httptest.NewRecorder()
+
+			r := chi.NewRouter()
+			r.Get("/api/workspaces/{workspace_id}/users", handler.ListWorkspaceUsers)
+			r.ServeHTTP(recorder, tt.in())
 
 			if status := recorder.Code; status != tt.wantStatus {
 				t.Fatalf("handler returned wrong status code: got %v want %v", status, tt.wantStatus)
