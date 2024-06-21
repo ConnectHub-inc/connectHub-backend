@@ -180,7 +180,7 @@ func (client *Client) handleNewMessage(jsonMessage []byte) {
 func (client *Client) handleListMessages(message entity.WSMessage) {
 	roomID := message.TargetID
 	start := time.Unix(0, 0)                       // Unixエポックの開始
-	end := time.Unix(1<<63-62135596801, 999999999) // 最大のタイムスタンプ
+	end := time.Unix(1<<63-62135596801, 999999999) //nolint:gomnd // Unixエポックの終了
 	msgs, err := client.muc.ListMessages(context.Background(), roomID, start, end)
 	if err != nil {
 		log.Error("Failed to list messages", log.Ferror(err))
