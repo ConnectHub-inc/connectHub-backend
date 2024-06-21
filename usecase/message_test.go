@@ -214,6 +214,7 @@ func TestMessageUseCase_UpdateMessage(t *testing.T) {
 func TestMessageUseCase_DeleteMessage(t *testing.T) {
 	t.Parallel()
 	userID := "f6db2530-cd9b-4ac1-8dc1-38c795e6eec2"
+	channelID := "f6bd2530-cd9b-4ac1-8dc1-38c697e6cce2"
 	msgID := "31894386-3e60-45a8-bc67-f46b72b42554"
 
 	patterns := []struct {
@@ -224,9 +225,10 @@ func TestMessageUseCase_DeleteMessage(t *testing.T) {
 			mcr *mock.MockMessageCacheRepository,
 		)
 		arg struct {
-			ctx     context.Context
-			message entity.Message
-			userID  string
+			ctx       context.Context
+			message   entity.Message
+			channelID string
+			userID    string
 		}
 		wantErr error
 	}{
@@ -243,19 +245,21 @@ func TestMessageUseCase_DeleteMessage(t *testing.T) {
 						Name:    "test",
 						IsAdmin: false,
 					}, nil)
-				mcr.EXPECT().Delete(gomock.Any(), msgID).Return(nil)
+				mcr.EXPECT().Delete(gomock.Any(), channelID, msgID).Return(nil)
 			},
 			arg: struct {
-				ctx     context.Context
-				message entity.Message
-				userID  string
+				ctx       context.Context
+				message   entity.Message
+				channelID string
+				userID    string
 			}{
 				ctx: context.Background(),
 				message: entity.Message{
 					ID:     msgID,
 					UserID: userID,
 				},
-				userID: userID,
+				channelID: channelID,
+				userID:    userID,
 			},
 			wantErr: nil,
 		},
@@ -272,19 +276,21 @@ func TestMessageUseCase_DeleteMessage(t *testing.T) {
 						Name:    "super_test",
 						IsAdmin: true,
 					}, nil)
-				mcr.EXPECT().Delete(gomock.Any(), msgID).Return(nil)
+				mcr.EXPECT().Delete(gomock.Any(), channelID, msgID).Return(nil)
 			},
 			arg: struct {
-				ctx     context.Context
-				message entity.Message
-				userID  string
+				ctx       context.Context
+				message   entity.Message
+				channelID string
+				userID    string
 			}{
 				ctx: context.Background(),
 				message: entity.Message{
 					ID:     msgID,
 					UserID: userID,
 				},
-				userID: "f6db2530-cd9b-4ac1-8dc1-38c795e61234",
+				channelID: channelID,
+				userID:    "f6db2530-cd9b-4ac1-8dc1-38c795e61234",
 			},
 			wantErr: nil,
 		},
@@ -303,16 +309,18 @@ func TestMessageUseCase_DeleteMessage(t *testing.T) {
 					}, nil)
 			},
 			arg: struct {
-				ctx     context.Context
-				message entity.Message
-				userID  string
+				ctx       context.Context
+				message   entity.Message
+				channelID string
+				userID    string
 			}{
 				ctx: context.Background(),
 				message: entity.Message{
 					ID:     msgID,
 					UserID: userID,
 				},
-				userID: "f6db2530-cd9b-4ac1-8dc1-38c795e61234",
+				channelID: channelID,
+				userID:    "f6db2530-cd9b-4ac1-8dc1-38c795e61234",
 			},
 			wantErr: fmt.Errorf("don't have permission to delete msg"),
 		},
@@ -335,6 +343,7 @@ func TestMessageUseCase_DeleteMessage(t *testing.T) {
 			err := usecase.DeleteMessage(
 				tt.arg.ctx,
 				tt.arg.message,
+				tt.arg.channelID,
 				tt.arg.userID,
 			)
 

@@ -209,12 +209,13 @@ func (client *Client) handleCreateMessage(message entity.WSMessage) {
 }
 
 func (client *Client) handleDeleteMessage(message entity.WSMessage) {
-	if err := client.muc.DeleteMessage(context.Background(), message.Content, client.ID); err != nil {
+	roomID := message.TargetID
+
+	if err := client.muc.DeleteMessage(context.Background(), message.Content, roomID, client.ID); err != nil {
 		log.Error("Failed to delete message", log.Ferror(err))
 		return
 	}
 
-	roomID := message.TargetID
 	if room := client.hub.findRoomByID(roomID); room != nil {
 		log.Info("Broadcasting message", log.Fstring("roomID", roomID), log.Fstring("messageID", message.Content.ID))
 		room.broadcast <- &message

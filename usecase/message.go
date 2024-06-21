@@ -14,7 +14,7 @@ type MessageUseCase interface {
 	ListMessages(ctx context.Context, roomID string) ([]entity.Message, error)
 	CreateMessage(ctx context.Context, message entity.Message) error
 	UpdateMessage(ctx context.Context, message entity.Message, userID string) error
-	DeleteMessage(ctx context.Context, content entity.Message, userID string) error
+	DeleteMessage(ctx context.Context, message entity.Message, channelID, userID string) error
 }
 
 type messageUseCase struct {
@@ -76,7 +76,7 @@ func (muc *messageUseCase) UpdateMessage(ctx context.Context, message entity.Mes
 	return nil
 }
 
-func (muc *messageUseCase) DeleteMessage(ctx context.Context, message entity.Message, userID string) error {
+func (muc *messageUseCase) DeleteMessage(ctx context.Context, message entity.Message, channelID, userID string) error {
 	user, err := muc.ur.Get(ctx, userID)
 	if err != nil {
 		log.Error("Failed to get user", log.Fstring("userID", userID))
@@ -92,7 +92,7 @@ func (muc *messageUseCase) DeleteMessage(ctx context.Context, message entity.Mes
 		return fmt.Errorf("don't have permission to delete msg")
 	}
 
-	if err = muc.mcr.Delete(ctx, message.ID); err != nil {
+	if err = muc.mcr.Delete(ctx, channelID, message.ID); err != nil {
 		log.Error("Failed to delete msg from cache", log.Fstring("msgID", message.ID))
 		return err
 	}
