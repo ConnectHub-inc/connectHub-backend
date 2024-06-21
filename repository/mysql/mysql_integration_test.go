@@ -30,7 +30,7 @@ func Test_NewMySQLDB(t *testing.T) {
 				t.Setenv("MYSQL_PASSWORD", "connecthub")
 				t.Setenv("MYSQL_HOST", "localhost")
 				t.Setenv("MYSQL_PORT", mysqlPort)
-				t.Setenv("MYSQL_DB_NAME", "connecthubdb")
+				t.Setenv("MYSQL_DB_NAME", "connecthubTestDB")
 			},
 			want: &sql.DB{},
 		},
