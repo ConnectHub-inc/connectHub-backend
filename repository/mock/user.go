@@ -95,6 +95,21 @@ func (mr *MockUserRepositoryMockRecorder) List(ctx, qcs interface{}) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockUserRepository)(nil).List), ctx, qcs)
 }
 
+// ListWorkspaceUsers mocks base method.
+func (m *MockUserRepository) ListWorkspaceUsers(ctx context.Context, workspaceID string) ([]entity.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListWorkspaceUsers", ctx, workspaceID)
+	ret0, _ := ret[0].([]entity.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListWorkspaceUsers indicates an expected call of ListWorkspaceUsers.
+func (mr *MockUserRepositoryMockRecorder) ListWorkspaceUsers(ctx, workspaceID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListWorkspaceUsers", reflect.TypeOf((*MockUserRepository)(nil).ListWorkspaceUsers), ctx, workspaceID)
+}
+
 // Update mocks base method.
 func (m *MockUserRepository) Update(ctx context.Context, id string, user entity.User) error {
 	m.ctrl.T.Helper()

@@ -39,7 +39,7 @@ func (ur *userRepository) ListWorkspaceUsers(ctx context.Context, workspaceID st
 	var users []entity.User
 	for rows.Next() {
 		var user entity.User
-		err := rows.Scan(
+		err = rows.Scan(
 			&user.ID,
 			&user.Name,
 			&user.Email,
