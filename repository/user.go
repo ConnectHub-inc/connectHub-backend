@@ -10,6 +10,7 @@ import (
 type UserRepository interface {
 	List(ctx context.Context, qcs []QueryCondition) ([]entity.User, error)
 	ListWorkspaceUsers(ctx context.Context, workspaceID string) ([]entity.User, error)
+	ListRoomUsers(ctx context.Context, channelID string) ([]entity.User, error)
 	Get(ctx context.Context, id string) (*entity.User, error)
 	Create(ctx context.Context, user entity.User) error
 	Update(ctx context.Context, id string, user entity.User) error
