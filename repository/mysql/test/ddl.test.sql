@@ -1,8 +1,8 @@
 -- Description: テスト用のDDLを記述します
-CREATE DATABASE IF NOT EXISTS `connecthubdb` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+CREATE DATABASE IF NOT EXISTS `connecthubTestDB` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 -- テーブル作成
-USE `connecthubdb` ;
+USE `connecthubTestDB` ;
 
 -- base.goのテスト用のテーブル
 DROP TABLE IF EXISTS TestItems CASCADE;
@@ -49,8 +49,8 @@ CREATE TABLE Users (
     id CHAR(36) PRIMARY KEY, -- UUIDは36文字の文字列として格納されます
     name VARCHAR(50) NOT NULL,
     email VARCHAR(150) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL  -- 暗号化されたパスワードを格納
-    profile_image_url VARCHAR(255) NULL
+    password VARCHAR(255) NOT NULL,  -- 暗号化されたパスワードを格納
+    profile_image_url VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE User_Workspaces (

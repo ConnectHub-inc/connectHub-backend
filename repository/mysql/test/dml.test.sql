@@ -1,5 +1,5 @@
 -- dml.test.sql
-USE `connecthubdb`;
+USE `connecthubTestDB`;
 
 -- ワークスペースデータを挿入
 INSERT INTO Workspaces (id, name, description) VALUES
@@ -18,10 +18,10 @@ INSERT INTO ActionTags (id, name, description) VALUES
 ('5fe0e23d-6b49-11ee-b686-0242c0a87001', 'Tag 2', 'Description for Tag 2');
 
 -- ユーザーデータを挿入
-INSERT INTO Users (id, name, email, password) VALUES
-('5fe0e23e-6b49-11ee-b686-0242c0a87001', 'John Doe', 'john.doe@example.com', 'hashed_password_1'),
-('5fe0e23f-6b49-11ee-b686-0242c0a87001', 'Jane Smith', 'jane.smith@example.com', 'hashed_password_2'),
-('5fe0e240-6b49-11ee-b686-0242c0a87001', 'Alice Johnson', 'alice.johnson@example.com', 'hashed_password_3');
+INSERT INTO Users (id, name, email, password, profile_image_url) VALUES
+('5fe0e23e-6b49-11ee-b686-0242c0a87001', 'John Doe', 'john.doe@example.com', 'hashed_password_1', 'https://example.com/profile_image_1'),
+('5fe0e23f-6b49-11ee-b686-0242c0a87001', 'Jane Smith', 'jane.smith@example.com', 'hashed_password_2', 'https://example.com/profile_image_2'),
+('5fe0e240-6b49-11ee-b686-0242c0a87001', 'Alice Johnson', 'alice.johnson@example.com', 'hashed_password_3', 'https://example.com/profile_image_3');
 
 -- ユーザーとワークスペースの関係データを挿入
 INSERT INTO User_Workspaces (user_id, workspace_id) VALUES
