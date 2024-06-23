@@ -53,6 +53,10 @@ type LoginRequest struct {
 }
 
 type ListRoomUsersResponse struct {
+  Users []entity.User `json:"users"`
+}
+
+type ListWorkspaceUsersResponse struct {
 	Users []entity.User `json:"users"`
 }
 
@@ -86,7 +90,7 @@ func (uh *userHandler) ListWorkspaceUsers(w http.ResponseWriter, r *http.Request
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	if err = json.NewEncoder(w).Encode(users); err != nil {
+	if err = json.NewEncoder(w).Encode(ListWorkspaceUsersResponse{Users: users}); err != nil {
 		log.Error("Failed to encode users to JSON", log.Ferror(err))
 		http.Error(w, "Failed to encode users to JSON", http.StatusInternalServerError)
 		w.WriteHeader(http.StatusInternalServerError)
