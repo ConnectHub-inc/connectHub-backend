@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
+	"github.com/tusmasoma/connectHub-backend/entity"
 	"github.com/tusmasoma/connectHub-backend/internal/log"
 	"github.com/tusmasoma/connectHub-backend/usecase"
 )
@@ -15,6 +16,7 @@ import (
 type UserHandler interface {
 	GetUser(w http.ResponseWriter, r *http.Request)
 	ListWorkspaceUsers(w http.ResponseWriter, r *http.Request)
+	ListRoomUsers(w http.ResponseWriter, r *http.Request)
 	CreateUser(w http.ResponseWriter, r *http.Request)
 	UpdateUser(w http.ResponseWriter, r *http.Request)
 	Login(w http.ResponseWriter, r *http.Request)
@@ -50,6 +52,10 @@ type LoginRequest struct {
 	Password string `json:"password"`
 }
 
+type ListRoomUsersResponse struct {
+	Users []entity.User `json:"users"`
+}
+
 func (uh *userHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	user, err := uh.auc.GetUserFromContext(ctx)
@@ -81,6 +87,26 @@ func (uh *userHandler) ListWorkspaceUsers(w http.ResponseWriter, r *http.Request
 
 	w.Header().Set("Content-Type", "application/json")
 	if err = json.NewEncoder(w).Encode(users); err != nil {
+		log.Error("Failed to encode users to JSON", log.Ferror(err))
+		http.Error(w, "Failed to encode users to JSON", http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
+func (uh *userHandler) ListRoomUsers(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	channelID := chi.URLParam(r, "channel_id")
+	users, err := uh.uur.ListRoomUsers(ctx, channelID)
+	if err != nil {
+		log.Error("Failed to list room users", log.Fstring("channelID", channelID), log.Ferror(err))
+		http.Error(w, "Failed to list room users", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err = json.NewEncoder(w).Encode(ListRoomUsersResponse{Users: users}); err != nil {
 		log.Error("Failed to encode users to JSON", log.Ferror(err))
 		http.Error(w, "Failed to encode users to JSON", http.StatusInternalServerError)
 		w.WriteHeader(http.StatusInternalServerError)
