@@ -52,11 +52,11 @@ type LoginRequest struct {
 	Password string `json:"password"`
 }
 
-type ListRoomUsersResponse struct {
-  Users []entity.User `json:"users"`
+type ListWorkspaceUsersResponse struct {
+	Users []entity.User `json:"users"`
 }
 
-type ListWorkspaceUsersResponse struct {
+type ListRoomUsersResponse struct {
 	Users []entity.User `json:"users"`
 }
 
