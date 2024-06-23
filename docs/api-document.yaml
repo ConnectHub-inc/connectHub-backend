@@ -12,6 +12,8 @@ tags:
     description: チャット関連API
   - name: user
     description: ユーザ関連API
+  - name: room
+    description: ルーム関連API
 paths:
   /ws/:
     get:
@@ -101,7 +103,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserGetResponse'
-  /user/update:
+  /api/user/update:
     put:
       tags:
         - user
@@ -122,6 +124,30 @@ paths:
       responses:
         200:
           description: A successful response.
+  /api/rooms/{room_id}/users:
+    get:
+      tags:
+        - room
+      summary: ルーム参加ユーザ取得API
+      description: |
+        ルームに参加しているユーザを取得します。<br>
+        ルームIDをリクエストで受け取り、ルームに参加しているユーザ情報を返します。
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: room_id
+          in: path
+          required: true
+          description: ID of the room
+          schema:
+            type: string
+      responses:
+        200:
+          description: A successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListRoomUsersResponse'
 components:
   securitySchemes:
     BearerAuth:
@@ -176,3 +202,23 @@ components:
         profile_image_url:
           type: string
           description: ユーザのプロフィール画像
+    ListRoomUsersResponse:
+      type: object
+      properties:
+        users:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                example: "12345"
+              name:
+                type: string
+                example: "John Doe"
+              email:
+                type: string
+                example: "john.doe@example.com"
+              profile_image_url:
+                type: string
+                example: "https://example.com/profile.jpg"
