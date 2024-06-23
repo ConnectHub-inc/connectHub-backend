@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -93,6 +94,80 @@ func TestUserUseCase_ListWorkspaceUsers(t *testing.T) {
 
 			if err == nil && len(getUsers) != len(tt.want) {
 				t.Errorf("ListWorkspaceUsers() = %v, want %v", getUsers, tt.want)
+			}
+		})
+	}
+}
+
+func TestUserUseCase_ListRoomUsers(t *testing.T) {
+	channelID := "f6db2530-cd9b-4ac1-8dc1-38c795e6eec2"
+	users := []entity.User{
+		{
+			ID:              "f6db2530-cd9b-4ac1-8dc1-38c795e6eec2",
+			Name:            "test",
+			Email:           "test@gmail.com",
+			ProfileImageURL: "https://test.com",
+		},
+	}
+
+	patterns := []struct {
+		name  string
+		setup func(
+			m *mock.MockUserRepository,
+			m1 *mock.MockUserCacheRepository,
+		)
+		arg     string
+		want    []entity.User
+		wantErr error
+	}{
+		{
+			name: "success",
+			setup: func(m *mock.MockUserRepository, m1 *mock.MockUserCacheRepository) {
+				m.EXPECT().ListRoomUsers(
+					gomock.Any(),
+					channelID,
+				).Return(users, nil)
+			},
+			arg:     channelID,
+			want:    users,
+			wantErr: nil,
+		},
+		{
+			name: "Fail: failed to list room users",
+			setup: func(m *mock.MockUserRepository, m1 *mock.MockUserCacheRepository) {
+				m.EXPECT().ListRoomUsers(
+					gomock.Any(),
+					channelID,
+				).Return(nil, fmt.Errorf("failed to list room users"))
+			},
+			arg:     channelID,
+			want:    nil,
+			wantErr: fmt.Errorf("failed to list room users"),
+		},
+	}
+
+	for _, tt := range patterns {
+		t.Run(tt.name, func(t *testing.T) {
+			tt := tt
+			ctrl := gomock.NewController(t)
+			ur := mock.NewMockUserRepository(ctrl)
+			cr := mock.NewMockUserCacheRepository(ctrl)
+
+			if tt.setup != nil {
+				tt.setup(ur, cr)
+			}
+
+			usecase := NewUserUseCase(ur, cr)
+			getUsers, err := usecase.ListRoomUsers(context.Background(), tt.arg)
+
+			if (err != nil) != (tt.wantErr != nil) {
+				t.Errorf("ListRoomUsers() error = %v, wantErr %v", err, tt.wantErr)
+			} else if err != nil && tt.wantErr != nil && err.Error() != tt.wantErr.Error() {
+				t.Errorf("ListRoomUsers() error = %v, wantErr %v", err, tt.wantErr)
+			}
+
+			if !reflect.DeepEqual(getUsers, tt.want) {
+				t.Errorf("ListRoomUsers() = %v, want %v", getUsers, tt.want)
 			}
 		})
 	}
