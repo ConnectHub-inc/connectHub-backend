@@ -12,6 +12,8 @@ tags:
     description: チャット関連API
   - name: user
     description: ユーザ関連API
+  - name: workspace
+    description: ワークスペース関連API
 paths:
   /ws/:
     get:
@@ -101,7 +103,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserGetResponse'
-  /user/update:
+  /api/user/update:
     put:
       tags:
         - user
@@ -122,6 +124,29 @@ paths:
       responses:
         200:
           description: A successful response.
+  /api/workspaces/{workspace_id}/users:
+    get:
+      tags:
+        - workspace
+      summary: ワークスペースユーザ取得API
+      description: |
+        ワークスペースに所属するユーザを取得します。
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: workspace_id
+          in: path
+          required: true
+          description: ID of the workspace
+          schema:
+            type: string
+      responses:
+        200:
+          description: A successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListWorkspaceUsersResponse'
 components:
   securitySchemes:
     BearerAuth:
@@ -176,3 +201,23 @@ components:
         profile_image_url:
           type: string
           description: ユーザのプロフィール画像
+    ListWorkspaceUsersResponse:
+      type: object
+      properties:
+        users:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                example: "12345"
+              name:
+                type: string
+                example: "John Doe"
+              email:
+                type: string
+                example: "john.doe@example.com"
+              profile_image_url:
+                type: string
+                example: "https://example.com/profile.jpg"
