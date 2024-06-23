@@ -14,6 +14,8 @@ tags:
     description: ユーザ関連API
   - name: workspace
     description: ワークスペース関連API
+  - name: room
+    description: ルーム関連API
 paths:
   /ws/:
     get:
@@ -147,6 +149,205 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListWorkspaceUsersResponse'
+  /api/rooms/{room_id}/users:
+    get:
+      tags:
+        - room
+      summary: ルーム参加ユーザ取得API
+      description: |
+        ルームに参加しているユーザを取得します。<br>
+        ルームIDをリクエストで受け取り、ルームに参加しているユーザ情報を返します。
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: room_id
+          in: path
+          required: true
+          description: ID of the room
+      responses:
+        200:
+          description: A successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListRoomUsersResponse'
+components:
+  securitySchemes:
+openapi: 3.0.2
+info:
+  title: ConnectHub API
+  description: <b>ConnectHub API仕様</b><br>
+  version: 1.0.0
+servers:
+  - url: http://localhost:8083/
+tags:
+  - name: setting
+    description: 設定関連API
+  - name: chat
+    description: チャット関連API
+  - name: user
+    description: ユーザ関連API
+  - name: workspace
+    description: ワークスペース関連API
+  - name: room
+    description: ルーム関連API
+paths:
+  /ws/:
+    get:
+      tags:
+        - chat
+      summary: WebSocket通信エンドポイント
+      description: WebSocket接続を確立するためのエンドポイント
+      security:
+        - BearerAuth: []
+      responses:
+        101:
+          description: WebSocketプロトコルを使用して接続が確立されました。
+  /api/user/login:
+    post:
+      tags:
+        - user
+      summary: ユーザログインAPI
+      description: |
+        ユーザ情報を作成します。<br>
+        ユーザの名前情報をリクエストで受け取り、ユーザIDと認証用のトークンを生成しデータベースへ保存します。<br>
+        tokenは以降の他のAPIコール時にヘッダに設定をします。
+      requestBody:
+        description: Request Body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+        required: true
+      responses:
+        200:
+          description: A successful response.
+          headers:
+            Authorization:
+              description: Auth token for the registered user
+              schema:
+                type: string
+  /api/user/signup:
+    post:
+      tags:
+        - user
+      summary: ユーザサインアップAPI
+      description: |
+        新規ユーザを作成します。<br>
+        ユーザの名前とパスワードをリクエストで受け取り、新しいユーザアカウントを作成します。
+      requestBody:
+        description: Request Body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+        required: true
+      responses:
+        200:
+          description: A successful response.
+          headers:
+            Authorization:
+              description: Auth token for the registered user
+              schema:
+                type: string
+  /api/user/logout:
+    post:
+      tags:
+        - user
+      summary: ユーザログアウトAPI
+      description: |
+        ユーザをログアウトします。<br>
+        クライアントからトークンを無効化します。
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: ログアウトが正常に完了しました。
+  /api/user/get:
+    get:
+      tags:
+        - user
+      summary: ユーザ情報取得API
+      description: |
+        ユーザ情報を取得します。<br>
+        トークンを含めたリクエストで受け取り、ユーザー情報を返します。
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserGetResponse'
+  /api/user/update:
+    put:
+      tags:
+        - user
+      summary: ユーザ情報更新API
+      description: |
+        ユーザ情報の更新をします。
+        emailは更新できません。
+        passwardは更新できません。
+      security:
+        - BearerAuth: []
+      requestBody:
+        description: Request Body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdateRequest'
+        required: true
+      responses:
+        200:
+          description: A successful response.
+  /api/workspaces/{workspace_id}/users:
+    get:
+      tags:
+        - workspace
+      summary: ワークスペースユーザ取得API
+      description: |
+        ワークスペースに所属するユーザを取得します。
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: workspace_id
+          in: path
+          required: true
+          description: ID of the workspace
+          schema:
+            type: string
+      responses:
+        200:
+          description: A successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListWorkspaceUsersResponse'
+  /api/rooms/{room_id}/users:
+    get:
+      tags:
+        - room
+      summary: ルーム参加ユーザ取得API
+      description: |
+        ルームに参加しているユーザを取得します。<br>
+        ルームIDをリクエストで受け取り、ルームに参加しているユーザ情報を返します。
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: room_id
+          in: path
+          required: true
+          description: ID of the room
+          schema:
+            type: string
+      responses:
+        200:
+          description: A successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListRoomUsersResponse'
 components:
   securitySchemes:
     BearerAuth:
@@ -202,6 +403,26 @@ components:
           type: string
           description: ユーザのプロフィール画像
     ListWorkspaceUsersResponse:
+      type: object
+      properties:
+        users:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                example: "12345"
+              name:
+                type: string
+                example: "John Doe"
+              email:
+                type: string
+                example: "john.doe@example.com"
+              profile_image_url:
+                type: string
+                example: "https://example.com/profile.jpg"
+    ListRoomUsersResponse:
       type: object
       properties:
         users:

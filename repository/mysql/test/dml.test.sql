@@ -29,6 +29,12 @@ INSERT INTO User_Workspaces (user_id, workspace_id) VALUES
 ('5fe0e23f-6b49-11ee-b686-0242c0a87001', '5fe0e237-6b49-11ee-b686-0242c0a87001'),
 ('5fe0e240-6b49-11ee-b686-0242c0a87001', '5fe0e238-6b49-11ee-b686-0242c0a87001');
 
+-- ユーザーとルームの関係データを挿入
+INSERT INTO User_Rooms (user_id, room_id) VALUES
+('5fe0e23e-6b49-11ee-b686-0242c0a87001', '5fe0e239-6b49-11ee-b686-0242c0a87001'),
+('5fe0e23f-6b49-11ee-b686-0242c0a87001', '5fe0e23a-6b49-11ee-b686-0242c0a87001'),
+('5fe0e240-6b49-11ee-b686-0242c0a87001', '5fe0e23b-6b49-11ee-b686-0242c0a87001');
+
 -- メッセージデータを挿入
 INSERT INTO Messages (id, user_id, room_id, action_tag_id, content, created_at, updated_at) VALUES
 ('5fe0e241-6b49-11ee-b686-0242c0a87001', '5fe0e23e-6b49-11ee-b686-0242c0a87001', '5fe0e239-6b49-11ee-b686-0242c0a87001', '5fe0e23c-6b49-11ee-b686-0242c0a87001', 'Hello from user 1 in room 1', '2023-01-01 10:00:00', '2023-01-01 10:00:00'),

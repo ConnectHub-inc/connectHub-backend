@@ -18,6 +18,7 @@ CREATE TABLE TestItems (
 
 -- ドメインのテスト用のテーブル
 DROP TABLE IF EXISTS Messages CASCADE;
+DROP TABLE IF EXISTS User_Rooms CASCADE;
 DROP TABLE IF EXISTS User_Workspaces CASCADE;
 DROP TABLE IF EXISTS Users CASCADE;
 DROP TABLE IF EXISTS ActionTags CASCADE;
@@ -59,6 +60,14 @@ CREATE TABLE User_Workspaces (
     PRIMARY KEY (user_id, workspace_id),
     FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE,
     FOREIGN KEY (workspace_id) REFERENCES Workspaces(id) ON DELETE CASCADE
+);
+
+CREATE TABLE User_Rooms (
+    user_id CHAR(36) NOT NULL,
+    room_id CHAR(36) NOT NULL,
+    PRIMARY KEY (user_id, room_id),
+    FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE,
+    FOREIGN KEY (room_id) REFERENCES Rooms(id) ON DELETE CASCADE
 );
 
 CREATE TABLE Messages (
