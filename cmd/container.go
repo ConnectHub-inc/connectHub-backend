@@ -45,6 +45,7 @@ func BuildContainer(ctx context.Context) (*dig.Container, error) {
 		redis.NewPubSubRepository,
 		usecase.NewUserUseCase,
 		usecase.NewMessageUseCase,
+		usecase.NewRoomUseCase,
 		usecase.NewAuthUseCase,
 		handler.NewWebsocketHandler,
 		handler.NewUserHandler,
