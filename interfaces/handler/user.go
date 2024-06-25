@@ -37,14 +37,6 @@ func NewUserHandler(uuc usecase.UserUseCase, ruc usecase.RoomUseCase, auc usecas
 	}
 }
 
-type UserGetResponse struct {
-	ID              string        `json:"id"`
-	Name            string        `json:"name"`
-	Email           string        `json:"email"`
-	ProfileImageURL string        `json:"profile_image_url"`
-	Rooms           []entity.Room `json:"rooms"`
-}
-
 type CreateUserRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
@@ -63,7 +55,11 @@ type LoginRequest struct {
 }
 
 type GetUserResponse struct {
-	User entity.User `json:"user"`
+	ID              string        `json:"id"`
+	Name            string        `json:"name"`
+	Email           string        `json:"email"`
+	ProfileImageURL string        `json:"profile_image_url"`
+	Rooms           []entity.Room `json:"rooms"`
 }
 
 type ListWorkspaceUsersResponse struct {
@@ -91,7 +87,7 @@ func (uh *userHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := UserGetResponse{
+	response := GetUserResponse{
 		ID:              user.ID,
 		Name:            user.Name,
 		Email:           user.Email,
@@ -132,7 +128,7 @@ func (uh *userHandler) ListRoomUsers(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	channelID := chi.URLParam(r, "channel_id")
-	users, err := uh.uur.ListRoomUsers(ctx, channelID)
+	users, err := uh.uuc.ListRoomUsers(ctx, channelID)
 	if err != nil {
 		log.Error("Failed to list room users", log.Fstring("channelID", channelID), log.Ferror(err))
 		http.Error(w, "Failed to list room users", http.StatusInternalServerError)

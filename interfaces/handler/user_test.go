@@ -192,13 +192,14 @@ func TestUserHandler_ListRoomUsers(t *testing.T) {
 			tt := tt
 			ctrl := gomock.NewController(t)
 			uuc := mock.NewMockUserUseCase(ctrl)
+			ruc := mock.NewMockRoomUseCase(ctrl)
 			auc := mock.NewMockAuthUseCase(ctrl)
 
 			if tt.setup != nil {
 				tt.setup(uuc, auc)
 			}
 
-			handler := NewUserHandler(uuc, auc)
+			handler := NewUserHandler(uuc, ruc, auc)
 			recorder := httptest.NewRecorder()
 
 			r := chi.NewRouter()
