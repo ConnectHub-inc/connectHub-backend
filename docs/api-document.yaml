@@ -111,7 +111,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserGetResponse'
+                $ref: '#/components/schemas/GetUserResponse'
   /api/user/update:
     put:
       tags:
@@ -128,7 +128,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserUpdateRequest'
+              $ref: '#/components/schemas/UpdateUserRequest'
         required: true
       responses:
         200:
@@ -204,13 +204,7 @@ components:
         password:
           type: string
           description: ユーザのパスワード
-    AuthTokenResponse:
-      type: object
-      properties:
-        token:
-          type: string
-          description: 認証トークン
-    UserGetResponse:
+    GetUserResponse:
       type: object
       properties:
         id:
@@ -240,7 +234,7 @@ components:
               private:
                 type: boolean
                 description: プライベートルームかどうか
-    UserUpdateRequest:
+    UpdateUserRequest:
       type: object
       properties:
         name:
