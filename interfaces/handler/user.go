@@ -52,6 +52,10 @@ type LoginRequest struct {
 	Password string `json:"password"`
 }
 
+type GetUserResponse struct {
+	User entity.User `json:"user"`
+}
+
 type ListWorkspaceUsersResponse struct {
 	Users []entity.User `json:"users"`
 }
@@ -70,7 +74,7 @@ func (uh *userHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	if err = json.NewEncoder(w).Encode(user); err != nil {
+	if err = json.NewEncoder(w).Encode(GetUserResponse{User: *user}); err != nil {
 		log.Error("Failed to encode user to JSON", log.Ferror(err))
 		http.Error(w, "Failed to encode user to JSON", http.StatusInternalServerError)
 		w.WriteHeader(http.StatusInternalServerError)
