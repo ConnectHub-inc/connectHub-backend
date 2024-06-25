@@ -24,13 +24,15 @@ type UserHandler interface {
 }
 
 type userHandler struct {
-	uur usecase.UserUseCase
+	uuc usecase.UserUseCase
+	ruc usecase.RoomUseCase
 	auc usecase.AuthUseCase
 }
 
-func NewUserHandler(uur usecase.UserUseCase, auc usecase.AuthUseCase) UserHandler {
+func NewUserHandler(uuc usecase.UserUseCase, ruc usecase.RoomUseCase, auc usecase.AuthUseCase) UserHandler {
 	return &userHandler{
-		uur: uur,
+		uuc: uuc,
+		ruc: ruc,
 		auc: auc,
 	}
 }
@@ -53,7 +55,11 @@ type LoginRequest struct {
 }
 
 type GetUserResponse struct {
-	User entity.User `json:"user"`
+	ID              string        `json:"id"`
+	Name            string        `json:"name"`
+	Email           string        `json:"email"`
+	ProfileImageURL string        `json:"profile_image_url"`
+	Rooms           []entity.Room `json:"rooms"`
 }
 
 type ListWorkspaceUsersResponse struct {
@@ -66,6 +72,7 @@ type ListRoomUsersResponse struct {
 
 func (uh *userHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+	workspaceID := chi.URLParam(r, "workspace_id")
 	user, err := uh.auc.GetUserFromContext(ctx)
 	if err != nil {
 		log.Error("Failed to get UserInfo from context", log.Ferror(err))
@@ -73,8 +80,23 @@ func (uh *userHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	rooms, err := uh.ruc.ListUserWorkspaceRooms(ctx, user.ID, workspaceID)
+	if err != nil {
+		log.Error("Failed to list user workspace rooms", log.Fstring("userID", user.ID))
+		http.Error(w, "Failed to list user workspace rooms", http.StatusInternalServerError)
+		return
+	}
+
+	response := GetUserResponse{
+		ID:              user.ID,
+		Name:            user.Name,
+		Email:           user.Email,
+		ProfileImageURL: user.ProfileImageURL,
+		Rooms:           rooms,
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	if err = json.NewEncoder(w).Encode(GetUserResponse{User: *user}); err != nil {
+	if err = json.NewEncoder(w).Encode(response); err != nil {
 		log.Error("Failed to encode user to JSON", log.Ferror(err))
 		http.Error(w, "Failed to encode user to JSON", http.StatusInternalServerError)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -86,7 +108,7 @@ func (uh *userHandler) ListWorkspaceUsers(w http.ResponseWriter, r *http.Request
 	ctx := r.Context()
 
 	workspaceID := chi.URLParam(r, "workspace_id")
-	users, err := uh.uur.ListWorkspaceUsers(ctx, workspaceID)
+	users, err := uh.uuc.ListWorkspaceUsers(ctx, workspaceID)
 	if err != nil {
 		log.Error("Failed to list workspace users", log.Ferror(err))
 		http.Error(w, "Failed to list workspace users", http.StatusInternalServerError)
@@ -106,7 +128,7 @@ func (uh *userHandler) ListRoomUsers(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	channelID := chi.URLParam(r, "channel_id")
-	users, err := uh.uur.ListRoomUsers(ctx, channelID)
+	users, err := uh.uuc.ListRoomUsers(ctx, channelID)
 	if err != nil {
 		log.Error("Failed to list room users", log.Fstring("channelID", channelID), log.Ferror(err))
 		http.Error(w, "Failed to list room users", http.StatusInternalServerError)
@@ -133,7 +155,7 @@ func (uh *userHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	jwt, err := uh.uur.CreateUserAndGenerateToken(ctx, requestBody.Email, requestBody.Password)
+	jwt, err := uh.uuc.CreateUserAndGenerateToken(ctx, requestBody.Email, requestBody.Password)
 	if err != nil {
 		log.Error("Failed to create user and generate token", log.Fstring("email", requestBody.Email), log.Ferror(err))
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -175,7 +197,7 @@ func (uh *userHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	params := convertUpdateUserReqeuestToParams(requestBody)
-	if err = uh.uur.UpdateUser(ctx, params, *user); err != nil {
+	if err = uh.uuc.UpdateUser(ctx, params, *user); err != nil {
 		log.Error("Failed to update user", log.Ferror(err))
 		http.Error(w, "Failed to update user", http.StatusInternalServerError)
 		return
@@ -217,7 +239,7 @@ func (uh *userHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	jwt, err := uh.uur.LoginAndGenerateToken(ctx, requestBody.Email, requestBody.Password)
+	jwt, err := uh.uuc.LoginAndGenerateToken(ctx, requestBody.Email, requestBody.Password)
 	if err != nil {
 		log.Error("Failed to login or generate token", log.Fstring("email", requestBody.Email), log.Ferror(err))
 		http.Error(w, "Failed to Login or generate token", http.StatusInternalServerError)
@@ -250,7 +272,7 @@ func (uh *userHandler) Logout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err = uh.uur.LogoutUser(ctx, user.ID); err != nil {
+	if err = uh.uuc.LogoutUser(ctx, user.ID); err != nil {
 		log.Error("Failed to logout", log.Ferror(err))
 		http.Error(w, "Failed to logout", http.StatusInternalServerError)
 		return

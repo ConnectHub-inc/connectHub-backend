@@ -88,7 +88,7 @@ paths:
       responses:
         200:
           description: ログアウトが正常に完了しました。
-  /api/user/get:
+  /api/user/get/{workspace_id}:
     get:
       tags:
         - user
@@ -98,6 +98,13 @@ paths:
         トークンを含めたリクエストで受け取り、ユーザー情報を返します。
       security:
         - BearerAuth: []
+      parameters:
+        - name: workspace_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ワークスペースID
       responses:
         200:
           description: A successful response.
@@ -218,6 +225,21 @@ components:
         profile_image_url:
           type: string
           description: ユーザのプロフィール画像
+        rooms:
+          type: array
+          description: 参加しているルームの一覧
+          items:
+            type: object
+            properties:
+              roomID:
+                type: string
+                description: ルームID
+              roomName:
+                type: string
+                description: ルームの名前
+              private:
+                type: boolean
+                description: プライベートルームかどうか
     UserUpdateRequest:
       type: object
       properties:
