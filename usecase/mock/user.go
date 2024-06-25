@@ -52,6 +52,21 @@ func (mr *MockUserUseCaseMockRecorder) CreateUserAndGenerateToken(ctx, email, pa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUserAndGenerateToken", reflect.TypeOf((*MockUserUseCase)(nil).CreateUserAndGenerateToken), ctx, email, passward)
 }
 
+// ListRoomUsers mocks base method.
+func (m *MockUserUseCase) ListRoomUsers(ctx context.Context, channelID string) ([]entity.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListRoomUsers", ctx, channelID)
+	ret0, _ := ret[0].([]entity.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListRoomUsers indicates an expected call of ListRoomUsers.
+func (mr *MockUserUseCaseMockRecorder) ListRoomUsers(ctx, channelID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListRoomUsers", reflect.TypeOf((*MockUserUseCase)(nil).ListRoomUsers), ctx, channelID)
+}
+
 // ListWorkspaceUsers mocks base method.
 func (m *MockUserUseCase) ListWorkspaceUsers(ctx context.Context, workspaceID string) ([]entity.User, error) {
 	m.ctrl.T.Helper()

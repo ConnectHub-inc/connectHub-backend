@@ -149,6 +149,69 @@ func TestUserHandler_ListWorkspaceUsers(t *testing.T) {
 	}
 }
 
+func TestUserHandler_ListRoomUsers(t *testing.T) {
+	channelID := "f6db2530-cd9b-4ac1-8dc1-38c795e6eec2"
+	patterns := []struct {
+		name  string
+		setup func(
+			m *mock.MockUserUseCase,
+			m1 *mock.MockAuthUseCase,
+		)
+		in         func() *http.Request
+		wantStatus int
+	}{
+		{
+			name: "success",
+			setup: func(m *mock.MockUserUseCase, m1 *mock.MockAuthUseCase) {
+				m.EXPECT().ListRoomUsers(
+					gomock.Any(),
+					channelID,
+				).Return(
+					[]entity.User{
+						{
+							ID:              "f6db2530-cd9b-4ac1-8dc1-38c795e6cce2",
+							Name:            "test",
+							Email:           "test@gmail.com",
+							ProfileImageURL: "https://test.com",
+						},
+					},
+					nil,
+				)
+			},
+			in: func() *http.Request {
+				url := fmt.Sprintf("/api/rooms/%s/users", channelID)
+				req, _ := http.NewRequest(http.MethodGet, url, nil)
+				return req
+			},
+			wantStatus: http.StatusOK,
+		},
+	}
+
+	for _, tt := range patterns {
+		t.Run(tt.name, func(t *testing.T) {
+			tt := tt
+			ctrl := gomock.NewController(t)
+			uuc := mock.NewMockUserUseCase(ctrl)
+			auc := mock.NewMockAuthUseCase(ctrl)
+
+			if tt.setup != nil {
+				tt.setup(uuc, auc)
+			}
+
+			handler := NewUserHandler(uuc, auc)
+			recorder := httptest.NewRecorder()
+
+			r := chi.NewRouter()
+			r.Get("/api/rooms/{channel_id}/users", handler.ListRoomUsers)
+			r.ServeHTTP(recorder, tt.in())
+
+			if status := recorder.Code; status != tt.wantStatus {
+				t.Fatalf("handler returned wrong status code: got %v want %v", status, tt.wantStatus)
+			}
+		})
+	}
+}
+
 func TestUserHandler_CreateUser(t *testing.T) {
 	patterns := []struct {
 		name  string

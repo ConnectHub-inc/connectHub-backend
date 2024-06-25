@@ -84,6 +84,11 @@ func BuildContainer(ctx context.Context) (*dig.Container, error) {
 					r.Get("/{workspace_id}/users", userHandler.ListWorkspaceUsers)
 				})
 
+				r.Route("/rooms", func(r chi.Router) {
+					r.Use(authMiddleware.Authenticate)
+					r.Get("/{room_id}/users", userHandler.ListWorkspaceUsers)
+				})
+
 				r.Route("/user", func(r chi.Router) {
 					r.Post("/create", userHandler.CreateUser)
 					r.Post("/login", userHandler.Login)

@@ -29,6 +29,7 @@ INSERT INTO User_Workspaces (user_id, workspace_id) VALUES
 ('5fe0e23f-6b49-11ee-b686-0242c0a87001', '5fe0e237-6b49-11ee-b686-0242c0a87001'),
 ('5fe0e240-6b49-11ee-b686-0242c0a87001', '5fe0e238-6b49-11ee-b686-0242c0a87001');
 
+-- ユーザーとルームの関係データを挿入
 INSERT INTO User_Rooms (user_id, room_id) VALUES
 ('5fe0e23e-6b49-11ee-b686-0242c0a87001', '5fe0e239-6b49-11ee-b686-0242c0a87001'),
 ('5fe0e23f-6b49-11ee-b686-0242c0a87001', '5fe0e23a-6b49-11ee-b686-0242c0a87001'),
