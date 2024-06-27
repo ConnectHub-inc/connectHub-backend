@@ -21,6 +21,11 @@ func NewRoomRepository(db *sql.DB, dialect *goqu.DialectWrapper) repository.Room
 	}
 }
 
+func (rr *roomRepository) Create(ctx context.Context, room entity.Room) error {
+	// TODO: INSERT Rooms table and User_Rooms table
+	return nil
+}
+
 func (rr *roomRepository) ListUserWorkspaceRooms(ctx context.Context, userID, workspaceID string) ([]entity.Room, error) {
 	query := `
 	SELECT Rooms.id, Rooms.name, Rooms.description, Rooms.private

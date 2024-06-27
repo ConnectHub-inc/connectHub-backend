@@ -74,7 +74,7 @@ func (h *Hub) listenPubSubChannel(ctx context.Context) {
 	}
 }
 
-func (h *Hub) findRoomByID(id string) *Room {
+func (h *Hub) FindRoomByID(id string) *Room {
 	for room := range h.rooms {
 		if room.ID == id {
 			return room
@@ -83,9 +83,19 @@ func (h *Hub) findRoomByID(id string) *Room {
 	return nil
 }
 
-func (h *Hub) createRoom(name string, private bool) *Room {
+func (h *Hub) FindRoomByName(name string) *Room {
+	for room := range h.rooms {
+		if room.Name == name {
+			return room
+		}
+	}
+	return nil
+}
+
+func (h *Hub) CreateRoom(name string, private bool) *Room {
 	room := NewRoom(name, private, h.pubsubRepo, h.messageCacheRepo)
 
+	// TODO: User_Roomsテーブルについては？
 	if err := h.roomRepo.Create(context.Background(), entity.Room{
 		ID:      room.ID,
 		Name:    room.Name,
