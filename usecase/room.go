@@ -45,7 +45,11 @@ func (ruc *roomUseCase) CreateRoom(ctx context.Context, userID string, room enti
 
 		return nil
 	})
-	return err
+	if err != nil {
+		log.Error("Failed to create room", log.Fstring("roomID", room.ID))
+		return err
+	}
+	return nil
 }
 
 func (ruc *roomUseCase) ListUserWorkspaceRooms(ctx context.Context, userID, workspaceID string) ([]entity.Room, error) {
