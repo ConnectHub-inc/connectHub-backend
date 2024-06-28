@@ -15,7 +15,7 @@ import (
 )
 
 type base[T any] struct {
-	db        *sql.DB
+	db        SQLExecutor
 	dialect   *goqu.DialectWrapper
 	tableName string
 }
@@ -72,6 +72,10 @@ func (b *base[T]) structScanRows(rows *sql.Rows) ([]T, error) {
 }
 
 func (b *base[T]) List(ctx context.Context, qcs []repository.QueryCondition) ([]T, error) {
+	if tx := TxFromCtx(ctx); tx != nil {
+		b.db = tx
+	}
+
 	var whereClauses []goqu.Expression
 	for _, qc := range qcs {
 		whereClauses = append(whereClauses, goqu.C(qc.Field).Eq(qc.Value))
@@ -98,6 +102,10 @@ func (b *base[T]) List(ctx context.Context, qcs []repository.QueryCondition) ([]
 }
 
 func (b *base[T]) Get(ctx context.Context, id string) (*T, error) {
+	if tx := TxFromCtx(ctx); tx != nil {
+		b.db = tx
+	}
+
 	var entity T
 	query, _, err := b.dialect.From(b.tableName).Select("*").Where(goqu.C("id").Eq(id)).ToSQL()
 	if err != nil {
@@ -112,6 +120,10 @@ func (b *base[T]) Get(ctx context.Context, id string) (*T, error) {
 }
 
 func (b *base[T]) Create(ctx context.Context, entity T) error {
+	if tx := TxFromCtx(ctx); tx != nil {
+		b.db = tx
+	}
+
 	query, _, err := b.dialect.Insert(b.tableName).Rows(entity).ToSQL()
 	if err != nil {
 		log.Error("Failed to generate SQL query", log.Ferror(err))
@@ -126,6 +138,10 @@ func (b *base[T]) Create(ctx context.Context, entity T) error {
 }
 
 func (b *base[T]) BatchCreate(ctx context.Context, entities []T) error {
+	if tx := TxFromCtx(ctx); tx != nil {
+		b.db = tx
+	}
+
 	query, _, err := b.dialect.Insert(b.tableName).Rows(entities).ToSQL()
 	if err != nil {
 		log.Error("Failed to generate SQL query", log.Ferror(err))
@@ -140,6 +156,10 @@ func (b *base[T]) BatchCreate(ctx context.Context, entities []T) error {
 }
 
 func (b *base[T]) Update(ctx context.Context, id string, entity T) error {
+	if tx := TxFromCtx(ctx); tx != nil {
+		b.db = tx
+	}
+
 	query, _, err := b.dialect.Update(b.tableName).Set(entity).Where(goqu.C("id").Eq(id)).ToSQL()
 	if err != nil {
 		log.Error("Failed to generate SQL query", log.Ferror(err))
@@ -154,6 +174,10 @@ func (b *base[T]) Update(ctx context.Context, id string, entity T) error {
 }
 
 func (b *base[T]) Delete(ctx context.Context, id string) error {
+	if tx := TxFromCtx(ctx); tx != nil {
+		b.db = tx
+	}
+
 	query, _, err := b.dialect.Delete(b.tableName).Where(goqu.C("id").Eq(id)).ToSQL()
 	if err != nil {
 		log.Error("Failed to generate SQL query", log.Ferror(err))
@@ -168,6 +192,10 @@ func (b *base[T]) Delete(ctx context.Context, id string) error {
 }
 
 func (b *base[T]) CreateOrUpdate(ctx context.Context, id string, qcs []repository.QueryCondition, entity T) error {
+	if tx := TxFromCtx(ctx); tx != nil {
+		b.db = tx
+	}
+
 	// TODO: アンチパターン(CreateOrUpdateは現状使わないこと)
 	entities, err := b.List(ctx, qcs)
 	if err != nil {
