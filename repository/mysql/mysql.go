@@ -38,9 +38,13 @@ func (tr *transactionRepository) Transaction(ctx context.Context, fn func(ctx co
 
 	var done bool
 	defer func() {
+		ctx = context.WithValue(ctx, CtxTxKey(), nil)
 		if !done {
-			if err = tx.Rollback(); err != nil {
-				log.Error("Failed to rollback transaction", log.Ferror(err))
+			if rollbackErr := tx.Rollback(); rollbackErr != nil {
+				log.Error("Failed to rollback transaction: %v", rollbackErr)
+				if err == nil {
+					err = rollbackErr
+				}
 			}
 		}
 	}()

@@ -72,8 +72,9 @@ func (b *base[T]) structScanRows(rows *sql.Rows) ([]T, error) {
 }
 
 func (b *base[T]) List(ctx context.Context, qcs []repository.QueryCondition) ([]T, error) {
+	executor := b.db
 	if tx := TxFromCtx(ctx); tx != nil {
-		b.db = tx
+		executor = tx
 	}
 
 	var whereClauses []goqu.Expression
@@ -87,7 +88,7 @@ func (b *base[T]) List(ctx context.Context, qcs []repository.QueryCondition) ([]
 		return nil, err
 	}
 
-	rows, err := b.db.QueryContext(ctx, query)
+	rows, err := executor.QueryContext(ctx, query)
 	if err != nil {
 		log.Error("Failed to execute query", log.Ferror(err))
 		return nil, err
@@ -102,8 +103,9 @@ func (b *base[T]) List(ctx context.Context, qcs []repository.QueryCondition) ([]
 }
 
 func (b *base[T]) Get(ctx context.Context, id string) (*T, error) {
+	executor := b.db
 	if tx := TxFromCtx(ctx); tx != nil {
-		b.db = tx
+		executor = tx
 	}
 
 	var entity T
@@ -112,7 +114,7 @@ func (b *base[T]) Get(ctx context.Context, id string) (*T, error) {
 		log.Error("Failed to generate SQL query", log.Ferror(err))
 		return nil, err
 	}
-	row := b.db.QueryRowContext(ctx, query)
+	row := executor.QueryRowContext(ctx, query)
 	if err = b.structScanRow(&entity, row); err != nil {
 		return nil, err
 	}
@@ -120,8 +122,9 @@ func (b *base[T]) Get(ctx context.Context, id string) (*T, error) {
 }
 
 func (b *base[T]) Create(ctx context.Context, entity T) error {
+	executor := b.db
 	if tx := TxFromCtx(ctx); tx != nil {
-		b.db = tx
+		executor = tx
 	}
 
 	query, _, err := b.dialect.Insert(b.tableName).Rows(entity).ToSQL()
@@ -129,7 +132,7 @@ func (b *base[T]) Create(ctx context.Context, entity T) error {
 		log.Error("Failed to generate SQL query", log.Ferror(err))
 		return err
 	}
-	_, err = b.db.ExecContext(ctx, query)
+	_, err = executor.ExecContext(ctx, query)
 	if err != nil {
 		log.Error("Failed to execute query", log.Ferror(err))
 		return err
@@ -138,8 +141,9 @@ func (b *base[T]) Create(ctx context.Context, entity T) error {
 }
 
 func (b *base[T]) BatchCreate(ctx context.Context, entities []T) error {
+	executor := b.db
 	if tx := TxFromCtx(ctx); tx != nil {
-		b.db = tx
+		executor = tx
 	}
 
 	query, _, err := b.dialect.Insert(b.tableName).Rows(entities).ToSQL()
@@ -147,7 +151,7 @@ func (b *base[T]) BatchCreate(ctx context.Context, entities []T) error {
 		log.Error("Failed to generate SQL query", log.Ferror(err))
 		return err
 	}
-	_, err = b.db.ExecContext(ctx, query)
+	_, err = executor.ExecContext(ctx, query)
 	if err != nil {
 		log.Error("Failed to execute query", log.Ferror(err))
 		return err
@@ -156,8 +160,9 @@ func (b *base[T]) BatchCreate(ctx context.Context, entities []T) error {
 }
 
 func (b *base[T]) Update(ctx context.Context, id string, entity T) error {
+	executor := b.db
 	if tx := TxFromCtx(ctx); tx != nil {
-		b.db = tx
+		executor = tx
 	}
 
 	query, _, err := b.dialect.Update(b.tableName).Set(entity).Where(goqu.C("id").Eq(id)).ToSQL()
@@ -165,7 +170,7 @@ func (b *base[T]) Update(ctx context.Context, id string, entity T) error {
 		log.Error("Failed to generate SQL query", log.Ferror(err))
 		return err
 	}
-	_, err = b.db.ExecContext(ctx, query)
+	_, err = executor.ExecContext(ctx, query)
 	if err != nil {
 		log.Error("Failed to execute query", log.Ferror(err))
 		return err
@@ -174,8 +179,9 @@ func (b *base[T]) Update(ctx context.Context, id string, entity T) error {
 }
 
 func (b *base[T]) Delete(ctx context.Context, id string) error {
+	executor := b.db
 	if tx := TxFromCtx(ctx); tx != nil {
-		b.db = tx
+		executor = tx
 	}
 
 	query, _, err := b.dialect.Delete(b.tableName).Where(goqu.C("id").Eq(id)).ToSQL()
@@ -183,7 +189,7 @@ func (b *base[T]) Delete(ctx context.Context, id string) error {
 		log.Error("Failed to generate SQL query", log.Ferror(err))
 		return err
 	}
-	_, err = b.db.ExecContext(ctx, query)
+	_, err = executor.ExecContext(ctx, query)
 	if err != nil {
 		log.Error("Failed to execute query", log.Ferror(err))
 		return err
