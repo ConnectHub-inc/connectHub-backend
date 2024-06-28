@@ -164,11 +164,11 @@ func (client *Client) handleNewMessage(jsonMessage []byte) {
 	switch message.Action {
 	case config.ListMessagesAction:
 		client.handleListMessages(message)
-	case config.SendMessageAction:
+	case config.CreateMessageAction:
 		client.handleCreateMessage(message)
 	case config.DeleteMessageAction:
 		client.handleDeleteMessage(message)
-	case config.EditMessageAction:
+	case config.UpdateMessageAction:
 		client.handleUpdateMessage(message)
 	case config.CreateRoomAction:
 		client.handleCreateRoomMessage(message)

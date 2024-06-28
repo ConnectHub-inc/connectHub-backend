@@ -74,7 +74,7 @@ func (room *Room) unregisterClientInRoom(client *Client) {
 
 func (room *Room) notifyClientJoined(client *Client) {
 	message := &entity.WSMessage{
-		Action: config.SendMessageAction,
+		Action: config.CreateMessageAction,
 		Content: entity.Message{
 			ID:        uuid.New().String(),
 			UserID:    client.ID,
