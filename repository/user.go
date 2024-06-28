@@ -26,3 +26,11 @@ type UserCacheRepository interface {
 	Exists(ctx context.Context, key string) bool
 	Scan(ctx context.Context, match string) ([]string, error)
 }
+
+type UserRoomRepository interface {
+	List(ctx context.Context, qcs []QueryCondition) ([]entity.UserRoom, error)
+	Get(ctx context.Context, id string) (*entity.UserRoom, error)
+	Create(ctx context.Context, userRoom entity.UserRoom) error
+	Update(ctx context.Context, id string, userRoom entity.UserRoom) error
+	Delete(ctx context.Context, id string) error
+}

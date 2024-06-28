@@ -22,3 +22,8 @@ func NewUser(name, email, password, profileImageURL string, isAdmin bool) *User 
 		IsAdmin:         isAdmin,
 	}
 }
+
+type UserRoom struct {
+	UserID string `json:"user_id" db:"user_id"`
+	RoomID string `json:"room_id" db:"room_id"`
+}
