@@ -67,12 +67,14 @@ func TestRoomUseCase_ListUserWorkspaceRooms(t *testing.T) {
 			tt := tt
 			ctrl := gomock.NewController(t)
 			rr := mock.NewMockRoomRepository(ctrl)
+			urr := mock.NewMockUserRoomRepository(ctrl)
+			tr := mock.NewMockTransactionRepository(ctrl)
 
 			if tt.setup != nil {
 				tt.setup(rr)
 			}
 
-			usecase := NewRoomUseCase(rr)
+			usecase := NewRoomUseCase(rr, urr, tr)
 			getRooms, err := usecase.ListUserWorkspaceRooms(tt.arg.ctx, tt.arg.userID, tt.arg.workspaceID)
 
 			if (err != nil) != (tt.wantErr != nil) {

@@ -7,6 +7,7 @@ import (
 	"github.com/tusmasoma/connectHub-backend/entity"
 	"github.com/tusmasoma/connectHub-backend/internal/log"
 	"github.com/tusmasoma/connectHub-backend/repository"
+	"github.com/tusmasoma/connectHub-backend/usecase"
 )
 
 type Hub struct {
@@ -15,8 +16,8 @@ type Hub struct {
 	Register         chan *Client
 	unregister       chan *Client
 	broadcast        chan []byte
+	roomUseCase      usecase.RoomUseCase
 	pubsubRepo       repository.PubSubRepository
-	roomRepo         repository.RoomRepository
 	messageCacheRepo repository.MessageCacheRepository
 }
 
@@ -92,16 +93,15 @@ func (h *Hub) FindRoomByName(name string) *Room {
 	return nil
 }
 
-func (h *Hub) CreateRoom(name string, private bool) *Room {
-	room := NewRoom(name, private, h.pubsubRepo, h.messageCacheRepo)
+func (h *Hub) CreateRoom(userID, roomName string, roomPrivate bool) *Room {
+	room := NewRoom(roomName, roomPrivate, h.pubsubRepo, h.messageCacheRepo)
 
-	// TODO: User_Roomsテーブルについては？
-	if err := h.roomRepo.Create(context.Background(), entity.Room{
+	if err := h.roomUseCase.CreateRoom(context.Background(), userID, entity.Room{
 		ID:      room.ID,
 		Name:    room.Name,
 		Private: room.Private,
 	}); err != nil {
-		log.Error("Failed to create room", log.Fstring("name", name))
+		log.Error("Failed to create room", log.Fstring("name", roomName))
 		return nil
 	}
 

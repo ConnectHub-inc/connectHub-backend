@@ -254,7 +254,7 @@ func (client *Client) handleCreatePublicRoom(message entity.WSMessage) {
 		return
 	}
 
-	room = client.hub.CreateRoom(roomName, false)
+	room = client.hub.CreateRoom(client.UserID, roomName, false)
 	if room == nil {
 		log.Error("Failed to create room", log.Fstring("roomName", roomName))
 		return
