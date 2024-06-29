@@ -36,7 +36,7 @@ INSERT INTO User_Rooms (user_id, room_id) VALUES
 ('5fe0e240-6b49-11ee-b686-0242c0a87001', '5fe0e23b-6b49-11ee-b686-0242c0a87001');
 
 -- メッセージデータを挿入
-INSERT INTO Messages (id, user_id, room_id, action_tag_id, content, created_at, updated_at) VALUES
+INSERT INTO Messages (id, user_id, room_id, action_tag_id, text, created_at, updated_at) VALUES
 ('5fe0e241-6b49-11ee-b686-0242c0a87001', '5fe0e23e-6b49-11ee-b686-0242c0a87001', '5fe0e239-6b49-11ee-b686-0242c0a87001', '5fe0e23c-6b49-11ee-b686-0242c0a87001', 'Hello from user 1 in room 1', '2023-01-01 10:00:00', '2023-01-01 10:00:00'),
 ('5fe0e242-6b49-11ee-b686-0242c0a87001', '5fe0e23f-6b49-11ee-b686-0242c0a87001', '5fe0e23a-6b49-11ee-b686-0242c0a87001', '5fe0e23d-6b49-11ee-b686-0242c0a87001', 'Hello from user 2 in room 2', '2023-01-01 11:00:00', '2023-01-01 11:00:00'),
 ('5fe0e243-6b49-11ee-b686-0242c0a87001', '5fe0e240-6b49-11ee-b686-0242c0a87001', '5fe0e23b-6b49-11ee-b686-0242c0a87001', '5fe0e23c-6b49-11ee-b686-0242c0a87001', 'Hello from user 3 in room 3', '2023-01-01 12:00:00', '2023-01-01 12:00:00');

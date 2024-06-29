@@ -46,6 +46,7 @@ func BuildContainer(ctx context.Context) (*dig.Container, error) {
 		usecase.NewUserUseCase,
 		usecase.NewMessageUseCase,
 		usecase.NewRoomUseCase,
+		usecase.NewUserRoomUseCase,
 		usecase.NewAuthUseCase,
 		handler.NewWebsocketHandler,
 		handler.NewUserHandler,

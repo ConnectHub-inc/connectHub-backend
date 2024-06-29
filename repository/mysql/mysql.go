@@ -9,7 +9,71 @@ import (
 
 	"github.com/tusmasoma/connectHub-backend/config"
 	"github.com/tusmasoma/connectHub-backend/internal/log"
+	"github.com/tusmasoma/connectHub-backend/repository"
 )
+
+type SQLExecutor interface {
+	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
+	QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
+	QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row
+}
+
+type transactionRepository struct {
+	db *sql.DB
+}
+
+func NewTransactionRepository(db *sql.DB) repository.TransactionRepository {
+	return &transactionRepository{
+		db: db,
+	}
+}
+
+func (tr *transactionRepository) Transaction(ctx context.Context, fn func(ctx context.Context) error) error {
+	tx, err := tr.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
+	if err != nil {
+		return err
+	}
+
+	ctx = context.WithValue(ctx, CtxTxKey(), tx)
+
+	var done bool
+	defer func() {
+		ctx = context.WithValue(ctx, CtxTxKey(), nil)
+		if !done {
+			if rollbackErr := tx.Rollback(); rollbackErr != nil {
+				log.Error("Failed to rollback transaction: %v", rollbackErr)
+				if err == nil {
+					err = rollbackErr
+				}
+			}
+		}
+	}()
+
+	if err = fn(ctx); err != nil {
+		return err
+	}
+
+	done = true
+	if err = tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type TxKey string
+
+func CtxTxKey() TxKey {
+	return "tx"
+}
+
+func TxFromCtx(ctx context.Context) *sql.Tx {
+	tx, ok := ctx.Value(CtxTxKey()).(*sql.Tx)
+	if !ok {
+		return nil
+	}
+	return tx
+}
 
 func NewMySQLDB() (*sql.DB, error) {
 	ctx := context.Background()

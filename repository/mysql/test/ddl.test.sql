@@ -51,7 +51,8 @@ CREATE TABLE Users (
     name VARCHAR(50) NOT NULL,
     email VARCHAR(150) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,  -- 暗号化されたパスワードを格納
-    profile_image_url VARCHAR(255) NOT NULL
+    profile_image_url VARCHAR(255) NOT NULL,
+    is_admin BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE User_Workspaces (
@@ -75,7 +76,7 @@ CREATE TABLE Messages (
     user_id CHAR(36) NOT NULL,
     room_id CHAR(36) NOT NULL,
     action_tag_id  CHAR(36) NOT NULL,
-    content TEXT NOT NULL,
+    text TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE,

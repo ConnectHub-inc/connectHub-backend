@@ -3,8 +3,10 @@ package ws
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 
 	"github.com/tusmasoma/connectHub-backend/config"
@@ -17,32 +19,37 @@ import (
 var newline = []byte{'\n'}
 
 type Client struct {
-	ID    string
-	Name  string
-	conn  *websocket.Conn
-	hub   *Hub
-	rooms map[*Room]bool
-	send  chan []byte
-	psr   repository.PubSubRepository
-	muc   usecase.MessageUseCase
+	ID     string
+	UserID string
+	Name   string
+	conn   *websocket.Conn
+	hub    *Hub
+	rooms  map[*Room]bool
+	send   chan []byte
+	psr    repository.PubSubRepository
+	muc    usecase.MessageUseCase
+	uruc   usecase.UserRoomUseCase
 }
 
 func NewClient(
-	id string,
+	userID string,
 	name string,
 	conn *websocket.Conn,
 	hub *Hub,
 	psr repository.PubSubRepository,
 	muc usecase.MessageUseCase,
+	uruc usecase.UserRoomUseCase,
 ) *Client {
 	return &Client{
-		ID:   id,
-		Name: name,
-		conn: conn,
-		hub:  hub,
-		send: make(chan []byte, config.ChannelBufferSize),
-		psr:  psr,
-		muc:  muc,
+		ID:     uuid.New().String(),
+		UserID: userID,
+		Name:   name,
+		conn:   conn,
+		hub:    hub,
+		send:   make(chan []byte, config.ChannelBufferSize),
+		psr:    psr,
+		muc:    muc,
+		uruc:   uruc,
 	}
 }
 
@@ -170,8 +177,12 @@ func (client *Client) handleNewMessage(jsonMessage []byte) {
 		client.handleDeleteMessage(message)
 	case config.UpdateMessageAction:
 		client.handleUpdateMessage(message)
-	case config.CreateRoomAction:
-		client.handleCreateRoomMessage(message)
+	case config.CreatePublicRoomAction:
+		client.handleCreatePublicRoom(message)
+	case config.JoinPublicRoomAction:
+		client.handleJoinPublicRoom(message)
+	case config.LeavePublicRoomAction:
+		client.handleLeavePublicRoom(message)
 	default:
 		log.Warn("Unknown message action", log.Fstring("action", message.Action))
 	}
@@ -203,7 +214,7 @@ func (client *Client) handleCreateMessage(message entity.WSMessage) {
 		return
 	}
 
-	if room := client.hub.findRoomByID(roomID); room != nil {
+	if room := client.hub.FindRoomByID(roomID); room != nil {
 		log.Info("Broadcasting message", log.Fstring("roomID", roomID), log.Fstring("messageID", message.Content.ID))
 		room.broadcast <- &message
 	} else {
@@ -219,7 +230,7 @@ func (client *Client) handleDeleteMessage(message entity.WSMessage) {
 		return
 	}
 
-	if room := client.hub.findRoomByID(roomID); room != nil {
+	if room := client.hub.FindRoomByID(roomID); room != nil {
 		log.Info("Broadcasting message", log.Fstring("roomID", roomID), log.Fstring("messageID", message.Content.ID))
 		room.broadcast <- &message
 	} else {
@@ -234,7 +245,7 @@ func (client *Client) handleUpdateMessage(message entity.WSMessage) {
 	}
 
 	roomID := message.TargetID
-	if room := client.hub.findRoomByID(roomID); room != nil {
+	if room := client.hub.FindRoomByID(roomID); room != nil {
 		log.Info("Broadcasting message", log.Fstring("roomID", roomID), log.Fstring("messageID", message.Content.ID))
 		room.broadcast <- &message
 	} else {
@@ -242,18 +253,114 @@ func (client *Client) handleUpdateMessage(message entity.WSMessage) {
 	}
 }
 
-func (client *Client) handleCreateRoomMessage(message entity.WSMessage) {
+func (client *Client) handleCreatePublicRoom(message entity.WSMessage) {
 	roomName := message.Content.Text
-	room := client.hub.createRoom(roomName, false)
+	room := client.hub.FindRoomByName(roomName)
+	if room != nil {
+		log.Warn("Room already exists", log.Fstring("roomName", roomName))
+		return
+	}
+
+	room = client.hub.CreateRoom(client.UserID, roomName, false)
 	if room == nil {
 		log.Error("Failed to create room", log.Fstring("roomName", roomName))
 		return
 	}
 
-	if !client.isInRoom(room) {
-		client.rooms[room] = true
-		room.register <- client
-		log.Info("Client registered to room", log.Fstring("clientID", client.ID), log.Fstring("roomID", room.ID))
+	for c := range client.hub.clients {
+		if c.UserID == client.UserID {
+			if !c.isInRoom(room) {
+				c.rooms[room] = true
+				room.register <- c
+				log.Info("Client registered to room", log.Fstring("clientID", c.ID), log.Fstring("roomID", room.ID))
+			}
+		}
+	}
+
+	room.broadcast <- &entity.WSMessage{
+		Action:   config.CreatePublicRoomAction,
+		TargetID: room.ID,
+		SenderID: client.ID,
+		Content: entity.Message{
+			ID:        uuid.New().String(),
+			UserID:    client.UserID,
+			Text:      room.Name,
+			CreatedAt: time.Now(),
+		},
+	}
+}
+
+func (client *Client) handleJoinPublicRoom(message entity.WSMessage) {
+	ctx := context.Background()
+	roomID := message.TargetID
+	room := client.hub.FindRoomByID(roomID)
+	if room == nil {
+		log.Warn("Room not found", log.Fstring("roomID", roomID))
+		return
+	}
+
+	if err := client.uruc.CreateUserRoom(ctx, client.UserID, roomID); err != nil {
+		log.Error("Failed to create user room", log.Fstring("userID", client.UserID), log.Fstring("roomID", roomID))
+		return
+	}
+
+	for c := range client.hub.clients {
+		if c.UserID == client.UserID {
+			if !c.isInRoom(room) {
+				c.rooms[room] = true
+				room.register <- c
+				log.Info("Client registered to room", log.Fstring("clientID", c.ID), log.Fstring("roomID", room.ID))
+			}
+		}
+	}
+
+	room.broadcast <- &entity.WSMessage{
+		Action:   config.JoinPublicRoomAction,
+		TargetID: room.ID,
+		SenderID: client.ID,
+		Content: entity.Message{
+			ID:        uuid.New().String(),
+			UserID:    client.UserID,
+			Text:      fmt.Sprintf(config.WelcomeMessage, client.Name),
+			CreatedAt: time.Now(),
+		},
+	}
+}
+
+func (client *Client) handleLeavePublicRoom(message entity.WSMessage) {
+	ctx := context.Background()
+	roomID := message.TargetID
+	room := client.hub.FindRoomByID(roomID)
+	if room == nil {
+		log.Warn("Room not found", log.Fstring("roomID", roomID))
+		return
+	}
+
+	if err := client.uruc.DeleteUserRoom(ctx, client.UserID, roomID); err != nil {
+		log.Error("Failed to delete user room", log.Fstring("userID", client.UserID), log.Fstring("roomID", roomID))
+		return
+	}
+
+	for c := range client.hub.clients {
+		if c.UserID == client.UserID {
+			if !c.isInRoom(room) {
+				delete(c.rooms, room)
+				room.unregister <- c
+				log.Info("Client unregistered from room", log.Fstring("clientID", client.ID), log.Fstring("roomID", room.ID))
+			}
+		}
+	}
+
+	room.broadcast <- &entity.WSMessage{
+		Action:   config.LeavePublicRoomAction,
+		TargetID: room.ID,
+		SenderID: client.ID,
+		Content: entity.Message{
+			ID:        uuid.New().String(),
+			UserID:    client.UserID,
+			Text:      fmt.Sprintf(config.GoodbyeMessage, client.Name),
+			CreatedAt: time.Now(),
+		},
 	}
 }
 

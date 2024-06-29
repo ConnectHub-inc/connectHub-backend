@@ -1,12 +1,75 @@
 package mysql
 
 import (
+	"context"
 	"database/sql"
+	"fmt"
 	"testing"
+	"time"
 
+	"github.com/doug-martin/goqu/v9"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func Test_Transaction(t *testing.T) {
+	dialect := goqu.Dialect("mysql")
+	ctx := context.Background()
+	userID := uuid.NewString()
+	items := []Item{
+		{ID: uuid.NewString(), UserID: userID, Text: "bar", Count: 1, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+		{ID: uuid.NewString(), UserID: "bat", Text: "baz", Count: 2, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+		{ID: uuid.NewString(), UserID: "qux", Text: "quux", Count: 3, CreatedAt: time.Now(), UpdatedAt: time.Now()},
+	}
+	repo := newBase[Item](db, &dialect, "TestItems")
+
+	patterns := []struct {
+		name        string
+		fn          func(ctx context.Context) error
+		item        Item
+		wantTXError error
+		wantError   error
+	}{
+		{
+			name: "default",
+			fn: func(ctx context.Context) error {
+				err := repo.Create(ctx, items[0])
+				return err
+			},
+			item:        items[0],
+			wantTXError: nil,
+			wantError:   nil,
+		},
+		{
+			name: "rollback",
+			fn: func(ctx context.Context) error {
+				err := repo.Create(ctx, items[1])
+				if err != nil {
+					return err
+				}
+				// force error to trigger rollback
+				return fmt.Errorf("forced error to trigger rollback")
+			},
+			item:        items[1],
+			wantTXError: fmt.Errorf("forced error to trigger rollback"),
+			wantError:   sql.ErrNoRows,
+		},
+	}
+
+	for _, tt := range patterns {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			trepo := NewTransactionRepository(db)
+
+			err := trepo.Transaction(ctx, tt.fn)
+			ValidateErr(t, err, tt.wantTXError)
+
+			_, err = repo.Get(ctx, tt.item.ID)
+			ValidateErr(t, err, tt.wantError)
+		})
+	}
+}
 
 func Test_NewMySQLDB(t *testing.T) {
 	patterns := []struct {

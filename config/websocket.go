@@ -31,9 +31,11 @@ const (
 )
 
 const (
-	ListMessagesAction  = "LIST_MESSAGES"
-	CreateMessageAction = "CREATE_MESSAGE"
-	DeleteMessageAction = "DELETE_MESSAGE"
-	UpdateMessageAction = "UPDATE_MESSAGE"
-	CreateRoomAction    = "CREATE_ROOM"
+	ListMessagesAction     = "LIST_MESSAGES"
+	CreateMessageAction    = "CREATE_MESSAGE"
+	DeleteMessageAction    = "DELETE_MESSAGE"
+	UpdateMessageAction    = "UPDATE_MESSAGE"
+	CreatePublicRoomAction = "CREATE_PUBLIC_ROOM"
+	JoinPublicRoomAction   = "JOIN_PUBLIC_ROOM"
+	LeavePublicRoomAction  = "LEAVE_PUBLIC_ROOM"
 )
