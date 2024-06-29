@@ -10,10 +10,11 @@ type Room struct {
 	Private     bool   `json:"private" db:"private"`
 }
 
-func NewRoom(name string, description string, private bool) Room {
+func NewRoom(workspaceID, name, description string, private bool) Room {
 	// TODO: validate
 	return Room{
 		ID:          uuid.New().String(),
+		WorkspaceID: workspaceID,
 		Name:        name,
 		Description: description,
 		Private:     private,

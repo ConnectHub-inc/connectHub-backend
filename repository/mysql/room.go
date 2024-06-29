@@ -23,7 +23,7 @@ func NewRoomRepository(db *sql.DB, dialect *goqu.DialectWrapper) repository.Room
 
 func (rr *roomRepository) ListUserWorkspaceRooms(ctx context.Context, userID, workspaceID string) ([]entity.Room, error) {
 	query := `
-	SELECT Rooms.id, Rooms.name, Rooms.description, Rooms.private
+	SELECT Rooms.id, Rooms.workspace_id, Rooms.name, Rooms.description, Rooms.private
 	FROM Rooms
 	JOIN Workspaces ON Rooms.workspace_id = Workspaces.id
 	JOIN User_Workspaces ON Workspaces.id = User_Workspaces.workspace_id
@@ -45,6 +45,7 @@ func (rr *roomRepository) ListUserWorkspaceRooms(ctx context.Context, userID, wo
 		var room entity.Room
 		err = rows.Scan(
 			&room.ID,
+			&room.WorkspaceID,
 			&room.Name,
 			&room.Description,
 			&room.Private,

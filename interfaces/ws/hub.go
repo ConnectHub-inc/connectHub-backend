@@ -3,6 +3,8 @@ package ws
 import (
 	"context"
 
+	"github.com/google/uuid"
+
 	"github.com/tusmasoma/connectHub-backend/config"
 	"github.com/tusmasoma/connectHub-backend/entity"
 	"github.com/tusmasoma/connectHub-backend/internal/log"
@@ -11,6 +13,7 @@ import (
 )
 
 type Hub struct {
+	ID               string
 	clients          map[*Client]bool
 	rooms            map[*Room]bool
 	Register         chan *Client
@@ -24,7 +27,9 @@ type Hub struct {
 // NewWebsocketServer creates a new Hub type
 func NewHub(pubsubRepo repository.PubSubRepository) *Hub {
 	return &Hub{
+		ID:         uuid.New().String(),
 		clients:    make(map[*Client]bool),
+		rooms:      make(map[*Room]bool),
 		Register:   make(chan *Client),
 		unregister: make(chan *Client),
 		broadcast:  make(chan []byte),
@@ -97,9 +102,10 @@ func (h *Hub) CreateRoom(userID, roomName string, roomPrivate bool) *Room {
 	room := NewRoom(roomName, roomPrivate, h.pubsubRepo, h.messageCacheRepo)
 
 	if err := h.roomUseCase.CreateRoom(context.Background(), userID, entity.Room{
-		ID:      room.ID,
-		Name:    room.Name,
-		Private: room.Private,
+		ID:          room.ID,
+		WorkspaceID: h.ID,
+		Name:        room.Name,
+		Private:     room.Private,
 	}); err != nil {
 		log.Error("Failed to create room", log.Fstring("name", roomName))
 		return nil
