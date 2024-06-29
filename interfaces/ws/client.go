@@ -3,7 +3,6 @@ package ws
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -277,7 +276,7 @@ func (client *Client) handleCreatePublicRoom(message entity.WSMessage) {
 		Content: entity.Message{
 			ID:        uuid.New().String(),
 			UserID:    client.UserID,
-			Text:      fmt.Sprintf(config.WelcomeMessage, client.Name),
+			Text:      room.Name,
 			CreatedAt: time.Now(),
 		},
 	}
