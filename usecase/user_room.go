@@ -25,10 +25,9 @@ func NewUserRoomUseCase(urr repository.UserRoomRepository) UserRoomUseCase {
 }
 
 func (uruc *userRoomUseCase) CreateUserRoom(ctx context.Context, userID, roomID string) error {
-	if err := uruc.urr.Create(ctx, entity.UserRoom{
-		UserID: userID,
-		RoomID: roomID,
-	}); err != nil {
+	userRoom := entity.NewUserRoom(userID, roomID)
+
+	if err := uruc.urr.Create(ctx, userRoom); err != nil {
 		log.Error("Failed to create user room", log.Fstring("userID", userID), log.Fstring("roomID", roomID))
 		return err
 	}

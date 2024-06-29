@@ -35,10 +35,8 @@ func (ruc *roomUseCase) CreateRoom(ctx context.Context, userID string, room enti
 			return err
 		}
 
-		if err := ruc.urr.Create(ctx, entity.UserRoom{
-			UserID: userID,
-			RoomID: room.ID,
-		}); err != nil {
+		userRoom := entity.NewUserRoom(userID, room.ID)
+		if err := ruc.urr.Create(ctx, userRoom); err != nil {
 			log.Error("Failed to create user room", log.Fstring("userID", userID), log.Fstring("roomID", room.ID))
 			return err
 		}

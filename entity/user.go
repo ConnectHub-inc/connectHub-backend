@@ -11,9 +11,9 @@ type User struct {
 	IsAdmin         bool   `json:"is_admin" db:"is_admin"`
 }
 
-func NewUser(name, email, password, profileImageURL string, isAdmin bool) *User {
+func NewUser(name, email, password, profileImageURL string, isAdmin bool) User {
 	// TODO: validation
-	return &User{
+	return User{
 		ID:              uuid.New().String(),
 		Name:            name,
 		Email:           email,
@@ -21,9 +21,4 @@ func NewUser(name, email, password, profileImageURL string, isAdmin bool) *User 
 		ProfileImageURL: profileImageURL,
 		IsAdmin:         isAdmin,
 	}
-}
-
-type UserRoom struct {
-	UserID string `json:"user_id" db:"user_id"`
-	RoomID string `json:"room_id" db:"room_id"`
 }

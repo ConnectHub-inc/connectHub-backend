@@ -10,9 +10,9 @@ type Room struct {
 	Private     bool   `json:"private" db:"private"`
 }
 
-func NewRoom(name string, description string, private bool) *Room {
+func NewRoom(name string, description string, private bool) Room {
 	// TODO: validate
-	return &Room{
+	return Room{
 		ID:          uuid.New().String(),
 		Name:        name,
 		Description: description,
