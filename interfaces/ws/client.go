@@ -3,6 +3,7 @@ package ws
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -27,6 +28,7 @@ type Client struct {
 	send   chan []byte
 	psr    repository.PubSubRepository
 	muc    usecase.MessageUseCase
+	uruc   usecase.UserRoomUseCase
 }
 
 func NewClient(
@@ -36,6 +38,7 @@ func NewClient(
 	hub *Hub,
 	psr repository.PubSubRepository,
 	muc usecase.MessageUseCase,
+	uruc usecase.UserRoomUseCase,
 ) *Client {
 	return &Client{
 		ID:     uuid.New().String(),
@@ -46,6 +49,7 @@ func NewClient(
 		send:   make(chan []byte, config.ChannelBufferSize),
 		psr:    psr,
 		muc:    muc,
+		uruc:   uruc,
 	}
 }
 
@@ -175,6 +179,8 @@ func (client *Client) handleNewMessage(jsonMessage []byte) {
 		client.handleUpdateMessage(message)
 	case config.CreatePublicRoomAction:
 		client.handleCreatePublicRoom(message)
+	case config.JoinPublicRoomAction:
+		client.handleJoinPublicRoom(message)
 	default:
 		log.Warn("Unknown message action", log.Fstring("action", message.Action))
 	}
@@ -277,6 +283,43 @@ func (client *Client) handleCreatePublicRoom(message entity.WSMessage) {
 			ID:        uuid.New().String(),
 			UserID:    client.UserID,
 			Text:      room.Name,
+			CreatedAt: time.Now(),
+		},
+	}
+}
+
+func (client *Client) handleJoinPublicRoom(message entity.WSMessage) {
+	ctx := context.Background()
+	roomID := message.TargetID
+	room := client.hub.FindRoomByID(roomID)
+	if room == nil {
+		log.Warn("Room not found", log.Fstring("roomID", roomID))
+		return
+	}
+
+	if err := client.uruc.CreateUserRoom(ctx, client.UserID, roomID); err != nil {
+		log.Error("Failed to create user room", log.Fstring("userID", client.UserID), log.Fstring("roomID", roomID))
+		return
+	}
+
+	for c := range client.hub.clients {
+		if c.UserID == client.UserID {
+			if !c.isInRoom(room) {
+				c.rooms[room] = true
+				room.register <- c
+				log.Info("Client registered to room", log.Fstring("clientID", c.ID), log.Fstring("roomID", room.ID))
+			}
+		}
+	}
+
+	room.broadcast <- &entity.WSMessage{
+		Action:   config.JoinPublicRoomAction,
+		TargetID: room.ID,
+		SenderID: client.ID,
+		Content: entity.Message{
+			ID:        uuid.New().String(),
+			UserID:    client.UserID,
+			Text:      fmt.Sprintf(config.WelcomeMessage, client.Name),
 			CreatedAt: time.Now(),
 		},
 	}
