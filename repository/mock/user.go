@@ -301,32 +301,32 @@ func (mr *MockUserRoomRepositoryMockRecorder) Create(ctx, userRoom interface{}) 
 }
 
 // Delete mocks base method.
-func (m *MockUserRoomRepository) Delete(ctx context.Context, id string) error {
+func (m *MockUserRoomRepository) Delete(ctx context.Context, userID, roomID string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", ctx, id)
+	ret := m.ctrl.Call(m, "Delete", ctx, userID, roomID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Delete indicates an expected call of Delete.
-func (mr *MockUserRoomRepositoryMockRecorder) Delete(ctx, id interface{}) *gomock.Call {
+func (mr *MockUserRoomRepositoryMockRecorder) Delete(ctx, userID, roomID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockUserRoomRepository)(nil).Delete), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockUserRoomRepository)(nil).Delete), ctx, userID, roomID)
 }
 
 // Get mocks base method.
-func (m *MockUserRoomRepository) Get(ctx context.Context, id string) (*entity.UserRoom, error) {
+func (m *MockUserRoomRepository) Get(ctx context.Context, userID, roomID string) (*entity.UserRoom, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Get", ctx, id)
+	ret := m.ctrl.Call(m, "Get", ctx, userID, roomID)
 	ret0, _ := ret[0].(*entity.UserRoom)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Get indicates an expected call of Get.
-func (mr *MockUserRoomRepositoryMockRecorder) Get(ctx, id interface{}) *gomock.Call {
+func (mr *MockUserRoomRepositoryMockRecorder) Get(ctx, userID, roomID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockUserRoomRepository)(nil).Get), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockUserRoomRepository)(nil).Get), ctx, userID, roomID)
 }
 
 // List mocks base method.

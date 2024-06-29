@@ -37,4 +37,5 @@ const (
 	UpdateMessageAction    = "UPDATE_MESSAGE"
 	CreatePublicRoomAction = "CREATE_PUBLIC_ROOM"
 	JoinPublicRoomAction   = "JOIN_PUBLIC_ROOM"
+	LeavePublicRoomAction  = "LEAVE_PUBLIC_ROOM"
 )

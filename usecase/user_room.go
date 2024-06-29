@@ -11,6 +11,7 @@ import (
 
 type UserRoomUseCase interface {
 	CreateUserRoom(ctx context.Context, userID, roomID string) error
+	DeleteUserRoom(ctx context.Context, userID, roomID string) error
 }
 
 type userRoomUseCase struct {
@@ -29,6 +30,14 @@ func (uruc *userRoomUseCase) CreateUserRoom(ctx context.Context, userID, roomID 
 		RoomID: roomID,
 	}); err != nil {
 		log.Error("Failed to create user room", log.Fstring("userID", userID), log.Fstring("roomID", roomID))
+		return err
+	}
+	return nil
+}
+
+func (uruc *userRoomUseCase) DeleteUserRoom(ctx context.Context, userID, roomID string) error {
+	if err := uruc.urr.Delete(ctx, userID, roomID); err != nil {
+		log.Error("Failed to delete user room", log.Fstring("userID", userID), log.Fstring("roomID", roomID))
 		return err
 	}
 	return nil

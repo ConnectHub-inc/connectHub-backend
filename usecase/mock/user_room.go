@@ -47,3 +47,17 @@ func (mr *MockUserRoomUseCaseMockRecorder) CreateUserRoom(ctx, userID, roomID in
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUserRoom", reflect.TypeOf((*MockUserRoomUseCase)(nil).CreateUserRoom), ctx, userID, roomID)
 }
+
+// DeleteUserRoom mocks base method.
+func (m *MockUserRoomUseCase) DeleteUserRoom(ctx context.Context, userID, roomID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteUserRoom", ctx, userID, roomID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteUserRoom indicates an expected call of DeleteUserRoom.
+func (mr *MockUserRoomUseCaseMockRecorder) DeleteUserRoom(ctx, userID, roomID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUserRoom", reflect.TypeOf((*MockUserRoomUseCase)(nil).DeleteUserRoom), ctx, userID, roomID)
+}

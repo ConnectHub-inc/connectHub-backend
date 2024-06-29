@@ -8,7 +8,7 @@ type User struct {
 	Email           string `json:"email" db:"email"`
 	Password        string `json:"password" db:"password"`
 	ProfileImageURL string `json:"profile_image_url" db:"profile_image_url"`
-	IsAdmin         bool   `json:"is_admin"`
+	IsAdmin         bool   `json:"is_admin" db:"is_admin"`
 }
 
 func NewUser(name, email, password, profileImageURL string, isAdmin bool) *User {

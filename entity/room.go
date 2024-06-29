@@ -4,6 +4,7 @@ import "github.com/google/uuid"
 
 type Room struct {
 	ID          string `json:"id" db:"id"`
+	WorkspaceID string `json:"workspace_id" db:"workspace_id"`
 	Name        string `json:"name" db:"name"`
 	Description string `json:"description" db:"description"`
 	Private     bool   `json:"private" db:"private"`

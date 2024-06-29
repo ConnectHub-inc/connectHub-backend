@@ -35,7 +35,8 @@ CREATE TABLE Users (
     name VARCHAR(50) NOT NULL,
     email VARCHAR(150) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,  -- 暗号化されたパスワードを格納
-    profile_image_url VARCHAR(255) NOT NULL
+    profile_image_url VARCHAR(255) NOT NULL,
+    is_admin BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE User_Workspaces (
