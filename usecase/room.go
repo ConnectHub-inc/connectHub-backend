@@ -10,7 +10,7 @@ import (
 )
 
 type RoomUseCase interface {
-	CreateRoom(ctx context.Context, userID string, room entity.Room) error
+	CreateRoom(ctx context.Context, userID, workspaceID string, room entity.Room) error
 	ListUserWorkspaceRooms(ctx context.Context, userID, workspaceID string) ([]entity.Room, error)
 }
 
@@ -28,14 +28,14 @@ func NewRoomUseCase(rr repository.RoomRepository, urr repository.UserRoomReposit
 	}
 }
 
-func (ruc *roomUseCase) CreateRoom(ctx context.Context, userID string, room entity.Room) error {
+func (ruc *roomUseCase) CreateRoom(ctx context.Context, userID, workspaceID string, room entity.Room) error {
 	err := ruc.tr.Transaction(ctx, func(ctx context.Context) error {
 		if err := ruc.rr.Create(ctx, room); err != nil {
 			log.Error("Failed to create room", log.Fstring("roomID", room.ID))
 			return err
 		}
 
-		userRoom := entity.NewUserRoom(userID, room.ID)
+		userRoom := entity.NewUserRoom(userID, workspaceID, room.ID)
 		if err := ruc.urr.Create(ctx, userRoom); err != nil {
 			log.Error("Failed to create user room", log.Fstring("userID", userID), log.Fstring("roomID", room.ID))
 			return err

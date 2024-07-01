@@ -35,29 +35,29 @@ func (m *MockUserRoomUseCase) EXPECT() *MockUserRoomUseCaseMockRecorder {
 }
 
 // CreateUserRoom mocks base method.
-func (m *MockUserRoomUseCase) CreateUserRoom(ctx context.Context, userID, roomID string) error {
+func (m *MockUserRoomUseCase) CreateUserRoom(ctx context.Context, userID, workspaceID, roomID string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateUserRoom", ctx, userID, roomID)
+	ret := m.ctrl.Call(m, "CreateUserRoom", ctx, userID, workspaceID, roomID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CreateUserRoom indicates an expected call of CreateUserRoom.
-func (mr *MockUserRoomUseCaseMockRecorder) CreateUserRoom(ctx, userID, roomID interface{}) *gomock.Call {
+func (mr *MockUserRoomUseCaseMockRecorder) CreateUserRoom(ctx, userID, workspaceID, roomID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUserRoom", reflect.TypeOf((*MockUserRoomUseCase)(nil).CreateUserRoom), ctx, userID, roomID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUserRoom", reflect.TypeOf((*MockUserRoomUseCase)(nil).CreateUserRoom), ctx, userID, workspaceID, roomID)
 }
 
 // DeleteUserRoom mocks base method.
-func (m *MockUserRoomUseCase) DeleteUserRoom(ctx context.Context, userID, roomID string) error {
+func (m *MockUserRoomUseCase) DeleteUserRoom(ctx context.Context, userID, workspaceID, roomID string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteUserRoom", ctx, userID, roomID)
+	ret := m.ctrl.Call(m, "DeleteUserRoom", ctx, userID, workspaceID, roomID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteUserRoom indicates an expected call of DeleteUserRoom.
-func (mr *MockUserRoomUseCaseMockRecorder) DeleteUserRoom(ctx, userID, roomID interface{}) *gomock.Call {
+func (mr *MockUserRoomUseCaseMockRecorder) DeleteUserRoom(ctx, userID, workspaceID, roomID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUserRoom", reflect.TypeOf((*MockUserRoomUseCase)(nil).DeleteUserRoom), ctx, userID, roomID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUserRoom", reflect.TypeOf((*MockUserRoomUseCase)(nil).DeleteUserRoom), ctx, userID, workspaceID, roomID)
 }

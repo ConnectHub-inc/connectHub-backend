@@ -14,6 +14,7 @@ import (
 func TestRoomUseCase_CreateRoom(t *testing.T) {
 	t.Parallel()
 
+	workspaceID := "f6db2530-cd9b-4ac1-8dc1-38c795e6eec2"
 	userID := "f6db2530-cd9b-4ac1-8dc1-38c795e6cce2"
 	room := entity.Room{
 		ID:          "roomID",
@@ -30,9 +31,10 @@ func TestRoomUseCase_CreateRoom(t *testing.T) {
 			m2 *mock.MockTransactionRepository,
 		)
 		arg struct {
-			ctx    context.Context
-			userID string
-			room   entity.Room
+			ctx         context.Context
+			userID      string
+			workspaceID string
+			room        entity.Room
 		}
 		wantErr error
 	}{
@@ -44,18 +46,20 @@ func TestRoomUseCase_CreateRoom(t *testing.T) {
 				})
 				rr.EXPECT().Create(gomock.Any(), room).Return(nil)
 				urr.EXPECT().Create(gomock.Any(), entity.UserRoom{
-					UserID: userID,
-					RoomID: room.ID,
+					UserWorkspaceID: userID + "_" + workspaceID,
+					RoomID:          room.ID,
 				}).Return(nil)
 			},
 			arg: struct {
-				ctx    context.Context
-				userID string
-				room   entity.Room
+				ctx         context.Context
+				userID      string
+				workspaceID string
+				room        entity.Room
 			}{
-				ctx:    context.Background(),
-				userID: userID,
-				room:   room,
+				ctx:         context.Background(),
+				userID:      userID,
+				workspaceID: workspaceID,
+				room:        room,
 			},
 			wantErr: nil,
 		},
@@ -68,13 +72,15 @@ func TestRoomUseCase_CreateRoom(t *testing.T) {
 				rr.EXPECT().Create(gomock.Any(), room).Return(fmt.Errorf("failed to create room"))
 			},
 			arg: struct {
-				ctx    context.Context
-				userID string
-				room   entity.Room
+				ctx         context.Context
+				userID      string
+				workspaceID string
+				room        entity.Room
 			}{
-				ctx:    context.Background(),
-				userID: userID,
-				room:   room,
+				ctx:         context.Background(),
+				userID:      userID,
+				workspaceID: workspaceID,
+				room:        room,
 			},
 			wantErr: fmt.Errorf("failed to create room"),
 		},
@@ -95,7 +101,7 @@ func TestRoomUseCase_CreateRoom(t *testing.T) {
 			}
 
 			usecase := NewRoomUseCase(rr, urr, tr)
-			err := usecase.CreateRoom(tt.arg.ctx, tt.arg.userID, tt.arg.room)
+			err := usecase.CreateRoom(tt.arg.ctx, tt.arg.userID, tt.arg.workspaceID, tt.arg.room)
 
 			if (err != nil) != (tt.wantErr != nil) {
 				t.Errorf("CreateRoom() error = %v, wantErr %v", err, tt.wantErr)

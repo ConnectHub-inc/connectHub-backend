@@ -10,8 +10,8 @@ import (
 )
 
 type UserRoomUseCase interface {
-	CreateUserRoom(ctx context.Context, userID, roomID string) error
-	DeleteUserRoom(ctx context.Context, userID, roomID string) error
+	CreateUserRoom(ctx context.Context, userID, workspaceID, roomID string) error
+	DeleteUserRoom(ctx context.Context, userID, workspaceID, roomID string) error
 }
 
 type userRoomUseCase struct {
@@ -24,8 +24,8 @@ func NewUserRoomUseCase(urr repository.UserRoomRepository) UserRoomUseCase {
 	}
 }
 
-func (uruc *userRoomUseCase) CreateUserRoom(ctx context.Context, userID, roomID string) error {
-	userRoom := entity.NewUserRoom(userID, roomID)
+func (uruc *userRoomUseCase) CreateUserRoom(ctx context.Context, userID, workspaceID, roomID string) error {
+	userRoom := entity.NewUserRoom(userID, workspaceID, roomID)
 
 	if err := uruc.urr.Create(ctx, userRoom); err != nil {
 		log.Error("Failed to create user room", log.Fstring("userID", userID), log.Fstring("roomID", roomID))
@@ -34,8 +34,8 @@ func (uruc *userRoomUseCase) CreateUserRoom(ctx context.Context, userID, roomID 
 	return nil
 }
 
-func (uruc *userRoomUseCase) DeleteUserRoom(ctx context.Context, userID, roomID string) error {
-	if err := uruc.urr.Delete(ctx, userID, roomID); err != nil {
+func (uruc *userRoomUseCase) DeleteUserRoom(ctx context.Context, userID, workspaceID, roomID string) error {
+	if err := uruc.urr.Delete(ctx, userID, workspaceID, roomID); err != nil {
 		log.Error("Failed to delete user room", log.Fstring("userID", userID), log.Fstring("roomID", roomID))
 		return err
 	}

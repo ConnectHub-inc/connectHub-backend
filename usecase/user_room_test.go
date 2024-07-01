@@ -12,6 +12,7 @@ import (
 
 func TestUserUseCase_CreateUserRoom(t *testing.T) {
 	t.Parallel()
+	workspaceID := "workspaceID"
 	userID := "userID"
 	roomID := "roomID"
 
@@ -21,9 +22,10 @@ func TestUserUseCase_CreateUserRoom(t *testing.T) {
 			m *mock.MockUserRoomRepository,
 		)
 		arg struct {
-			ctx    context.Context
-			userID string
-			roomID string
+			ctx         context.Context
+			userID      string
+			workspaceID string
+			roomID      string
 		}
 		wantErr error
 	}{
@@ -32,19 +34,21 @@ func TestUserUseCase_CreateUserRoom(t *testing.T) {
 			setup: func(urr *mock.MockUserRoomRepository) {
 				urr.EXPECT().Create(gomock.Any(),
 					entity.UserRoom{
-						UserID: userID,
-						RoomID: roomID,
+						UserWorkspaceID: userID + "_" + workspaceID,
+						RoomID:          roomID,
 					},
 				).Return(nil)
 			},
 			arg: struct {
-				ctx    context.Context
-				userID string
-				roomID string
+				ctx         context.Context
+				userID      string
+				workspaceID string
+				roomID      string
 			}{
-				ctx:    context.Background(),
-				userID: userID,
-				roomID: roomID,
+				ctx:         context.Background(),
+				userID:      userID,
+				workspaceID: workspaceID,
+				roomID:      roomID,
 			},
 			wantErr: nil,
 		},
@@ -64,7 +68,7 @@ func TestUserUseCase_CreateUserRoom(t *testing.T) {
 
 			usecase := NewUserRoomUseCase(urr)
 
-			err := usecase.CreateUserRoom(tt.arg.ctx, tt.arg.userID, tt.arg.roomID)
+			err := usecase.CreateUserRoom(tt.arg.ctx, tt.arg.userID, tt.arg.workspaceID, tt.arg.roomID)
 
 			if (err != nil) != (tt.wantErr != nil) {
 				t.Errorf("CreateUserRoom() error = %v, wantErr %v", err, tt.wantErr)
@@ -77,6 +81,7 @@ func TestUserUseCase_CreateUserRoom(t *testing.T) {
 
 func TestUserUseCase_DeleteUserRoom(t *testing.T) {
 	t.Parallel()
+	workspaceID := "workspaceID"
 	userID := "userID"
 	roomID := "roomID"
 
@@ -86,25 +91,28 @@ func TestUserUseCase_DeleteUserRoom(t *testing.T) {
 			m *mock.MockUserRoomRepository,
 		)
 		arg struct {
-			ctx    context.Context
-			userID string
-			roomID string
+			ctx         context.Context
+			userID      string
+			workspaceID string
+			roomID      string
 		}
 		wantErr error
 	}{
 		{
 			name: "success",
 			setup: func(urr *mock.MockUserRoomRepository) {
-				urr.EXPECT().Delete(gomock.Any(), userID, roomID).Return(nil)
+				urr.EXPECT().Delete(gomock.Any(), userID, workspaceID, roomID).Return(nil)
 			},
 			arg: struct {
-				ctx    context.Context
-				userID string
-				roomID string
+				ctx         context.Context
+				userID      string
+				workspaceID string
+				roomID      string
 			}{
-				ctx:    context.Background(),
-				userID: userID,
-				roomID: roomID,
+				ctx:         context.Background(),
+				userID:      userID,
+				workspaceID: workspaceID,
+				roomID:      roomID,
 			},
 			wantErr: nil,
 		},
@@ -124,7 +132,7 @@ func TestUserUseCase_DeleteUserRoom(t *testing.T) {
 
 			usecase := NewUserRoomUseCase(urr)
 
-			err := usecase.DeleteUserRoom(tt.arg.ctx, tt.arg.userID, tt.arg.roomID)
+			err := usecase.DeleteUserRoom(tt.arg.ctx, tt.arg.userID, tt.arg.workspaceID, tt.arg.roomID)
 
 			if (err != nil) != (tt.wantErr != nil) {
 				t.Errorf("DeleteUserRoom() error = %v, wantErr %v", err, tt.wantErr)

@@ -304,7 +304,7 @@ func (client *Client) handleJoinPublicRoom(message entity.WSMessage) {
 		return
 	}
 
-	if err := client.uruc.CreateUserRoom(ctx, client.UserID, roomID); err != nil {
+	if err := client.uruc.CreateUserRoom(ctx, client.UserID, client.hub.ID, roomID); err != nil {
 		log.Error("Failed to create user room", log.Fstring("userID", client.UserID), log.Fstring("roomID", roomID))
 		return
 	}
@@ -341,7 +341,7 @@ func (client *Client) handleLeavePublicRoom(message entity.WSMessage) {
 		return
 	}
 
-	if err := client.uruc.DeleteUserRoom(ctx, client.UserID, roomID); err != nil {
+	if err := client.uruc.DeleteUserRoom(ctx, client.UserID, client.hub.ID, roomID); err != nil {
 		log.Error("Failed to delete user room", log.Fstring("userID", client.UserID), log.Fstring("roomID", roomID))
 		return
 	}
