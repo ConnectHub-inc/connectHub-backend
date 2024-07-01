@@ -101,12 +101,16 @@ func (h *Hub) FindRoomByName(name string) *Room {
 func (h *Hub) CreateRoom(userID, roomName string, roomPrivate bool) *Room {
 	room := NewRoom(roomName, roomPrivate, h.pubsubRepo, h.messageCacheRepo)
 
-	if err := h.roomUseCase.CreateRoom(context.Background(), userID, entity.Room{
-		ID:          room.ID,
-		WorkspaceID: h.ID,
-		Name:        room.Name,
-		Private:     room.Private,
-	}); err != nil {
+	if err := h.roomUseCase.CreateRoom(
+		context.Background(),
+		userID,
+		h.ID,
+		entity.Room{
+			ID:          room.ID,
+			WorkspaceID: h.ID,
+			Name:        room.Name,
+			Private:     room.Private,
+		}); err != nil {
 		log.Error("Failed to create room", log.Fstring("name", roomName))
 		return nil
 	}

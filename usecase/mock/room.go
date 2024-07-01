@@ -37,17 +37,17 @@ func (m *MockRoomUseCase) EXPECT() *MockRoomUseCaseMockRecorder {
 }
 
 // CreateRoom mocks base method.
-func (m *MockRoomUseCase) CreateRoom(ctx context.Context, userID string, room entity.Room) error {
+func (m *MockRoomUseCase) CreateRoom(ctx context.Context, userID, workspaceID string, room entity.Room) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateRoom", ctx, userID, room)
+	ret := m.ctrl.Call(m, "CreateRoom", ctx, userID, workspaceID, room)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CreateRoom indicates an expected call of CreateRoom.
-func (mr *MockRoomUseCaseMockRecorder) CreateRoom(ctx, userID, room interface{}) *gomock.Call {
+func (mr *MockRoomUseCaseMockRecorder) CreateRoom(ctx, userID, workspaceID, room interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRoom", reflect.TypeOf((*MockRoomUseCase)(nil).CreateRoom), ctx, userID, room)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRoom", reflect.TypeOf((*MockRoomUseCase)(nil).CreateRoom), ctx, userID, workspaceID, room)
 }
 
 // ListUserWorkspaceRooms mocks base method.

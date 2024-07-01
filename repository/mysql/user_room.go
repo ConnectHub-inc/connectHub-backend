@@ -21,14 +21,18 @@ func NewUserRoomRepository(db *sql.DB, dialect *goqu.DialectWrapper) repository.
 	}
 }
 
-func (urr *userRoomRepository) Get(ctx context.Context, userID, roomID string) (*entity.UserRoom, error) {
+func (urr *userRoomRepository) Get(ctx context.Context, userID, workspaceID, roomID string) (*entity.UserRoom, error) {
 	executor := urr.db
 	if tx := TxFromCtx(ctx); tx != nil {
 		executor = tx
 	}
 
 	var userRoom entity.UserRoom
-	query, _, err := urr.dialect.Select("*").From(urr.tableName).Where(goqu.C("user_id").Eq(userID), goqu.C("room_id").Eq(roomID)).ToSQL()
+	userWorkspaceID := userID + "_" + workspaceID
+	query, _, err := urr.dialect.Select("*").From(urr.tableName).Where(
+		goqu.C("user_workspace_id").Eq(userWorkspaceID),
+		goqu.C("room_id").Eq(roomID),
+	).ToSQL()
 	if err != nil {
 		log.Error("Failed to generate SQL query", log.Ferror(err))
 		return nil, err
@@ -41,13 +45,17 @@ func (urr *userRoomRepository) Get(ctx context.Context, userID, roomID string) (
 	return &userRoom, nil
 }
 
-func (urr *userRoomRepository) Delete(ctx context.Context, userID, roomID string) error {
+func (urr *userRoomRepository) Delete(ctx context.Context, userID, workspaceID, roomID string) error {
 	executor := urr.db
 	if tx := TxFromCtx(ctx); tx != nil {
 		executor = tx
 	}
 
-	query, _, err := urr.dialect.Delete(urr.tableName).Where(goqu.C("user_id").Eq(userID), goqu.C("room_id").Eq(roomID)).ToSQL()
+	userWorkspaceID := userID + "_" + workspaceID
+	query, _, err := urr.dialect.Delete(urr.tableName).Where(
+		goqu.C("user_workspace_id").Eq(userWorkspaceID),
+		goqu.C("room_id").Eq(roomID),
+	).ToSQL()
 	if err != nil {
 		log.Error("Failed to generate SQL query", log.Ferror(err))
 		return err

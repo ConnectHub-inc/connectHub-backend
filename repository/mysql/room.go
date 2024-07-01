@@ -33,6 +33,17 @@ func (rr *roomRepository) ListUserWorkspaceRooms(ctx context.Context, userID, wo
   	  AND User_Rooms.user_id = ?;
 	`
 
+	query = `
+	SELECT Rooms.id, Rooms.workspace_id, Rooms.name, Rooms.description, Rooms.private
+	FROM Rooms
+	JOIN Workspaces ON Rooms.workspace_id = Workspaces.id
+	JOIN User_Workspaces ON Workspaces.id = User_Workspaces.workspace_id
+	JOIN User_Rooms ON Rooms.id = User_Rooms.room_id
+	WHERE User_Workspaces.user_id = ?
+	  AND User_Workspaces.workspace_id = ?
+  	  AND User_Rooms.user_workspace_id = CONCAT(User_Workspaces.user_id, '_', User_Workspaces.workspace_id);
+	`
+
 	rows, err := rr.db.QueryContext(ctx, query, userID, workspaceID, userID)
 	if err != nil {
 		log.Error("Failed to query rooms", log.Ferror(err))
