@@ -36,8 +36,8 @@ func Test_UserRoomRepository(t *testing.T) {
 	}
 
 	userRoom := entity.UserRoom{
-		UserID: userID,
-		RoomID: channelID,
+		UserWorkspaceID: userID + "_" + workspaceID,
+		RoomID:          channelID,
 	}
 
 	userRepo := NewUserRepository(db, &dialect)
@@ -53,16 +53,16 @@ func Test_UserRoomRepository(t *testing.T) {
 	err = userRoomRepo.Create(ctx, userRoom)
 	ValidateErr(t, err, nil)
 
-	getUserRoom, err := userRoomRepo.Get(ctx, userID, channelID)
+	getUserRoom, err := userRoomRepo.Get(ctx, userID, workspaceID, channelID)
 	ValidateErr(t, err, nil)
 	if !reflect.DeepEqual(*getUserRoom, userRoom) {
 		t.Errorf("Get() = %v, want %v", getUserRoom, userRoom)
 	}
 
-	err = userRoomRepo.Delete(ctx, userID, channelID)
+	err = userRoomRepo.Delete(ctx, userID, workspaceID, channelID)
 	ValidateErr(t, err, nil)
 
-	getUserRoom, err = userRoomRepo.Get(ctx, userID, channelID)
+	getUserRoom, err = userRoomRepo.Get(ctx, userID, workspaceID, channelID)
 	if err == nil {
 		t.Errorf("Expected error for deleted item, got nil")
 	}
