@@ -14,23 +14,23 @@ import (
 type MessageUseCase interface {
 	ListMessages(ctx context.Context, channelID string, start, end time.Time) ([]entity.Message, error)
 	CreateMessage(ctx context.Context, channelID string, message entity.Message) error
-	UpdateMessage(ctx context.Context, message entity.Message, userID string) error
-	DeleteMessage(ctx context.Context, message entity.Message, channelID, userID string) error
+	UpdateMessage(ctx context.Context, message entity.Message, userID, workspaceID string) error
+	DeleteMessage(ctx context.Context, message entity.Message, userID, workspaceID, channelID string) error
 }
 
 type messageUseCase struct {
-	ur  repository.UserRepository
+	uwr repository.UserWorkspaceRepository
 	mr  repository.MessageRepository
 	mcr repository.MessageCacheRepository
 }
 
 func NewMessageUseCase(
-	ur repository.UserRepository,
+	uwr repository.UserWorkspaceRepository,
 	mr repository.MessageRepository,
 	mcr repository.MessageCacheRepository,
 ) MessageUseCase {
 	return &messageUseCase{
-		ur:  ur,
+		uwr: uwr,
 		mr:  mr,
 		mcr: mcr,
 	}
@@ -53,17 +53,18 @@ func (muc *messageUseCase) CreateMessage(ctx context.Context, channelID string, 
 	return nil
 }
 
-func (muc *messageUseCase) UpdateMessage(ctx context.Context, message entity.Message, userID string) error {
-	user, err := muc.ur.Get(ctx, userID)
+func (muc *messageUseCase) UpdateMessage(ctx context.Context, message entity.Message, userID, workspaceID string) error {
+	user, err := muc.uwr.Get(ctx, userID, workspaceID)
 	if err != nil {
 		log.Error("Failed to get user", log.Fstring("userID", userID))
 		return err
 	}
 
-	if !user.IsAdmin && user.ID != message.UserID {
+	userWorkspaceID := userID + "_" + workspaceID
+	if !user.IsAdmin && userWorkspaceID != message.UserWorkspaceID {
 		log.Warn(
 			"User don't have permission to update msg",
-			log.Fstring("userID", message.UserID),
+			log.Fstring("userID", message.UserWorkspaceID),
 			log.Fstring("msgID", message.ID),
 		)
 		return fmt.Errorf("don't have permission to update msg")
@@ -76,17 +77,18 @@ func (muc *messageUseCase) UpdateMessage(ctx context.Context, message entity.Mes
 	return nil
 }
 
-func (muc *messageUseCase) DeleteMessage(ctx context.Context, message entity.Message, channelID, userID string) error {
-	user, err := muc.ur.Get(ctx, userID)
+func (muc *messageUseCase) DeleteMessage(ctx context.Context, message entity.Message, userID, workspaceID, channelID string) error {
+	user, err := muc.uwr.Get(ctx, userID, workspaceID)
 	if err != nil {
 		log.Error("Failed to get user", log.Fstring("userID", userID))
 		return err
 	}
 
-	if !user.IsAdmin && user.ID != message.UserID {
+	userWorkspaceID := userID + "_" + workspaceID
+	if !user.IsAdmin && userWorkspaceID != message.UserWorkspaceID {
 		log.Warn(
 			"User don't have permission to delete msg",
-			log.Fstring("userID", message.UserID),
+			log.Fstring("userID", message.UserWorkspaceID),
 			log.Fstring("msgID", message.ID),
 		)
 		return fmt.Errorf("don't have permission to delete msg")

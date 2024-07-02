@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
+	"github.com/google/uuid"
 
 	"github.com/tusmasoma/connectHub-backend/entity"
 	"github.com/tusmasoma/connectHub-backend/repository/mock"
@@ -21,7 +22,7 @@ func TestMessageUseCase_ListMessages(t *testing.T) {
 	patterns := []struct {
 		name  string
 		setup func(
-			mur *mock.MockUserRepository,
+			mur *mock.MockUserWorkspaceRepository,
 			mmr *mock.MockMessageRepository,
 			mcr *mock.MockMessageCacheRepository,
 		)
@@ -36,16 +37,16 @@ func TestMessageUseCase_ListMessages(t *testing.T) {
 		{
 			name: "success",
 			setup: func(
-				mur *mock.MockUserRepository,
+				mur *mock.MockUserWorkspaceRepository,
 				mmr *mock.MockMessageRepository,
 				mcr *mock.MockMessageCacheRepository,
 			) {
 				mcr.EXPECT().List(gomock.Any(), channelID, start, end).Return([]entity.Message{
 					{
-						ID:        "31894386-3e60-45a8-bc67-f46b72b42554",
-						UserID:    "f6db2530-cd9b-4ac1-8dc1-38c795e6eec2",
-						Text:      "test message",
-						CreatedAt: time.Now(),
+						ID:              "31894386-3e60-45a8-bc67-f46b72b42554",
+						UserWorkspaceID: "f6db2530-cd9b-4ac1-8dc1-38c795e6eec2",
+						Text:            "test message",
+						CreatedAt:       time.Now(),
 					},
 				}, nil)
 			},
@@ -68,15 +69,15 @@ func TestMessageUseCase_ListMessages(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			ctrl := gomock.NewController(t)
-			ur := mock.NewMockUserRepository(ctrl)
+			uwr := mock.NewMockUserWorkspaceRepository(ctrl)
 			mr := mock.NewMockMessageRepository(ctrl)
 			mcr := mock.NewMockMessageCacheRepository(ctrl)
 
 			if tt.setup != nil {
-				tt.setup(ur, mr, mcr)
+				tt.setup(uwr, mr, mcr)
 			}
 
-			usecase := NewMessageUseCase(ur, mr, mcr)
+			usecase := NewMessageUseCase(uwr, mr, mcr)
 
 			_, err := usecase.ListMessages(
 				tt.arg.ctx,
@@ -105,7 +106,7 @@ func TestMessageUseCase_CreateMessage(t *testing.T) {
 	patterns := []struct {
 		name  string
 		setup func(
-			mur *mock.MockUserRepository,
+			mur *mock.MockUserWorkspaceRepository,
 			mmr *mock.MockMessageRepository,
 			mcr *mock.MockMessageCacheRepository,
 		)
@@ -119,7 +120,7 @@ func TestMessageUseCase_CreateMessage(t *testing.T) {
 		{
 			name: "success",
 			setup: func(
-				mur *mock.MockUserRepository,
+				mur *mock.MockUserWorkspaceRepository,
 				mmr *mock.MockMessageRepository,
 				mcr *mock.MockMessageCacheRepository,
 			) {
@@ -142,15 +143,15 @@ func TestMessageUseCase_CreateMessage(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			ctrl := gomock.NewController(t)
-			ur := mock.NewMockUserRepository(ctrl)
+			uwr := mock.NewMockUserWorkspaceRepository(ctrl)
 			mr := mock.NewMockMessageRepository(ctrl)
 			mcr := mock.NewMockMessageCacheRepository(ctrl)
 
 			if tt.setup != nil {
-				tt.setup(ur, mr, mcr)
+				tt.setup(uwr, mr, mcr)
 			}
 
-			usecase := NewMessageUseCase(ur, mr, mcr)
+			usecase := NewMessageUseCase(uwr, mr, mcr)
 
 			err := usecase.CreateMessage(
 				tt.arg.ctx,
@@ -169,102 +170,115 @@ func TestMessageUseCase_CreateMessage(t *testing.T) {
 
 func TestMessageUseCase_UpdateMessage(t *testing.T) {
 	t.Parallel()
-	userID := "f6db2530-cd9b-4ac1-8dc1-38c795e6eec2"
-	msgID := "31894386-3e60-45a8-bc67-f46b72b42554"
+	workspaceID := uuid.New().String()
+	userID := uuid.New().String()
+	superUserID := uuid.New().String()
+	notAuthorizedUserID := uuid.New().String()
+	msgID := uuid.New().String()
 	message := entity.Message{
-		ID:     msgID,
-		UserID: userID,
-		Text:   "test message",
+		ID:              msgID,
+		UserWorkspaceID: userID + "_" + workspaceID,
+		Text:            "test message",
 	}
 
 	patterns := []struct {
 		name  string
 		setup func(
-			mur *mock.MockUserRepository,
+			mur *mock.MockUserWorkspaceRepository,
 			mmr *mock.MockMessageRepository,
 			mcr *mock.MockMessageCacheRepository,
 		)
 		arg struct {
-			ctx     context.Context
-			message entity.Message
-			userID  string
+			ctx         context.Context
+			message     entity.Message
+			userID      string
+			workspaceID string
 		}
 		wantErr error
 	}{
 		{
 			name: "success",
 			setup: func(
-				mur *mock.MockUserRepository,
+				mur *mock.MockUserWorkspaceRepository,
 				mmr *mock.MockMessageRepository,
 				mcr *mock.MockMessageCacheRepository,
 			) {
-				mur.EXPECT().Get(gomock.Any(), userID).
-					Return(&entity.User{
-						ID:      userID,
-						Name:    "test",
-						IsAdmin: false,
+				mur.EXPECT().Get(gomock.Any(), userID, workspaceID).
+					Return(&entity.UserWorkspace{
+						UserID:      userID,
+						WorkspaceID: workspaceID,
+						Name:        "test",
+						IsAdmin:     false,
 					}, nil)
 				mcr.EXPECT().Update(gomock.Any(), message).Return(nil)
 			},
 			arg: struct {
-				ctx     context.Context
-				message entity.Message
-				userID  string
+				ctx         context.Context
+				message     entity.Message
+				userID      string
+				workspaceID string
 			}{
-				ctx:     context.Background(),
-				message: message,
-				userID:  userID,
+				ctx:         context.Background(),
+				message:     message,
+				userID:      userID,
+				workspaceID: workspaceID,
 			},
 			wantErr: nil,
 		},
 		{
 			name: "success: Super User",
 			setup: func(
-				mur *mock.MockUserRepository,
+				mur *mock.MockUserWorkspaceRepository,
 				mmr *mock.MockMessageRepository,
 				mcr *mock.MockMessageCacheRepository,
 			) {
-				mur.EXPECT().Get(gomock.Any(), "f6db2530-cd9b-4ac1-8dc1-38c795e61234").
-					Return(&entity.User{
-						ID:      "f6db2530-cd9b-4ac1-8dc1-38c795e61234",
-						Name:    "super_test",
-						IsAdmin: true,
+				mur.EXPECT().Get(gomock.Any(), superUserID, workspaceID).
+					Return(&entity.UserWorkspace{
+						UserID:      superUserID,
+						WorkspaceID: workspaceID,
+						Name:        "super_test",
+						IsAdmin:     true,
 					}, nil)
 				mcr.EXPECT().Update(gomock.Any(), message).Return(nil)
 			},
 			arg: struct {
-				ctx     context.Context
-				message entity.Message
-				userID  string
+				ctx         context.Context
+				message     entity.Message
+				userID      string
+				workspaceID string
 			}{
-				ctx:     context.Background(),
-				message: message,
-				userID:  "f6db2530-cd9b-4ac1-8dc1-38c795e61234",
+				ctx:         context.Background(),
+				message:     message,
+				userID:      superUserID,
+				workspaceID: workspaceID,
 			},
 			wantErr: nil,
 		},
 		{
 			name: "Fail: Not authorized to update",
 			setup: func(
-				mur *mock.MockUserRepository,
+				mur *mock.MockUserWorkspaceRepository,
 				mmr *mock.MockMessageRepository,
 				mcr *mock.MockMessageCacheRepository,
 			) {
-				mur.EXPECT().Get(gomock.Any(), "f6db2530-cd9b-4ac1-8dc1-38c795e61234").
-					Return(&entity.User{
-						ID:      "f6db2530-cd9b-4ac1-8dc1-38c795e61234",
-						Name:    "not_authorized_test",
-						IsAdmin: false,
+				mur.EXPECT().Get(gomock.Any(), notAuthorizedUserID, workspaceID).
+					Return(&entity.UserWorkspace{
+						UserID:      notAuthorizedUserID,
+						WorkspaceID: workspaceID,
+						Name:        "not_authorized_test",
+						IsAdmin:     false,
 					}, nil)
 			},
 			arg: struct {
-				ctx     context.Context
-				message entity.Message
-				userID  string
+				ctx         context.Context
+				message     entity.Message
+				userID      string
+				workspaceID string
 			}{
-				ctx:     context.Background(),
-				message: message,
-				userID:  "f6db2530-cd9b-4ac1-8dc1-38c795e61234",
+				ctx:         context.Background(),
+				message:     message,
+				userID:      notAuthorizedUserID,
+				workspaceID: workspaceID,
 			},
 			wantErr: fmt.Errorf("don't have permission to update msg"),
 		},
@@ -274,20 +288,21 @@ func TestMessageUseCase_UpdateMessage(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			ctrl := gomock.NewController(t)
-			ur := mock.NewMockUserRepository(ctrl)
+			uwr := mock.NewMockUserWorkspaceRepository(ctrl)
 			mr := mock.NewMockMessageRepository(ctrl)
 			mcr := mock.NewMockMessageCacheRepository(ctrl)
 
 			if tt.setup != nil {
-				tt.setup(ur, mr, mcr)
+				tt.setup(uwr, mr, mcr)
 			}
 
-			usecase := NewMessageUseCase(ur, mr, mcr)
+			usecase := NewMessageUseCase(uwr, mr, mcr)
 
 			err := usecase.UpdateMessage(
 				tt.arg.ctx,
 				tt.arg.message,
 				tt.arg.userID,
+				tt.arg.workspaceID,
 			)
 
 			if (err != nil) != (tt.wantErr != nil) {
@@ -301,114 +316,127 @@ func TestMessageUseCase_UpdateMessage(t *testing.T) {
 
 func TestMessageUseCase_DeleteMessage(t *testing.T) {
 	t.Parallel()
-	userID := "f6db2530-cd9b-4ac1-8dc1-38c795e6eec2"
-	channelID := "f6bd2530-cd9b-4ac1-8dc1-38c697e6cce2"
-	msgID := "31894386-3e60-45a8-bc67-f46b72b42554"
+	userID := uuid.New().String()
+	superUserID := uuid.New().String()
+	notAuthorizedUserID := uuid.New().String()
+	workspaceID := uuid.New().String()
+	channelID := uuid.New().String()
+	msgID := uuid.New().String()
 
 	patterns := []struct {
 		name  string
 		setup func(
-			mur *mock.MockUserRepository,
+			mur *mock.MockUserWorkspaceRepository,
 			mmr *mock.MockMessageRepository,
 			mcr *mock.MockMessageCacheRepository,
 		)
 		arg struct {
-			ctx       context.Context
-			message   entity.Message
-			channelID string
-			userID    string
+			ctx         context.Context
+			message     entity.Message
+			userID      string
+			workspaceID string
+			channelID   string
 		}
 		wantErr error
 	}{
 		{
 			name: "success",
 			setup: func(
-				mur *mock.MockUserRepository,
+				mur *mock.MockUserWorkspaceRepository,
 				mmr *mock.MockMessageRepository,
 				mcr *mock.MockMessageCacheRepository,
 			) {
-				mur.EXPECT().Get(gomock.Any(), userID).
-					Return(&entity.User{
-						ID:      userID,
-						Name:    "test",
-						IsAdmin: false,
+				mur.EXPECT().Get(gomock.Any(), userID, workspaceID).
+					Return(&entity.UserWorkspace{
+						UserID:      userID,
+						WorkspaceID: workspaceID,
+						Name:        "test",
+						IsAdmin:     false,
 					}, nil)
 				mcr.EXPECT().Delete(gomock.Any(), channelID, msgID).Return(nil)
 			},
 			arg: struct {
-				ctx       context.Context
-				message   entity.Message
-				channelID string
-				userID    string
+				ctx         context.Context
+				message     entity.Message
+				userID      string
+				workspaceID string
+				channelID   string
 			}{
 				ctx: context.Background(),
 				message: entity.Message{
-					ID:     msgID,
-					UserID: userID,
+					ID:              msgID,
+					UserWorkspaceID: userID + "_" + workspaceID,
 				},
-				channelID: channelID,
-				userID:    userID,
+				userID:      userID,
+				workspaceID: workspaceID,
+				channelID:   channelID,
 			},
 			wantErr: nil,
 		},
 		{
 			name: "success: Super User",
 			setup: func(
-				mur *mock.MockUserRepository,
+				mur *mock.MockUserWorkspaceRepository,
 				mmr *mock.MockMessageRepository,
 				mcr *mock.MockMessageCacheRepository,
 			) {
-				mur.EXPECT().Get(gomock.Any(), "f6db2530-cd9b-4ac1-8dc1-38c795e61234").
-					Return(&entity.User{
-						ID:      "f6db2530-cd9b-4ac1-8dc1-38c795e61234",
-						Name:    "super_test",
-						IsAdmin: true,
+				mur.EXPECT().Get(gomock.Any(), superUserID, workspaceID).
+					Return(&entity.UserWorkspace{
+						UserID:      superUserID,
+						WorkspaceID: workspaceID,
+						Name:        "super_test",
+						IsAdmin:     true,
 					}, nil)
 				mcr.EXPECT().Delete(gomock.Any(), channelID, msgID).Return(nil)
 			},
 			arg: struct {
-				ctx       context.Context
-				message   entity.Message
-				channelID string
-				userID    string
+				ctx         context.Context
+				message     entity.Message
+				userID      string
+				workspaceID string
+				channelID   string
 			}{
 				ctx: context.Background(),
 				message: entity.Message{
-					ID:     msgID,
-					UserID: userID,
+					ID:              msgID,
+					UserWorkspaceID: userID + "_" + workspaceID,
 				},
-				channelID: channelID,
-				userID:    "f6db2530-cd9b-4ac1-8dc1-38c795e61234",
+				userID:      superUserID,
+				workspaceID: workspaceID,
+				channelID:   channelID,
 			},
 			wantErr: nil,
 		},
 		{
 			name: "Fail: Not authorized to delete",
 			setup: func(
-				mur *mock.MockUserRepository,
+				mur *mock.MockUserWorkspaceRepository,
 				mmr *mock.MockMessageRepository,
 				mcr *mock.MockMessageCacheRepository,
 			) {
-				mur.EXPECT().Get(gomock.Any(), "f6db2530-cd9b-4ac1-8dc1-38c795e61234").
-					Return(&entity.User{
-						ID:      "f6db2530-cd9b-4ac1-8dc1-38c795e61234",
-						Name:    "not_authorized_test",
-						IsAdmin: false,
+				mur.EXPECT().Get(gomock.Any(), notAuthorizedUserID, workspaceID).
+					Return(&entity.UserWorkspace{
+						UserID:      notAuthorizedUserID,
+						WorkspaceID: workspaceID,
+						Name:        "not_authorized_test",
+						IsAdmin:     false,
 					}, nil)
 			},
 			arg: struct {
-				ctx       context.Context
-				message   entity.Message
-				channelID string
-				userID    string
+				ctx         context.Context
+				message     entity.Message
+				userID      string
+				workspaceID string
+				channelID   string
 			}{
 				ctx: context.Background(),
 				message: entity.Message{
-					ID:     msgID,
-					UserID: userID,
+					ID:              msgID,
+					UserWorkspaceID: userID + "_" + workspaceID,
 				},
-				channelID: channelID,
-				userID:    "f6db2530-cd9b-4ac1-8dc1-38c795e61234",
+				userID:      notAuthorizedUserID,
+				workspaceID: workspaceID,
+				channelID:   channelID,
 			},
 			wantErr: fmt.Errorf("don't have permission to delete msg"),
 		},
@@ -418,21 +446,22 @@ func TestMessageUseCase_DeleteMessage(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			ctrl := gomock.NewController(t)
-			ur := mock.NewMockUserRepository(ctrl)
+			uwr := mock.NewMockUserWorkspaceRepository(ctrl)
 			mr := mock.NewMockMessageRepository(ctrl)
 			mcr := mock.NewMockMessageCacheRepository(ctrl)
 
 			if tt.setup != nil {
-				tt.setup(ur, mr, mcr)
+				tt.setup(uwr, mr, mcr)
 			}
 
-			usecase := NewMessageUseCase(ur, mr, mcr)
+			usecase := NewMessageUseCase(uwr, mr, mcr)
 
 			err := usecase.DeleteMessage(
 				tt.arg.ctx,
 				tt.arg.message,
-				tt.arg.channelID,
 				tt.arg.userID,
+				tt.arg.workspaceID,
+				tt.arg.channelID,
 			)
 
 			if (err != nil) != (tt.wantErr != nil) {

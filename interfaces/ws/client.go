@@ -226,9 +226,9 @@ func (client *Client) handleCreateMessage(message entity.WSMessage) {
 }
 
 func (client *Client) handleDeleteMessage(message entity.WSMessage) {
+	ctx := context.Background()
 	roomID := message.TargetID
-
-	if err := client.muc.DeleteMessage(context.Background(), message.Content, roomID, client.UserID); err != nil {
+	if err := client.muc.DeleteMessage(ctx, message.Content, client.UserID, client.hub.ID, roomID); err != nil {
 		log.Error("Failed to delete message", log.Ferror(err))
 		return
 	}
@@ -242,7 +242,8 @@ func (client *Client) handleDeleteMessage(message entity.WSMessage) {
 }
 
 func (client *Client) handleUpdateMessage(message entity.WSMessage) {
-	if err := client.muc.UpdateMessage(context.Background(), message.Content, client.UserID); err != nil {
+	ctx := context.Background()
+	if err := client.muc.UpdateMessage(ctx, message.Content, client.UserID, client.hub.ID); err != nil {
 		log.Error("Failed to update message", log.Ferror(err))
 		return
 	}
@@ -287,10 +288,10 @@ func (client *Client) handleCreatePublicRoom(message entity.WSMessage) {
 		TargetID: room.ID,
 		SenderID: client.ID,
 		Content: entity.Message{
-			ID:        uuid.New().String(),
-			UserID:    client.UserID,
-			Text:      room.Name,
-			CreatedAt: time.Now(),
+			ID:              uuid.New().String(),
+			UserWorkspaceID: client.UserID + "_" + client.hub.ID,
+			Text:            room.Name,
+			CreatedAt:       time.Now(),
 		},
 	}
 }
@@ -324,10 +325,10 @@ func (client *Client) handleJoinPublicRoom(message entity.WSMessage) {
 		TargetID: room.ID,
 		SenderID: client.ID,
 		Content: entity.Message{
-			ID:        uuid.New().String(),
-			UserID:    client.UserID,
-			Text:      fmt.Sprintf(config.WelcomeMessage, client.Name),
-			CreatedAt: time.Now(),
+			ID:              uuid.New().String(),
+			UserWorkspaceID: client.UserID + "_" + client.hub.ID,
+			Text:            fmt.Sprintf(config.WelcomeMessage, client.Name),
+			CreatedAt:       time.Now(),
 		},
 	}
 }
@@ -361,10 +362,10 @@ func (client *Client) handleLeavePublicRoom(message entity.WSMessage) {
 		TargetID: room.ID,
 		SenderID: client.ID,
 		Content: entity.Message{
-			ID:        uuid.New().String(),
-			UserID:    client.UserID,
-			Text:      fmt.Sprintf(config.GoodbyeMessage, client.Name),
-			CreatedAt: time.Now(),
+			ID:              uuid.New().String(),
+			UserWorkspaceID: client.UserID + "_" + client.hub.ID,
+			Text:            fmt.Sprintf(config.GoodbyeMessage, client.Name),
+			CreatedAt:       time.Now(),
 		},
 	}
 }
