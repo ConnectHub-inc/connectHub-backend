@@ -44,7 +44,7 @@ func (uwuc *userWorkspaceUseCase) GetUser(ctx context.Context, userID, workspace
 	return user, nil
 }
 
-func (uuc *userWorkspaceUseCase) UpdateUser(ctx context.Context, params *UpdateUserParams, user entity.UserWorkspace) error {
+func (uwuc *userWorkspaceUseCase) UpdateUser(ctx context.Context, params *UpdateUserParams, user entity.UserWorkspace) error {
 	if user.UserID != params.ID {
 		log.Warn(
 			"User don't have permission to update user",
@@ -58,7 +58,7 @@ func (uuc *userWorkspaceUseCase) UpdateUser(ctx context.Context, params *UpdateU
 	// user.Email = params.Email
 	user.ProfileImageURL = params.ProfileImageURL
 
-	if err := uuc.uwr.Update(ctx, user); err != nil {
+	if err := uwuc.uwr.Update(ctx, user); err != nil {
 		log.Error(
 			"Failed to update user",
 			log.Fstring("userID", user.UserID),
