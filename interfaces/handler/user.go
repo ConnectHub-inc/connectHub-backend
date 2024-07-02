@@ -6,7 +6,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi"
 
 	"github.com/tusmasoma/connectHub-backend/entity"
 	"github.com/tusmasoma/connectHub-backend/internal/log"
@@ -162,6 +162,7 @@ func (uh *userHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Info("User created successfully", log.Fstring("email", requestBody.Email))
 	w.Header().Set("Authorization", "Bearer "+jwt)
 	w.WriteHeader(http.StatusOK)
 }

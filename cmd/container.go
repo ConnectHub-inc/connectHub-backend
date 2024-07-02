@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/doug-martin/goqu/v9"
-	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
 	"go.uber.org/dig"
 
@@ -106,6 +106,71 @@ func BuildContainer(ctx context.Context) (*dig.Container, error) {
 			})
 
 			return r
+		},
+	}
+
+	for _, provider := range providers {
+		if err := container.Provide(provider); err != nil {
+			log.Critical("Failed to provide dependency", log.Fstring("provider", fmt.Sprintf("%T", provider)))
+			return nil, err
+		}
+	}
+
+	log.Info("Container built successfully")
+	return container, nil
+}
+
+func BuildContainer2(ctx context.Context) (*dig.Container, error) {
+	container := dig.New()
+
+	if err := container.Provide(func() context.Context {
+		return ctx
+	}); err != nil {
+		log.Error("Failed to provide context")
+		return nil, err
+	}
+
+	providers := []interface{}{
+		config.NewServerConfig,
+		config.NewCacheConfig,
+		config.NewDBConfig,
+		provideMySQLDialect,
+		mysql.NewMySQLDB,
+		mysql.NewTransactionRepository,
+		mysql.NewUserRepository,
+		mysql.NewMessageRepository,
+		mysql.NewRoomRepository,
+		mysql.NewUserRoomRepository,
+		redis.NewRedisClient,
+		redis.NewUserRepository,
+		redis.NewMessageRepository,
+		redis.NewPubSubRepository,
+		usecase.NewUserUseCase,
+		usecase.NewMessageUseCase,
+		usecase.NewRoomUseCase,
+		usecase.NewUserRoomUseCase,
+		usecase.NewAuthUseCase,
+		handler.NewWebsocketHandler,
+		handler.NewUserHandler,
+		middleware.NewAuthMiddleware,
+		ws.NewHub,
+		func(
+			serverConfig *config.ServerConfig,
+			wsHandler *handler.WebsocketHandler,
+			userHandler handler.UserHandler,
+			authMiddleware middleware.AuthMiddleware,
+			hub *ws.Hub,
+		) *http.ServeMux {
+			mux := http.NewServeMux()
+			go hub.Run()
+
+			mux.Handle("/ws", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				authMiddleware.Authenticate(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					wsHandler.WebSocket(hub, w, r)
+				})).ServeHTTP(w, r)
+			}))
+			mux.Handle("/api/user/create", http.HandlerFunc(userHandler.CreateUser))
+			return mux
 		},
 	}
 

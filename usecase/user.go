@@ -77,15 +77,13 @@ func (uuc *userUseCase) CreateUser(ctx context.Context, email string, passward s
 		return nil, fmt.Errorf("user with this email already exists")
 	}
 
-	var user entity.User
-	user.Email = email
-	user.Name = auth.ExtractUsernameFromEmail(email)
+	name := auth.ExtractUsernameFromEmail(email)
 	password, err := auth.PasswordEncrypt(passward)
 	if err != nil {
 		log.Error("Failed to encrypt password")
 		return nil, err
 	}
-	user.Password = password
+	user := entity.NewUser(name, email, password, "", false)
 
 	if err = uuc.ur.Create(ctx, user); err != nil {
 		log.Error("Failed to create user", log.Fstring("email", email))
