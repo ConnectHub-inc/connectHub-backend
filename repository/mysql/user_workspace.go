@@ -43,3 +43,28 @@ func (uwr *userWorkspaceRepository) Get(ctx context.Context, userID, workspaceID
 	}
 	return &userWorkspace, nil
 }
+
+func (uwr *userWorkspaceRepository) Update(ctx context.Context, userWorkspace entity.UserWorkspace) error {
+	executor := uwr.db
+	if tx := TxFromCtx(ctx); tx != nil {
+		executor = tx
+	}
+
+	query, _, err := uwr.dialect.Update(uwr.tableName).Set(
+		userWorkspace,
+	).Where(
+		goqu.C("user_id").Eq(userWorkspace.UserID),
+		goqu.C("workspace_id").Eq(userWorkspace.WorkspaceID),
+	).ToSQL()
+	if err != nil {
+		log.Error("Failed to generate SQL query", log.Ferror(err))
+		return err
+	}
+
+	_, err = executor.ExecContext(ctx, query)
+	if err != nil {
+		log.Error("Failed to execute query", log.Ferror(err))
+		return err
+	}
+	return nil
+}

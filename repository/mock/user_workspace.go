@@ -96,15 +96,15 @@ func (mr *MockUserWorkspaceRepositoryMockRecorder) List(ctx, qcs interface{}) *g
 }
 
 // Update mocks base method.
-func (m *MockUserWorkspaceRepository) Update(ctx context.Context, id string, userWorkspace entity.UserWorkspace) error {
+func (m *MockUserWorkspaceRepository) Update(ctx context.Context, userWorkspace entity.UserWorkspace) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", ctx, id, userWorkspace)
+	ret := m.ctrl.Call(m, "Update", ctx, userWorkspace)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Update indicates an expected call of Update.
-func (mr *MockUserWorkspaceRepositoryMockRecorder) Update(ctx, id, userWorkspace interface{}) *gomock.Call {
+func (mr *MockUserWorkspaceRepositoryMockRecorder) Update(ctx, userWorkspace interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockUserWorkspaceRepository)(nil).Update), ctx, id, userWorkspace)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockUserWorkspaceRepository)(nil).Update), ctx, userWorkspace)
 }
