@@ -64,8 +64,8 @@ func TestMessageUseCase_ListMessages(t *testing.T) {
 		},
 	}
 	for _, tt := range patterns {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			tt := tt
 			t.Parallel()
 			ctrl := gomock.NewController(t)
 			ur := mock.NewMockUserRepository(ctrl)
@@ -138,8 +138,8 @@ func TestMessageUseCase_CreateMessage(t *testing.T) {
 		},
 	}
 	for _, tt := range patterns {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			tt := tt
 			t.Parallel()
 			ctrl := gomock.NewController(t)
 			ur := mock.NewMockUserRepository(ctrl)
@@ -270,8 +270,8 @@ func TestMessageUseCase_UpdateMessage(t *testing.T) {
 		},
 	}
 	for _, tt := range patterns {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			tt := tt
 			t.Parallel()
 			ctrl := gomock.NewController(t)
 			ur := mock.NewMockUserRepository(ctrl)
@@ -414,8 +414,8 @@ func TestMessageUseCase_DeleteMessage(t *testing.T) {
 		},
 	}
 	for _, tt := range patterns {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			tt := tt
 			t.Parallel()
 			ctrl := gomock.NewController(t)
 			ur := mock.NewMockUserRepository(ctrl)

@@ -18,6 +18,8 @@ import (
 )
 
 func TestUserHandler_GetUser(t *testing.T) {
+	t.Parallel()
+
 	workspaceID := "f6db2530-cd9b-4ac1-8dc1-38c795e6eec2"
 	userID := "f6db2530-cd9b-4ac1-8dc1-38c795e6cce2"
 	patterns := []struct {
@@ -61,8 +63,9 @@ func TestUserHandler_GetUser(t *testing.T) {
 		},
 	}
 	for _, tt := range patterns {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			tt := tt
+			t.Parallel()
 			ctrl := gomock.NewController(t)
 			uuc := mock.NewMockUserUseCase(ctrl)
 			ruc := mock.NewMockRoomUseCase(ctrl)
@@ -87,6 +90,7 @@ func TestUserHandler_GetUser(t *testing.T) {
 }
 
 func TestUserHandler_ListWorkspaceUsers(t *testing.T) {
+	t.Parallel()
 	workspaceID := "f6db2530-cd9b-4ac1-8dc1-38c795e6eec2"
 	patterns := []struct {
 		name  string
@@ -124,8 +128,9 @@ func TestUserHandler_ListWorkspaceUsers(t *testing.T) {
 		},
 	}
 	for _, tt := range patterns {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			tt := tt
+			t.Parallel()
 			ctrl := gomock.NewController(t)
 			uuc := mock.NewMockUserUseCase(ctrl)
 			ruc := mock.NewMockRoomUseCase(ctrl)
@@ -150,6 +155,7 @@ func TestUserHandler_ListWorkspaceUsers(t *testing.T) {
 }
 
 func TestUserHandler_ListRoomUsers(t *testing.T) {
+	t.Parallel()
 	channelID := "f6db2530-cd9b-4ac1-8dc1-38c795e6eec2"
 	patterns := []struct {
 		name  string
@@ -188,8 +194,9 @@ func TestUserHandler_ListRoomUsers(t *testing.T) {
 	}
 
 	for _, tt := range patterns {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			tt := tt
+			t.Parallel()
 			ctrl := gomock.NewController(t)
 			uuc := mock.NewMockUserUseCase(ctrl)
 			ruc := mock.NewMockRoomUseCase(ctrl)
@@ -214,6 +221,7 @@ func TestUserHandler_ListRoomUsers(t *testing.T) {
 }
 
 func TestUserHandler_CreateUser(t *testing.T) {
+	t.Parallel()
 	patterns := []struct {
 		name  string
 		setup func(
@@ -257,8 +265,9 @@ func TestUserHandler_CreateUser(t *testing.T) {
 		},
 	}
 	for _, tt := range patterns {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			tt := tt
+			t.Parallel()
 			ctrl := gomock.NewController(t)
 			uuc := mock.NewMockUserUseCase(ctrl)
 			ruc := mock.NewMockRoomUseCase(ctrl)
@@ -285,6 +294,7 @@ func TestUserHandler_CreateUser(t *testing.T) {
 }
 
 func TestUserHandler_UpdateUser(t *testing.T) {
+	t.Parallel()
 	userID := "f6db2530-cd9b-4ac1-8dc1-38c795e6eec2"
 	user := entity.User{
 		ID:              userID,
@@ -355,8 +365,9 @@ func TestUserHandler_UpdateUser(t *testing.T) {
 		},
 	}
 	for _, tt := range patterns {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			tt := tt
+			t.Parallel()
 			ctrl := gomock.NewController(t)
 			uuc := mock.NewMockUserUseCase(ctrl)
 			ruc := mock.NewMockRoomUseCase(ctrl)
@@ -378,6 +389,7 @@ func TestUserHandler_UpdateUser(t *testing.T) {
 }
 
 func TestUserHandler_Login(t *testing.T) {
+	t.Parallel()
 	patterns := []struct {
 		name  string
 		setup func(
@@ -421,8 +433,9 @@ func TestUserHandler_Login(t *testing.T) {
 		},
 	}
 	for _, tt := range patterns {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			tt := tt
+			t.Parallel()
 			ctrl := gomock.NewController(t)
 			uuc := mock.NewMockUserUseCase(ctrl)
 			ruc := mock.NewMockRoomUseCase(ctrl)

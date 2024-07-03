@@ -11,6 +11,7 @@ import (
 )
 
 func Test_Logging(t *testing.T) {
+	t.Parallel()
 	// ログの出力をキャプチャするためのバッファ
 	var logBuf bytes.Buffer
 	log.SetOutput(&logBuf)
@@ -45,7 +46,9 @@ func Test_Logging(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			// ロギングミドルウェアを適用
 			handlerToTest := Logging(tt.handler)
 

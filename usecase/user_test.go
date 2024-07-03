@@ -27,6 +27,8 @@ type UpdateUserArg struct {
 }
 
 func TestUserUseCase_ListWorkspaceUsers(t *testing.T) {
+	t.Parallel()
+
 	workspaceID := "f6db2530-cd9b-4ac1-8dc1-38c795e6eec2"
 	users := []entity.User{
 		{
@@ -73,8 +75,10 @@ func TestUserUseCase_ListWorkspaceUsers(t *testing.T) {
 	}
 
 	for _, tt := range patterns {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			tt := tt
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			ur := mock.NewMockUserRepository(ctrl)
 			cr := mock.NewMockUserCacheRepository(ctrl)
@@ -100,6 +104,8 @@ func TestUserUseCase_ListWorkspaceUsers(t *testing.T) {
 }
 
 func TestUserUseCase_ListRoomUsers(t *testing.T) {
+	t.Parallel()
+
 	channelID := "f6db2530-cd9b-4ac1-8dc1-38c795e6eec2"
 	users := []entity.User{
 		{
@@ -147,8 +153,10 @@ func TestUserUseCase_ListRoomUsers(t *testing.T) {
 	}
 
 	for _, tt := range patterns {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			tt := tt
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			ur := mock.NewMockUserRepository(ctrl)
 			cr := mock.NewMockUserCacheRepository(ctrl)
@@ -221,8 +229,8 @@ func TestUserUseCase_CreateUserAndGenerateToken(t *testing.T) {
 		},
 	}
 	for _, tt := range patterns {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			tt := tt
 			ctrl := gomock.NewController(t)
 			ur := mock.NewMockUserRepository(ctrl)
 			cr := mock.NewMockUserCacheRepository(ctrl)
@@ -248,6 +256,8 @@ func TestUserUseCase_CreateUserAndGenerateToken(t *testing.T) {
 }
 
 func TestUserUseCase_UpdateUser(t *testing.T) {
+	t.Parallel()
+
 	userID := "f6db2530-cd9b-4ac1-8dc1-38c795e6eec2"
 	user := entity.User{
 		ID:              userID,
@@ -309,8 +319,10 @@ func TestUserUseCase_UpdateUser(t *testing.T) {
 		},
 	}
 	for _, tt := range patterns {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			tt := tt
+			t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			ur := mock.NewMockUserRepository(ctrl)
 			cr := mock.NewMockUserCacheRepository(ctrl)
@@ -437,8 +449,8 @@ func TestUserUseCase_LoginAndGenerateToken(t *testing.T) {
 	}
 
 	for _, tt := range patterns {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			tt := tt
 			ctrl := gomock.NewController(t)
 			ur := mock.NewMockUserRepository(ctrl)
 			cr := mock.NewMockUserCacheRepository(ctrl)

@@ -107,6 +107,8 @@ func TestRoomUseCase_CreateRoom(t *testing.T) {
 }
 
 func TestRoomUseCase_ListUserWorkspaceRooms(t *testing.T) {
+	t.Parallel()
+
 	workspaceID := "f6db2530-cd9b-4ac1-8dc1-38c795e6eec2"
 	userID := "f6db2530-cd9b-4ac1-8dc1-38c795e6cce2"
 
@@ -159,8 +161,9 @@ func TestRoomUseCase_ListUserWorkspaceRooms(t *testing.T) {
 		},
 	}
 	for _, tt := range patterns {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			tt := tt
+			t.Parallel()
 			ctrl := gomock.NewController(t)
 			rr := mock.NewMockRoomRepository(ctrl)
 			urr := mock.NewMockUserRoomRepository(ctrl)

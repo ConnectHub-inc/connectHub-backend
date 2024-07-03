@@ -80,24 +80,27 @@ func TestAuthUseCase_FetchUserFromContext(t *testing.T) {
 	}
 	for _, tt := range patterns {
 		tt := tt
-		ctrl := gomock.NewController(t)
-		mockUserRepo := mock.NewMockUserRepository(ctrl)
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			ctrl := gomock.NewController(t)
+			mockUserRepo := mock.NewMockUserRepository(ctrl)
 
-		if tt.setup != nil {
-			tt.setup(mockUserRepo)
-		}
+			if tt.setup != nil {
+				tt.setup(mockUserRepo)
+			}
 
-		usecase := NewAuthUseCase(mockUserRepo)
-		user, err := usecase.GetUserFromContext(tt.in())
+			usecase := NewAuthUseCase(mockUserRepo)
+			user, err := usecase.GetUserFromContext(tt.in())
 
-		if (err != nil) != (tt.want.err != nil) {
-			t.Errorf("FetchUserFromContext() error = %v, wantErr %v", err, tt.want.err)
-		} else if err != nil && tt.want.err != nil && err.Error() != tt.want.err.Error() {
-			t.Errorf("FetchUserFromContext() error = %v, wantErr %v", err, tt.want.err)
-		}
+			if (err != nil) != (tt.want.err != nil) {
+				t.Errorf("FetchUserFromContext() error = %v, wantErr %v", err, tt.want.err)
+			} else if err != nil && tt.want.err != nil && err.Error() != tt.want.err.Error() {
+				t.Errorf("FetchUserFromContext() error = %v, wantErr %v", err, tt.want.err)
+			}
 
-		if !reflect.DeepEqual(user, tt.want.user) {
-			t.Errorf("FetchUserFromContext() got = %v, want %v", *user, tt.want.user)
-		}
+			if !reflect.DeepEqual(user, tt.want.user) {
+				t.Errorf("FetchUserFromContext() got = %v, want %v", *user, tt.want.user)
+			}
+		})
 	}
 }
