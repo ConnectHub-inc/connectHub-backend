@@ -85,8 +85,8 @@ describe("WebSocket E2E Tests with Go Server", () => {
       target_id: "",
       sender_id: clientID,
       content: {
+        id: "",
         user_id: "",
-        messageID: "f6db2530-cd9b-4ac1-8dc1-38c795e6eec2",
         text: "testChannel",
         created: "2024-06-11T15:48:00Z",
         updated: null,
