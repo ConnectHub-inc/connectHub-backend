@@ -9,6 +9,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/go-chi/chi"
 	"github.com/joho/godotenv"
 
 	"github.com/tusmasoma/connectHub-backend/config"
@@ -28,17 +29,17 @@ func main() {
 	mainCtx, cancelMain := context.WithCancel(context.Background())
 	defer cancelMain()
 
-	container, err := BuildContainer2(mainCtx)
+	container, err := BuildContainer(mainCtx)
 	if err != nil {
 		log.Critical("Failed to build container", log.Ferror(err))
 		return
 	}
 
 	/* ===== サーバの設定 ===== */
-	err = container.Invoke(func(mux *http.ServeMux, config *config.ServerConfig) {
+	err = container.Invoke(func(router *chi.Mux, config *config.ServerConfig) {
 		srv := &http.Server{
 			Addr:         addr,
-			Handler:      mux,
+			Handler:      router,
 			ReadTimeout:  config.ReadTimeout,
 			WriteTimeout: config.WriteTimeout,
 			IdleTimeout:  config.IdleTimeout,
