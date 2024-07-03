@@ -94,17 +94,18 @@ func (room *Room) broadcastToClientsInRoom(message []byte) {
 }
 
 func (room *Room) publishRoomMessage(ctx context.Context, message *entity.WSMessage) {
-	if err := room.pubsubRepo.Publish(ctx, room.ID, *message); err != nil {
+	if err := room.pubsubRepo.Publish(ctx, room.ID, message.Encode()); err != nil {
 		log.Error("Failed to publish message", log.Ferror(err))
 	}
 }
 
 func (room *Room) subscribeToRoomMessages(ctx context.Context) {
 	pubsub := room.pubsubRepo.Subscribe(ctx, room.ID)
+	defer pubsub.Close()
 
 	ch := pubsub.Channel()
 
 	for msg := range ch {
-		room.broadcastToClientsInRoom([]byte(msg.Payload)) // ここもentity.Messageに変更する？
+		room.broadcastToClientsInRoom([]byte(msg.Payload))
 	}
 }

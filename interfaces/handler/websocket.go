@@ -52,8 +52,6 @@ func (wsh *WebsocketHandler) WebSocket(hub *ws.Hub, w http.ResponseWriter, r *ht
 		return
 	}
 
-	log.Info("Connected to websocket", log.Fstring("userID", user.ID))
-
 	client := ws.NewClient(user.ID, user.Name, conn, hub, wsh.psr, wsh.muc, wsh.uru)
 
 	go client.WritePump()

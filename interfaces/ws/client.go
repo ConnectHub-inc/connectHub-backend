@@ -46,6 +46,7 @@ func NewClient(
 		Name:   name,
 		conn:   conn,
 		hub:    hub,
+		rooms:  make(map[*Room]bool),
 		send:   make(chan []byte, config.ChannelBufferSize),
 		psr:    psr,
 		muc:    muc,
@@ -276,6 +277,8 @@ func (client *Client) handleCreatePublicRoom(message entity.WSMessage) {
 			}
 		}
 	}
+
+	time.Sleep(5 * time.Second) //nolint:gomnd // TODO: time.Sleepを使うのは避ける
 
 	room.broadcast <- &entity.WSMessage{
 		Action:   config.CreatePublicRoomAction,

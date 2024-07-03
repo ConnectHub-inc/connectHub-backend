@@ -6,6 +6,8 @@ jest.setTimeout(1000000); // タイムアウトを延長
 describe('WebSocket E2E Tests with Go Server', () => {
   let ws: WebSocket; // WebSocketクライアントのインスタンスを保持する変数
   let authToken: string;
+  let clientID: string;
+  let channelID: string;
 
   // 全てのテストの前に実行されるセットアップ処理
   beforeAll(async () => {
@@ -50,11 +52,11 @@ describe('WebSocket E2E Tests with Go Server', () => {
   });
 
   // WebSocket接続が正しく確立されるかをテスト
-  test('should establish a WebSocket connection', (done) => {
+  test('TEST: WebSocket connection', (done) => {
     // WebSocket接続が確立された時に発生するイベント
     ws.on('open', () => {
-      console.log('WebSocket is open');
       expect(ws.readyState).toBe(WebSocket.OPEN); // WebSocketがOPEN状態であることを確認
+      console.log('SUCCESS: WebSocket connection');
       done(); // テスト完了
     });
 
@@ -66,8 +68,89 @@ describe('WebSocket E2E Tests with Go Server', () => {
     }
 
     ws.on('error', (error) => {
-      console.error('Test WebSocket connection error:', error);
+      console.error('FAIL: WebSocket connection', error);
       done(error); // エラー発生時はテスト失敗
     });
   });
+
+  // 公開チャンネルの作成をテスト
+  test('TEST: Create Public Channel', (done) => {
+    const createChannelMessage = {
+      action_tag: "CREATE_PUBLIC_ROOM",
+      target_id: "",
+      sender_id: clientID,
+      content: {
+        user_id: "user123",
+        messageID: "f6db2530-cd9b-4ac1-8dc1-38c795e6eec2",
+        text: "testChannel",
+        created: "2024-06-11T15:48:00Z",
+        updated: null
+      }
+    };
+
+    ws.once('message', (data) => {
+        const receivedMessage = JSON.parse(data.toString());
+        if (receivedMessage.action_tag === 'CREATE_PUBLIC_ROOM') {
+          expect(receivedMessage.content.text).toBe("testChannel");
+          channelID = receivedMessage.target_id;
+          console.log('SUCCESS: CREATE_PUBLIC_CHANNEL')
+          done();
+        }
+    });
+
+    if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify(createChannelMessage));
+    } else {
+        ws.once('open', () => {
+          ws.send(JSON.stringify(createChannelMessage));
+        });
+    }
+
+    ws.once('error', (error) => {
+        console.error('FAIL: CREATE_PUBLIC_CHANNEL', error);
+        done(error);
+    });
+  });
+
+  // メッセージの送信と受信をテスト
+  test('TEST: Create Message', (done) => {
+    const testMessage = {
+      action_tag: "CREATE_MESSAGE",
+      target_id: channelID,
+      sender_id: clientID,
+      content: {
+        user_id: "user123",
+        text: "送信したいメッセージの内容",
+        created_at: "2024-06-11T15:48:00Z",
+        updated_at: null
+      }
+    };
+
+    ws.once('message', (data) => {
+      const receivedMessage = JSON.parse(data.toString());
+      if (receivedMessage.action_tag === 'CREATE_MESSAGE') {
+        expect(receivedMessage.action_tag).toBe(testMessage.action_tag);
+        expect(receivedMessage.target_id).toBe(testMessage.target_id);
+        //expect(receivedMessage.sender_id).toBe(testMessage.sender_id);
+        expect(receivedMessage.content.user_id).toBe(testMessage.content.user_id);
+        expect(receivedMessage.content.text).toBe(testMessage.content.text);
+        expect(receivedMessage.content.created_at).toBe(testMessage.content.created_at);
+        console.log('SUCCESS: CREATE_MESSAGE')
+        done();
+      }
+    });
+
+    if (ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify(testMessage));
+    } else {
+      ws.once('open', () => {
+        ws.send(JSON.stringify(testMessage));
+      });
+    }
+
+    ws.once('error', (error) => {
+      console.error('FAIL: CREATE_MESSAGE', error);
+      done(error);
+    });
+    });
 });

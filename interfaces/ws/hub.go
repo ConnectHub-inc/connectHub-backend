@@ -25,15 +25,17 @@ type Hub struct {
 }
 
 // NewWebsocketServer creates a new Hub type
-func NewHub(pubsubRepo repository.PubSubRepository) *Hub {
+func NewHub(roomUseCase usecase.RoomUseCase, pubsubRepo repository.PubSubRepository, messageCacheRepo repository.MessageCacheRepository) *Hub {
 	return &Hub{
-		ID:         uuid.New().String(),
-		clients:    make(map[*Client]bool),
-		rooms:      make(map[*Room]bool),
-		Register:   make(chan *Client),
-		unregister: make(chan *Client),
-		broadcast:  make(chan []byte),
-		pubsubRepo: pubsubRepo,
+		ID:               uuid.New().String(),
+		clients:          make(map[*Client]bool),
+		rooms:            make(map[*Room]bool),
+		Register:         make(chan *Client),
+		unregister:       make(chan *Client),
+		broadcast:        make(chan []byte),
+		roomUseCase:      roomUseCase,
+		pubsubRepo:       pubsubRepo,
+		messageCacheRepo: messageCacheRepo,
 	}
 }
 
