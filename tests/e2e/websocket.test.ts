@@ -165,6 +165,55 @@ describe("WebSocket E2E Tests with Go Server", () => {
     });
   });
 
+  // 初回メッセージの取得をテスト
+  test("TEST: List Messages", (done) => {
+    const listMessagesRequest = {
+      action_tag: "LIST_MESSAGES",
+      target_id: channelID,
+      sender_id: clientID,
+      content: {
+        id: "",
+        user_id: "",
+        text: "",
+        created_at: "2024-06-11T15:48:00Z",
+        updated_at: null,
+      },
+    };
+
+    ws.once("message", (data) => {
+      const receivedMessage = JSON.parse(data.toString());
+      if (receivedMessage.action_tag === "LIST_MESSAGES") {
+        expect(receivedMessage.action_tag).toBe(listMessagesRequest.action_tag);
+        expect(receivedMessage.target_id).toBe(channelID);
+        //expect(receivedMessage.sender_id).toBe(clientID);
+        expect(Array.isArray(receivedMessage.contents)).toBe(true);
+        expect(receivedMessage.contents.length).toBeGreaterThan(0);
+        expect(receivedMessage.contents[0]).toHaveProperty("id");
+        expect(receivedMessage.contents[0]).toHaveProperty("user_id");
+        expect(receivedMessage.contents[0]).toHaveProperty("text");
+        expect(receivedMessage.contents[0].text).toBe(
+          "送信したいメッセージの内容"
+        );
+        expect(receivedMessage.contents[0]).toHaveProperty("created_at");
+        console.log("SUCCESS: LIST_MESSAGES");
+        done();
+      }
+    });
+
+    if (ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify(listMessagesRequest));
+    } else {
+      ws.once("open", () => {
+        ws.send(JSON.stringify(listMessagesRequest));
+      });
+    }
+
+    ws.once("error", (error) => {
+      console.error("FAIL: LIST_MESSAGES", error);
+      done(error);
+    });
+  });
+
   // メッセージの更新をテスト
   test("TEST: Update Message", (done) => {
     const testMessage = {

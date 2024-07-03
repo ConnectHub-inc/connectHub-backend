@@ -32,7 +32,7 @@ func (message *WSMessage) Encode() []byte {
 
 type WSMessages struct {
 	Action   string    `json:"action_tag"`
-	Contents []Message `json:"content"`
+	Contents []Message `json:"contents"`
 	TargetID string    `json:"target_id"` // TargetID is the ID of the room or user the message is intended for
 	SenderID string    `json:"sender_id"` // SenderID is the ID of the user who sent the message
 }
