@@ -209,6 +209,7 @@ func (client *Client) handleListMessages(message entity.WSMessage) {
 
 func (client *Client) handleCreateMessage(message entity.WSMessage) {
 	roomID := message.TargetID
+	message.Content.ID = uuid.New().String()
 	message.Content.UserID = client.UserID
 
 	if err := client.muc.CreateMessage(context.Background(), roomID, message.Content); err != nil {
@@ -227,7 +228,7 @@ func (client *Client) handleCreateMessage(message entity.WSMessage) {
 func (client *Client) handleDeleteMessage(message entity.WSMessage) {
 	roomID := message.TargetID
 
-	if err := client.muc.DeleteMessage(context.Background(), message.Content, roomID, client.ID); err != nil {
+	if err := client.muc.DeleteMessage(context.Background(), message.Content, roomID, client.UserID); err != nil {
 		log.Error("Failed to delete message", log.Ferror(err))
 		return
 	}

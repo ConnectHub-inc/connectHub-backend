@@ -8,6 +8,7 @@ describe("WebSocket E2E Tests with Go Server", () => {
   let authToken: string;
   let clientID: string;
   let channelID: string;
+  let msgID: string;
   let userIDofMsg: string;
 
   // 全てのテストの前に実行されるセットアップ処理
@@ -123,6 +124,7 @@ describe("WebSocket E2E Tests with Go Server", () => {
       target_id: channelID,
       sender_id: clientID,
       content: {
+        id: "",
         user_id: "",
         text: "送信したいメッセージの内容",
         created_at: "2024-06-11T15:48:00Z",
@@ -136,12 +138,14 @@ describe("WebSocket E2E Tests with Go Server", () => {
         expect(receivedMessage.action_tag).toBe(testMessage.action_tag);
         expect(receivedMessage.target_id).toBe(testMessage.target_id);
         //expect(receivedMessage.sender_id).toBe(testMessage.sender_id);
+        expect(receivedMessage.content.id).not.toBe("");
         expect(receivedMessage.content.user_id).not.toBe("");
         expect(receivedMessage.content.text).toBe(testMessage.content.text);
         expect(receivedMessage.content.created_at).toBe(
           testMessage.content.created_at
         );
         console.log("SUCCESS: CREATE_MESSAGE");
+        msgID = receivedMessage.content.id;
         userIDofMsg = receivedMessage.content.user_id;
         done();
       }
@@ -168,6 +172,7 @@ describe("WebSocket E2E Tests with Go Server", () => {
       target_id: channelID,
       sender_id: clientID,
       content: {
+        id: msgID,
         user_id: userIDofMsg,
         text: "更新したいメッセージの内容",
         created_at: "2024-06-11T15:48:00Z",
@@ -181,6 +186,7 @@ describe("WebSocket E2E Tests with Go Server", () => {
         expect(receivedMessage.action_tag).toBe(testMessage.action_tag);
         expect(receivedMessage.target_id).toBe(testMessage.target_id);
         //expect(receivedMessage.sender_id).toBe(testMessage.sender_id);
+        expect(receivedMessage.content.id).toBe(testMessage.content.id);
         expect(receivedMessage.content.user_id).toBe(
           testMessage.content.user_id
         );
@@ -206,6 +212,53 @@ describe("WebSocket E2E Tests with Go Server", () => {
 
     ws.once("error", (error) => {
       console.error("FAIL: UPDATE_MESSAGE", error);
+      done(error);
+    });
+  });
+
+  // メッセージの削除をテスト
+  test("TEST: Delete Message", (done) => {
+    const testMessage = {
+      action_tag: "DELETE_MESSAGE",
+      target_id: channelID,
+      sender_id: clientID,
+      content: {
+        id: msgID,
+        user_id: userIDofMsg,
+        text: "",
+        created_at: "2024-06-11T15:48:00Z",
+        updated_at: null,
+      },
+    };
+
+    ws.once("message", (data) => {
+      const receivedMessage = JSON.parse(data.toString());
+      if (receivedMessage.action_tag === "DELETE_MESSAGE") {
+        expect(receivedMessage.action_tag).toBe(testMessage.action_tag);
+        expect(receivedMessage.target_id).toBe(testMessage.target_id);
+        //expect(receivedMessage.sender_id).toBe(testMessage.sender_id);
+        expect(receivedMessage.content.user_id).toBe(
+          testMessage.content.user_id
+        );
+        expect(receivedMessage.content.text).toBe(testMessage.content.text);
+        expect(receivedMessage.content.created_at).toBe(
+          testMessage.content.created_at
+        );
+        console.log("SUCCESS: DELETE_MESSAGE");
+        done();
+      }
+    });
+
+    if (ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify(testMessage));
+    } else {
+      ws.once("open", () => {
+        ws.send(JSON.stringify(testMessage));
+      });
+    }
+
+    ws.once("error", (error) => {
+      console.error("FAIL: DELETE_MESSAGE", error);
       done(error);
     });
   });
