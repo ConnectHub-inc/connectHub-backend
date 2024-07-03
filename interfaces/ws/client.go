@@ -209,6 +209,7 @@ func (client *Client) handleListMessages(message entity.WSMessage) {
 
 func (client *Client) handleCreateMessage(message entity.WSMessage) {
 	roomID := message.TargetID
+	message.Content.UserID = client.UserID
 
 	if err := client.muc.CreateMessage(context.Background(), roomID, message.Content); err != nil {
 		log.Error("Failed to create message", log.Ferror(err))
@@ -240,7 +241,7 @@ func (client *Client) handleDeleteMessage(message entity.WSMessage) {
 }
 
 func (client *Client) handleUpdateMessage(message entity.WSMessage) {
-	if err := client.muc.UpdateMessage(context.Background(), message.Content, client.ID); err != nil {
+	if err := client.muc.UpdateMessage(context.Background(), message.Content, client.UserID); err != nil {
 		log.Error("Failed to update message", log.Ferror(err))
 		return
 	}
