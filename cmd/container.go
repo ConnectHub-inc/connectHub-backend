@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/doug-martin/goqu/v9"
-	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
 	"go.uber.org/dig"
 
@@ -63,15 +63,14 @@ func BuildContainer(ctx context.Context) (*dig.Container, error) {
 		) *chi.Mux {
 			r := chi.NewRouter()
 			r.Use(cors.Handler(cors.Options{
-				AllowedOrigins:   []string{"https://*", "http://*"},
-				AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE"},
-				AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token", "Origin"},
-				ExposedHeaders:   []string{"Link", "Authorization"},
-				AllowCredentials: false,
-				MaxAge:           serverConfig.PreflightCacheDurationSec,
+				AllowedOrigins:     []string{"https://*", "http://*"},
+				AllowedMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+				AllowedHeaders:     []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token", "Origin"},
+				ExposedHeaders:     []string{"Link", "Authorization"},
+				AllowCredentials:   true,
+				MaxAge:             serverConfig.PreflightCacheDurationSec,
+				OptionsPassthrough: true,
 			}))
-
-			r.Use(middleware.Logging)
 
 			go hub.Run()
 
@@ -82,6 +81,7 @@ func BuildContainer(ctx context.Context) (*dig.Container, error) {
 				})
 			})
 
+			// r.Use(middleware.Logging)
 			r.Route("/api", func(r chi.Router) {
 				r.Route("/workspaces", func(r chi.Router) {
 					r.Use(authMiddleware.Authenticate)

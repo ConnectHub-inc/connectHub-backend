@@ -46,6 +46,7 @@ func NewClient(
 		Name:   name,
 		conn:   conn,
 		hub:    hub,
+		rooms:  make(map[*Room]bool),
 		send:   make(chan []byte, config.ChannelBufferSize),
 		psr:    psr,
 		muc:    muc,
@@ -208,6 +209,8 @@ func (client *Client) handleListMessages(message entity.WSMessage) {
 
 func (client *Client) handleCreateMessage(message entity.WSMessage) {
 	roomID := message.TargetID
+	message.Content.ID = uuid.New().String()
+	message.Content.UserID = client.UserID
 
 	if err := client.muc.CreateMessage(context.Background(), roomID, message.Content); err != nil {
 		log.Error("Failed to create message", log.Ferror(err))
@@ -225,7 +228,7 @@ func (client *Client) handleCreateMessage(message entity.WSMessage) {
 func (client *Client) handleDeleteMessage(message entity.WSMessage) {
 	roomID := message.TargetID
 
-	if err := client.muc.DeleteMessage(context.Background(), message.Content, roomID, client.ID); err != nil {
+	if err := client.muc.DeleteMessage(context.Background(), message.Content, roomID, client.UserID); err != nil {
 		log.Error("Failed to delete message", log.Ferror(err))
 		return
 	}
@@ -239,7 +242,7 @@ func (client *Client) handleDeleteMessage(message entity.WSMessage) {
 }
 
 func (client *Client) handleUpdateMessage(message entity.WSMessage) {
-	if err := client.muc.UpdateMessage(context.Background(), message.Content, client.ID); err != nil {
+	if err := client.muc.UpdateMessage(context.Background(), message.Content, client.UserID); err != nil {
 		log.Error("Failed to update message", log.Ferror(err))
 		return
 	}
@@ -276,6 +279,8 @@ func (client *Client) handleCreatePublicRoom(message entity.WSMessage) {
 			}
 		}
 	}
+
+	time.Sleep(5 * time.Second) //nolint:gomnd // TODO: time.Sleepを使うのは避ける
 
 	room.broadcast <- &entity.WSMessage{
 		Action:   config.CreatePublicRoomAction,

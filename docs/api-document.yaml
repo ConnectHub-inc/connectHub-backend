@@ -52,7 +52,7 @@ paths:
               description: Auth token for the registered user
               schema:
                 type: string
-  /api/user/signup:
+  /api/user/create:
     post:
       tags:
         - user
