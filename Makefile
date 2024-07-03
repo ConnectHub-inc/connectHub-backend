@@ -42,6 +42,23 @@ $(BIN)/gofumpt-$(GOFUMPT_VERSION):
 test:
 	$(GO) test -v -count=1 ./...
 
+.PHONY: e2e-test
+e2e-test:
+	@echo "Starting Docker containers..."
+	@docker-compose up -d
+	@echo "Waiting for server to start..."
+	@while true; do \
+		if docker-compose logs back 2>&1 | grep -q "Server running..."; then \
+			echo "Server is up and running."; \
+			break; \
+		fi; \
+		sleep 1; \
+	done
+	@echo "Running E2E tests..."
+	@npm run test
+	@echo "Stopping Docker containers..."
+	@docker-compose down
+
 # golangci-lint: lint for all under the PKG
 .PHONY: lint
 lint: PKG ?= ./...
