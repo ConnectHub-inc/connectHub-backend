@@ -41,3 +41,7 @@ curl -sfL https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.s
 ```makefile
 make test
 ```
+
+```makefile
+make e2e-test
+```
