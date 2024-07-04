@@ -96,6 +96,12 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: ./coverage.txt
           slug: tusmasoma/connecthub-backend
+
+      - name: Run E2E tests
+        run: make e2e-test
+        env:
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          PUBLIC_KEY: ${{ secrets.PUBLIC_KEY }}
   lint:
     needs: build
     runs-on: ubuntu-latest
