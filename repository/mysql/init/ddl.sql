@@ -21,7 +21,8 @@ CREATE TABLE Rooms (
     name VARCHAR(50) NOT NULL,
     private BOOLEAN NOT NULL,
     description TEXT,
-    FOREIGN KEY (workspace_id) REFERENCES Workspaces(id) ON DELETE CASCADE
+    FOREIGN KEY (workspace_id) REFERENCES Workspaces(id) ON DELETE CASCADE,
+    UNIQUE (workspace_id, name)
 );
 
 CREATE TABLE ActionTags (
