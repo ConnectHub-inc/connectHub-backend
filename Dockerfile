@@ -29,9 +29,6 @@ COPY entrypoint.sh /usr/local/bin/
 # エントリポイントスクリプトを実行可能にする
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-# アプリケーションのビルド
-RUN go build -buildvcs=false -o app ./cmd/
-
 # コンテナが起動するときに実行されるコマンド (バイナリにしたgolangのファイルを実行)
 ENTRYPOINT ["entrypoint.sh"]
 
