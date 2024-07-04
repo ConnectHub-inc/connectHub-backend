@@ -29,7 +29,7 @@ func NewTransactionRepository(db *sql.DB) repository.TransactionRepository {
 }
 
 func (tr *transactionRepository) Transaction(ctx context.Context, fn func(ctx context.Context) error) error {
-	tx, err := tr.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
+	tx, err := tr.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelRepeatableRead})
 	if err != nil {
 		return err
 	}
