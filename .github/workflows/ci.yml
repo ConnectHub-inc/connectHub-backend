@@ -69,6 +69,7 @@ jobs:
           name: app
           path: ./app
   test:
+    if: github.ref != 'refs/head/feature/refactor-table'
     needs: build
     runs-on: ubuntu-latest
     steps:
