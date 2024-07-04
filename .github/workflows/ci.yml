@@ -102,6 +102,9 @@ jobs:
       - name: Checkout the repository
         uses: actions/checkout@v3.5.2
 
+      - name: Install dependencies
+        run: npm install
+
       - name: Setup .env file
         run: echo "${{ secrets.LOCAL_ENV_FILE }}" > .env
         env:
