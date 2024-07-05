@@ -73,13 +73,14 @@ func (room *Room) unregisterClientInRoom(client *Client) {
 }
 
 func (room *Room) notifyClientJoined(client *Client) {
+	membershipID := client.UserID + "_" + client.hub.ID
 	message := &entity.WSMessage{
 		Action: config.CreateMessageAction,
 		Content: entity.Message{
-			ID:        uuid.New().String(),
-			UserID:    client.ID,
-			Text:      fmt.Sprintf(config.WelcomeMessage, client.Name),
-			CreatedAt: time.Now(),
+			ID:           uuid.New().String(),
+			MembershipID: membershipID,
+			Text:         fmt.Sprintf(config.WelcomeMessage, "client.Name"), // TODO: add client.Name field
+			CreatedAt:    time.Now(),
 		},
 		TargetID: room.ID,
 		SenderID: client.ID,

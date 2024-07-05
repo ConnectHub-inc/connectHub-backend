@@ -20,37 +20,34 @@ var newline = []byte{'\n'}
 
 type Client struct {
 	ID     string
-	UserID string
-	Name   string
+	UserID string // TODO: membershipIDに変更すべきか？
 	conn   *websocket.Conn
 	hub    *Hub
 	rooms  map[*Room]bool
 	send   chan []byte
 	psr    repository.PubSubRepository
 	muc    usecase.MessageUseCase
-	uruc   usecase.UserRoomUseCase
+	mruc   usecase.MembershipRoomUseCase
 }
 
 func NewClient(
 	userID string,
-	name string,
 	conn *websocket.Conn,
 	hub *Hub,
 	psr repository.PubSubRepository,
 	muc usecase.MessageUseCase,
-	uruc usecase.UserRoomUseCase,
+	mruc usecase.MembershipRoomUseCase,
 ) *Client {
 	return &Client{
 		ID:     uuid.New().String(),
 		UserID: userID,
-		Name:   name,
 		conn:   conn,
 		hub:    hub,
 		rooms:  make(map[*Room]bool),
 		send:   make(chan []byte, config.ChannelBufferSize),
 		psr:    psr,
 		muc:    muc,
-		uruc:   uruc,
+		mruc:   mruc,
 	}
 }
 
@@ -210,7 +207,7 @@ func (client *Client) handleListMessages(message entity.WSMessage) {
 func (client *Client) handleCreateMessage(message entity.WSMessage) {
 	roomID := message.TargetID
 	message.Content.ID = uuid.New().String()
-	message.Content.UserID = client.UserID
+	message.Content.MembershipID = client.UserID + "_" + client.hub.ID
 
 	if err := client.muc.CreateMessage(context.Background(), roomID, message.Content); err != nil {
 		log.Error("Failed to create message", log.Ferror(err))
@@ -227,8 +224,9 @@ func (client *Client) handleCreateMessage(message entity.WSMessage) {
 
 func (client *Client) handleDeleteMessage(message entity.WSMessage) {
 	roomID := message.TargetID
+	membershipID := client.UserID + "_" + client.hub.ID
 
-	if err := client.muc.DeleteMessage(context.Background(), message.Content, roomID, client.UserID); err != nil {
+	if err := client.muc.DeleteMessage(context.Background(), message.Content, membershipID, roomID); err != nil {
 		log.Error("Failed to delete message", log.Ferror(err))
 		return
 	}
@@ -242,7 +240,8 @@ func (client *Client) handleDeleteMessage(message entity.WSMessage) {
 }
 
 func (client *Client) handleUpdateMessage(message entity.WSMessage) {
-	if err := client.muc.UpdateMessage(context.Background(), message.Content, client.UserID); err != nil {
+	membershipID := client.UserID + "_" + client.hub.ID
+	if err := client.muc.UpdateMessage(context.Background(), message.Content, membershipID); err != nil {
 		log.Error("Failed to update message", log.Ferror(err))
 		return
 	}
@@ -258,13 +257,14 @@ func (client *Client) handleUpdateMessage(message entity.WSMessage) {
 
 func (client *Client) handleCreatePublicRoom(message entity.WSMessage) {
 	roomName := message.Content.Text
+	membershipID := client.UserID + "_" + client.hub.ID
 	room := client.hub.FindRoomByName(roomName)
 	if room != nil {
 		log.Warn("Room already exists", log.Fstring("roomName", roomName))
 		return
 	}
 
-	room = client.hub.CreateRoom(client.UserID, roomName, false)
+	room = client.hub.CreateRoom(client.UserID, roomName, false) // TODO: userIDでいいのか？membershipIDか？
 	if room == nil {
 		log.Error("Failed to create room", log.Fstring("roomName", roomName))
 		return
@@ -287,10 +287,10 @@ func (client *Client) handleCreatePublicRoom(message entity.WSMessage) {
 		TargetID: room.ID,
 		SenderID: client.ID,
 		Content: entity.Message{
-			ID:        uuid.New().String(),
-			UserID:    client.UserID,
-			Text:      room.Name,
-			CreatedAt: time.Now(),
+			ID:           uuid.New().String(),
+			MembershipID: membershipID,
+			Text:         room.Name,
+			CreatedAt:    time.Now(),
 		},
 	}
 }
@@ -298,14 +298,15 @@ func (client *Client) handleCreatePublicRoom(message entity.WSMessage) {
 func (client *Client) handleJoinPublicRoom(message entity.WSMessage) {
 	ctx := context.Background()
 	roomID := message.TargetID
+	membershipID := client.UserID + "_" + client.hub.ID
 	room := client.hub.FindRoomByID(roomID)
 	if room == nil {
 		log.Warn("Room not found", log.Fstring("roomID", roomID))
 		return
 	}
 
-	if err := client.uruc.CreateUserRoom(ctx, client.UserID, roomID); err != nil {
-		log.Error("Failed to create user room", log.Fstring("userID", client.UserID), log.Fstring("roomID", roomID))
+	if err := client.mruc.CreateMembershipRoom(ctx, membershipID, roomID); err != nil {
+		log.Error("Failed to create membership room", log.Fstring("membershipID", membershipID), log.Fstring("roomID", roomID))
 		return
 	}
 
@@ -324,10 +325,10 @@ func (client *Client) handleJoinPublicRoom(message entity.WSMessage) {
 		TargetID: room.ID,
 		SenderID: client.ID,
 		Content: entity.Message{
-			ID:        uuid.New().String(),
-			UserID:    client.UserID,
-			Text:      fmt.Sprintf(config.WelcomeMessage, client.Name),
-			CreatedAt: time.Now(),
+			ID:           uuid.New().String(),
+			MembershipID: membershipID,
+			Text:         fmt.Sprintf(config.WelcomeMessage, "client.Name"), // TODO: add client.Name field
+			CreatedAt:    time.Now(),
 		},
 	}
 }
@@ -335,14 +336,15 @@ func (client *Client) handleJoinPublicRoom(message entity.WSMessage) {
 func (client *Client) handleLeavePublicRoom(message entity.WSMessage) {
 	ctx := context.Background()
 	roomID := message.TargetID
+	membershipID := client.UserID + "_" + client.hub.ID
 	room := client.hub.FindRoomByID(roomID)
 	if room == nil {
 		log.Warn("Room not found", log.Fstring("roomID", roomID))
 		return
 	}
 
-	if err := client.uruc.DeleteUserRoom(ctx, client.UserID, roomID); err != nil {
-		log.Error("Failed to delete user room", log.Fstring("userID", client.UserID), log.Fstring("roomID", roomID))
+	if err := client.mruc.DeleteMembershipRoom(ctx, membershipID, roomID); err != nil {
+		log.Error("Failed to delete membership room", log.Fstring("membershipID", membershipID), log.Fstring("roomID", roomID))
 		return
 	}
 
@@ -361,10 +363,10 @@ func (client *Client) handleLeavePublicRoom(message entity.WSMessage) {
 		TargetID: room.ID,
 		SenderID: client.ID,
 		Content: entity.Message{
-			ID:        uuid.New().String(),
-			UserID:    client.UserID,
-			Text:      fmt.Sprintf(config.GoodbyeMessage, client.Name),
-			CreatedAt: time.Now(),
+			ID:           uuid.New().String(),
+			MembershipID: membershipID,
+			Text:         fmt.Sprintf(config.GoodbyeMessage, "client.Name"), // TODO: add client.Name field
+			CreatedAt:    time.Now(),
 		},
 	}
 }

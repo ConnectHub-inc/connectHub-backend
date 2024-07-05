@@ -37,30 +37,30 @@ func (m *MockRoomUseCase) EXPECT() *MockRoomUseCaseMockRecorder {
 }
 
 // CreateRoom mocks base method.
-func (m *MockRoomUseCase) CreateRoom(ctx context.Context, userID string, room entity.Room) error {
+func (m *MockRoomUseCase) CreateRoom(ctx context.Context, membershipID string, room entity.Room) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateRoom", ctx, userID, room)
+	ret := m.ctrl.Call(m, "CreateRoom", ctx, membershipID, room)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CreateRoom indicates an expected call of CreateRoom.
-func (mr *MockRoomUseCaseMockRecorder) CreateRoom(ctx, userID, room interface{}) *gomock.Call {
+func (mr *MockRoomUseCaseMockRecorder) CreateRoom(ctx, membershipID, room interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRoom", reflect.TypeOf((*MockRoomUseCase)(nil).CreateRoom), ctx, userID, room)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRoom", reflect.TypeOf((*MockRoomUseCase)(nil).CreateRoom), ctx, membershipID, room)
 }
 
-// ListUserWorkspaceRooms mocks base method.
-func (m *MockRoomUseCase) ListUserWorkspaceRooms(ctx context.Context, userID, workspaceID string) ([]entity.Room, error) {
+// ListMembershipRooms mocks base method.
+func (m *MockRoomUseCase) ListMembershipRooms(ctx context.Context, membershipID string) ([]entity.Room, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListUserWorkspaceRooms", ctx, userID, workspaceID)
+	ret := m.ctrl.Call(m, "ListMembershipRooms", ctx, membershipID)
 	ret0, _ := ret[0].([]entity.Room)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ListUserWorkspaceRooms indicates an expected call of ListUserWorkspaceRooms.
-func (mr *MockRoomUseCaseMockRecorder) ListUserWorkspaceRooms(ctx, userID, workspaceID interface{}) *gomock.Call {
+// ListMembershipRooms indicates an expected call of ListMembershipRooms.
+func (mr *MockRoomUseCaseMockRecorder) ListMembershipRooms(ctx, membershipID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListUserWorkspaceRooms", reflect.TypeOf((*MockRoomUseCase)(nil).ListUserWorkspaceRooms), ctx, userID, workspaceID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListMembershipRooms", reflect.TypeOf((*MockRoomUseCase)(nil).ListMembershipRooms), ctx, membershipID)
 }

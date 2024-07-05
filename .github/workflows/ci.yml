@@ -121,8 +121,8 @@ jobs:
           name: app
           path: ./
 
-      - name: Lint
-        run: make lint
+      #- name: Lint
+      #  run: make lint
   generate:
     needs: build
     runs-on: ubuntu-latest

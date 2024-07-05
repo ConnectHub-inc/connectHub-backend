@@ -10,34 +10,38 @@ import (
 )
 
 type RoomUseCase interface {
-	CreateRoom(ctx context.Context, userID string, room entity.Room) error
-	ListUserWorkspaceRooms(ctx context.Context, userID, workspaceID string) ([]entity.Room, error)
+	CreateRoom(ctx context.Context, membershipID string, room entity.Room) error
+	ListMembershipRooms(ctx context.Context, membershipID string) ([]entity.Room, error)
 }
 
 type roomUseCase struct {
 	rr  repository.RoomRepository
-	urr repository.UserRoomRepository
+	mrr repository.MembershipRoomRepository
 	tr  repository.TransactionRepository
 }
 
-func NewRoomUseCase(rr repository.RoomRepository, urr repository.UserRoomRepository, tr repository.TransactionRepository) RoomUseCase {
+func NewRoomUseCase(rr repository.RoomRepository, mrr repository.MembershipRoomRepository, tr repository.TransactionRepository) RoomUseCase {
 	return &roomUseCase{
 		rr:  rr,
-		urr: urr,
+		mrr: mrr,
 		tr:  tr,
 	}
 }
 
-func (ruc *roomUseCase) CreateRoom(ctx context.Context, userID string, room entity.Room) error {
+func (ruc *roomUseCase) CreateRoom(ctx context.Context, membershipID string, room entity.Room) error {
 	err := ruc.tr.Transaction(ctx, func(ctx context.Context) error {
 		if err := ruc.rr.Create(ctx, room); err != nil {
 			log.Error("Failed to create room", log.Fstring("roomID", room.ID))
 			return err
 		}
 
-		userRoom := entity.NewUserRoom(userID, room.ID)
-		if err := ruc.urr.Create(ctx, userRoom); err != nil {
-			log.Error("Failed to create user room", log.Fstring("userID", userID), log.Fstring("roomID", room.ID))
+		membershipRoom := entity.NewMembershipRoom(membershipID, room.ID)
+		if err := ruc.mrr.Create(ctx, membershipRoom); err != nil {
+			log.Error(
+				"Failed to create membership room",
+				log.Fstring("membershipID", membershipID),
+				log.Fstring("roomID", room.ID),
+			)
 			return err
 		}
 
@@ -50,10 +54,10 @@ func (ruc *roomUseCase) CreateRoom(ctx context.Context, userID string, room enti
 	return nil
 }
 
-func (ruc *roomUseCase) ListUserWorkspaceRooms(ctx context.Context, userID, workspaceID string) ([]entity.Room, error) {
-	rooms, err := ruc.rr.ListUserWorkspaceRooms(ctx, userID, workspaceID)
+func (ruc *roomUseCase) ListMembershipRooms(ctx context.Context, membershipID string) ([]entity.Room, error) {
+	rooms, err := ruc.rr.ListMembershipRooms(ctx, membershipID)
 	if err != nil {
-		log.Error("Failed to list user workspace rooms", log.Fstring("userID", userID), log.Fstring("workspaceID", workspaceID))
+		log.Error("Failed to list user workspace rooms", log.Fstring("membershipID", membershipID))
 		return nil, err
 	}
 	return rooms, nil

@@ -21,16 +21,23 @@ func NewRoomRepository(db *sql.DB, dialect *goqu.DialectWrapper) repository.Room
 	}
 }
 
-func (rr *roomRepository) ListUserWorkspaceRooms(ctx context.Context, userID, workspaceID string) ([]entity.Room, error) {
+func (rr *roomRepository) ListMembershipRooms(ctx context.Context, membershipID string) ([]entity.Room, error) {
+	var membership entity.Membership
+	userID, workspaceID, err := membership.SplitMembershipID(membershipID)
+	if err != nil {
+		log.Error("Failed to split membership ID", log.Ferror(err))
+		return nil, err
+	}
+
 	query := `
 	SELECT Rooms.id, Rooms.workspace_id, Rooms.name, Rooms.description, Rooms.private
 	FROM Rooms
 	JOIN Workspaces ON Rooms.workspace_id = Workspaces.id
-	JOIN User_Workspaces ON Workspaces.id = User_Workspaces.workspace_id
-	JOIN User_Rooms ON Rooms.id = User_Rooms.room_id
-	WHERE User_Workspaces.user_id = ?
-	  AND User_Workspaces.workspace_id = ?
-  	  AND User_Rooms.user_id = ?;
+	JOIN Memberships ON Workspaces.id = Memberships.workspace_id
+	JOIN Membership_Rooms ON Rooms.id = Membership_Rooms.room_id
+	WHERE Memberships.user_id = ?
+	  AND Memberships.workspace_id = ?
+  	  AND Membership_Rooms.user_id = ?;
 	`
 
 	rows, err := rr.db.QueryContext(ctx, query, userID, workspaceID, userID)

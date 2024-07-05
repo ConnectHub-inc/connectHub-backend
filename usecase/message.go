@@ -14,18 +14,18 @@ import (
 type MessageUseCase interface {
 	ListMessages(ctx context.Context, channelID string, start, end time.Time) ([]entity.Message, error)
 	CreateMessage(ctx context.Context, channelID string, message entity.Message) error
-	UpdateMessage(ctx context.Context, message entity.Message, userID string) error
-	DeleteMessage(ctx context.Context, message entity.Message, channelID, userID string) error
+	UpdateMessage(ctx context.Context, message entity.Message, membershipID string) error
+	DeleteMessage(ctx context.Context, message entity.Message, membershipID, channelID string) error
 }
 
 type messageUseCase struct {
-	ur  repository.UserRepository
+	ur  repository.MembershipRepository
 	mr  repository.MessageRepository
 	mcr repository.MessageCacheRepository
 }
 
 func NewMessageUseCase(
-	ur repository.UserRepository,
+	ur repository.MembershipRepository,
 	mr repository.MessageRepository,
 	mcr repository.MessageCacheRepository,
 ) MessageUseCase {
@@ -53,17 +53,17 @@ func (muc *messageUseCase) CreateMessage(ctx context.Context, channelID string, 
 	return nil
 }
 
-func (muc *messageUseCase) UpdateMessage(ctx context.Context, message entity.Message, userID string) error {
-	user, err := muc.ur.Get(ctx, userID)
+func (muc *messageUseCase) UpdateMessage(ctx context.Context, message entity.Message, membershipID string) error {
+	membership, err := muc.ur.Get(ctx, membershipID)
 	if err != nil {
-		log.Error("Failed to get user", log.Fstring("userID", userID))
+		log.Error("Failed to get membership", log.Fstring("membershipID", membershipID))
 		return err
 	}
 
-	if !user.IsAdmin && user.ID != message.UserID {
+	if !membership.IsAdmin && membershipID != message.MembershipID {
 		log.Warn(
-			"User don't have permission to update msg",
-			log.Fstring("userID", message.UserID),
+			"Membership don't have permission to update msg",
+			log.Fstring("membershipID", membershipID),
 			log.Fstring("msgID", message.ID),
 		)
 		return fmt.Errorf("don't have permission to update msg")
@@ -76,17 +76,17 @@ func (muc *messageUseCase) UpdateMessage(ctx context.Context, message entity.Mes
 	return nil
 }
 
-func (muc *messageUseCase) DeleteMessage(ctx context.Context, message entity.Message, channelID, userID string) error {
-	user, err := muc.ur.Get(ctx, userID)
+func (muc *messageUseCase) DeleteMessage(ctx context.Context, message entity.Message, membershipID, channelID string) error {
+	membership, err := muc.ur.Get(ctx, membershipID)
 	if err != nil {
-		log.Error("Failed to get user", log.Fstring("userID", userID))
+		log.Error("Failed to get membership", log.Fstring("membershipID", membershipID))
 		return err
 	}
 
-	if !user.IsAdmin && user.ID != message.UserID {
+	if !membership.IsAdmin && membershipID != message.MembershipID {
 		log.Warn(
-			"User don't have permission to delete msg",
-			log.Fstring("userID", message.UserID),
+			"Membership don't have permission to delete msg",
+			log.Fstring("membershipID", membershipID),
 			log.Fstring("msgID", message.ID),
 		)
 		return fmt.Errorf("don't have permission to delete msg")
