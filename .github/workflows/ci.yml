@@ -95,15 +95,15 @@ jobs:
           PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
           PUBLIC_KEY: ${{ secrets.PUBLIC_KEY }}
 
-      #- name: Test
-      #  run: go test -v -coverprofile=coverage.txt ./...
+      - name: Test
+        run: go test -v -coverprofile=coverage.txt ./...
 
-      #- name: Upload coverage reports to Codecov
-      #  uses: codecov/codecov-action@v4.0.1
-      #  with:
-      #    token: ${{ secrets.CODECOV_TOKEN }}
-      #    file: ./coverage.txt
-      #    slug: tusmasoma/connecthub-backend
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4.0.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage.txt
+          slug: tusmasoma/connecthub-backend
 
       #- name: Run E2E tests
       #  run: make e2e-test
@@ -121,8 +121,8 @@ jobs:
           name: app
           path: ./
 
-      #- name: Lint
-      #  run: make lint
+      - name: Lint
+        run: make lint
   generate:
     needs: build
     runs-on: ubuntu-latest
