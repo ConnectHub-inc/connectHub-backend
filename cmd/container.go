@@ -90,8 +90,8 @@ func BuildContainer(ctx context.Context) (*dig.Container, error) {
 				r.Route("/membership", func(r chi.Router) {
 					r.Use(authMiddleware.Authenticate)
 					r.Get("/list/{workspace_id}", membershipHandler.ListMemberships)
-					r.Get("/list-room/{room_id}", membershipHandler.ListRoomMemberships)
-					r.Get("/get/{membership_id}", membershipHandler.GetMembership)
+					r.Get("/list-room/{channel_id}", membershipHandler.ListRoomMemberships)
+					r.Get("/get/{workspace_id}", membershipHandler.GetMembership)
 					r.Put("/update/{workspace_id}", membershipHandler.UpdateMembership)
 				})
 

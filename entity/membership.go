@@ -26,8 +26,9 @@ func NewMembership(userID, workspaceID, name, profileImageURL string, isAdmin, i
 }
 
 func (m *Membership) SplitMembershipID(membershipID string) (string, string, error) {
+	const expectedParts = 2
 	parts := strings.Split(membershipID, "_")
-	if len(parts) != 2 {
+	if len(parts) != expectedParts {
 		return "", "", fmt.Errorf("invalid user_workspace_id format")
 	}
 	return parts[0], parts[1], nil

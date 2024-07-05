@@ -37,7 +37,6 @@ func TestAuthUseCase_FetchUserFromContext(t *testing.T) {
 				).Return(
 					&entity.User{
 						ID:       "5c5323e9-c78f-4dac-94ef-d34ab5ea8fed",
-						Name:     "test",
 						Email:    "test@gmail.com",
 						Password: passward,
 					}, nil,
@@ -56,7 +55,6 @@ func TestAuthUseCase_FetchUserFromContext(t *testing.T) {
 			}{
 				user: &entity.User{
 					ID:       "5c5323e9-c78f-4dac-94ef-d34ab5ea8fed",
-					Name:     "test",
 					Email:    "test@gmail.com",
 					Password: passward,
 				},

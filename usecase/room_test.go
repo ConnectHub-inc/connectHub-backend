@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/google/uuid"
 
 	"github.com/tusmasoma/connectHub-backend/entity"
 	"github.com/tusmasoma/connectHub-backend/repository/mock"
@@ -14,9 +15,13 @@ import (
 func TestRoomUseCase_CreateRoom(t *testing.T) {
 	t.Parallel()
 
-	userID := "f6db2530-cd9b-4ac1-8dc1-38c795e6cce2"
+	workspaceID := uuid.New().String()
+	userID := uuid.New().String()
+	membershipID := userID + "_" + workspaceID
+
+	roomID := uuid.New().String()
 	room := entity.Room{
-		ID:          "roomID",
+		ID:          roomID,
 		Name:        "test",
 		Description: "test",
 		Private:     false,
@@ -26,55 +31,55 @@ func TestRoomUseCase_CreateRoom(t *testing.T) {
 		name  string
 		setup func(
 			m *mock.MockRoomRepository,
-			m1 *mock.MockUserRoomRepository,
+			m1 *mock.MockMembershipRoomRepository,
 			m2 *mock.MockTransactionRepository,
 		)
 		arg struct {
-			ctx    context.Context
-			userID string
-			room   entity.Room
+			ctx          context.Context
+			membershipID string
+			room         entity.Room
 		}
 		wantErr error
 	}{
 		{
 			name: "success",
-			setup: func(rr *mock.MockRoomRepository, urr *mock.MockUserRoomRepository, tr *mock.MockTransactionRepository) {
+			setup: func(rr *mock.MockRoomRepository, urr *mock.MockMembershipRoomRepository, tr *mock.MockTransactionRepository) {
 				tr.EXPECT().Transaction(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, fn func(ctx context.Context) error) error {
 					return fn(ctx)
 				})
 				rr.EXPECT().Create(gomock.Any(), room).Return(nil)
-				urr.EXPECT().Create(gomock.Any(), entity.UserRoom{
-					UserID: userID,
-					RoomID: room.ID,
+				urr.EXPECT().Create(gomock.Any(), entity.MembershipRoom{
+					MembershipID: membershipID,
+					RoomID:       room.ID,
 				}).Return(nil)
 			},
 			arg: struct {
-				ctx    context.Context
-				userID string
-				room   entity.Room
+				ctx          context.Context
+				membershipID string
+				room         entity.Room
 			}{
-				ctx:    context.Background(),
-				userID: userID,
-				room:   room,
+				ctx:          context.Background(),
+				membershipID: membershipID,
+				room:         room,
 			},
 			wantErr: nil,
 		},
 		{
 			name: "failed to create room",
-			setup: func(rr *mock.MockRoomRepository, urr *mock.MockUserRoomRepository, tr *mock.MockTransactionRepository) {
+			setup: func(rr *mock.MockRoomRepository, urr *mock.MockMembershipRoomRepository, tr *mock.MockTransactionRepository) {
 				tr.EXPECT().Transaction(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, fn func(ctx context.Context) error) error {
 					return fn(ctx)
 				})
 				rr.EXPECT().Create(gomock.Any(), room).Return(fmt.Errorf("failed to create room"))
 			},
 			arg: struct {
-				ctx    context.Context
-				userID string
-				room   entity.Room
+				ctx          context.Context
+				membershipID string
+				room         entity.Room
 			}{
-				ctx:    context.Background(),
-				userID: userID,
-				room:   room,
+				ctx:          context.Background(),
+				membershipID: membershipID,
+				room:         room,
 			},
 			wantErr: fmt.Errorf("failed to create room"),
 		},
@@ -87,7 +92,7 @@ func TestRoomUseCase_CreateRoom(t *testing.T) {
 
 			ctrl := gomock.NewController(t)
 			rr := mock.NewMockRoomRepository(ctrl)
-			urr := mock.NewMockUserRoomRepository(ctrl)
+			urr := mock.NewMockMembershipRoomRepository(ctrl)
 			tr := mock.NewMockTransactionRepository(ctrl)
 
 			if tt.setup != nil {
@@ -95,7 +100,7 @@ func TestRoomUseCase_CreateRoom(t *testing.T) {
 			}
 
 			usecase := NewRoomUseCase(rr, urr, tr)
-			err := usecase.CreateRoom(tt.arg.ctx, tt.arg.userID, tt.arg.room)
+			err := usecase.CreateRoom(tt.arg.ctx, tt.arg.membershipID, tt.arg.room)
 
 			if (err != nil) != (tt.wantErr != nil) {
 				t.Errorf("CreateRoom() error = %v, wantErr %v", err, tt.wantErr)
@@ -106,11 +111,12 @@ func TestRoomUseCase_CreateRoom(t *testing.T) {
 	}
 }
 
-func TestRoomUseCase_ListUserWorkspaceRooms(t *testing.T) {
+func TestRoomUseCase_ListMembershipRooms(t *testing.T) {
 	t.Parallel()
 
-	workspaceID := "f6db2530-cd9b-4ac1-8dc1-38c795e6eec2"
-	userID := "f6db2530-cd9b-4ac1-8dc1-38c795e6cce2"
+	workspaceID := uuid.New().String()
+	userID := uuid.New().String()
+	membershipID := userID + "_" + workspaceID
 
 	patterns := []struct {
 		name  string
@@ -118,9 +124,8 @@ func TestRoomUseCase_ListUserWorkspaceRooms(t *testing.T) {
 			m *mock.MockRoomRepository,
 		)
 		arg struct {
-			ctx         context.Context
-			userID      string
-			workspaceID string
+			ctx          context.Context
+			membershipID string
 		}
 		want    []entity.Room
 		wantErr error
@@ -128,7 +133,7 @@ func TestRoomUseCase_ListUserWorkspaceRooms(t *testing.T) {
 		{
 			name: "success",
 			setup: func(rr *mock.MockRoomRepository) {
-				rr.EXPECT().ListUserWorkspaceRooms(gomock.Any(), userID, workspaceID).Return(
+				rr.EXPECT().ListMembershipRooms(gomock.Any(), membershipID).Return(
 					[]entity.Room{
 						{
 							ID:          "roomID",
@@ -141,13 +146,11 @@ func TestRoomUseCase_ListUserWorkspaceRooms(t *testing.T) {
 				)
 			},
 			arg: struct {
-				ctx         context.Context
-				userID      string
-				workspaceID string
+				ctx          context.Context
+				membershipID string
 			}{
-				ctx:         context.Background(),
-				userID:      userID,
-				workspaceID: workspaceID,
+				ctx:          context.Background(),
+				membershipID: membershipID,
 			},
 			want: []entity.Room{
 				{
@@ -166,7 +169,7 @@ func TestRoomUseCase_ListUserWorkspaceRooms(t *testing.T) {
 			t.Parallel()
 			ctrl := gomock.NewController(t)
 			rr := mock.NewMockRoomRepository(ctrl)
-			urr := mock.NewMockUserRoomRepository(ctrl)
+			urr := mock.NewMockMembershipRoomRepository(ctrl)
 			tr := mock.NewMockTransactionRepository(ctrl)
 
 			if tt.setup != nil {
@@ -174,7 +177,7 @@ func TestRoomUseCase_ListUserWorkspaceRooms(t *testing.T) {
 			}
 
 			usecase := NewRoomUseCase(rr, urr, tr)
-			getRooms, err := usecase.ListUserWorkspaceRooms(tt.arg.ctx, tt.arg.userID, tt.arg.workspaceID)
+			getRooms, err := usecase.ListMembershipRooms(tt.arg.ctx, tt.arg.membershipID)
 
 			if (err != nil) != (tt.wantErr != nil) {
 				t.Errorf("ListUserWorkspaceRooms() error = %v, wantErr %v", err, tt.wantErr)
