@@ -19,7 +19,14 @@ func Test_MembershipRoomRepository(t *testing.T) {
 	channelID := uuid.New().String()
 	membershipID := userID + "_" + workspaceID
 
+	user := entity.User{
+		ID:       userID,
+		Email:    "test@gmail.com",
+		Password: "password123",
+	}
+
 	membership := entity.Membership{
+		ID:              membershipID,
 		UserID:          userID,
 		WorkspaceID:     workspaceID,
 		Name:            "test",
@@ -41,11 +48,15 @@ func Test_MembershipRoomRepository(t *testing.T) {
 		RoomID:       channelID,
 	}
 
+	userRepo := NewUserRepository(db, &dialect)
 	membershipRepo := NewMembershipRepository(db, &dialect)
 	roomRepo := NewRoomRepository(db, &dialect)
 	membershipRoomRepo := NewMembershipRoomRepository(db, &dialect)
 
-	err := membershipRepo.Create(ctx, membership)
+	err := userRepo.Create(ctx, user)
+	ValidateErr(t, err, nil)
+
+	err = membershipRepo.Create(ctx, membership)
 	ValidateErr(t, err, nil)
 
 	err = roomRepo.Create(ctx, room)
@@ -70,4 +81,12 @@ func Test_MembershipRoomRepository(t *testing.T) {
 	if getMembershipRoom != nil {
 		t.Errorf("Expected nil for deleted item, got %v", getMembershipRoom)
 	}
+
+	// clean up
+	err = roomRepo.Delete(ctx, channelID)
+	ValidateErr(t, err, nil)
+	err = membershipRepo.Delete(ctx, membershipID)
+	ValidateErr(t, err, nil)
+	err = userRepo.Delete(ctx, userID)
+	ValidateErr(t, err, nil)
 }

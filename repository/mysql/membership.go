@@ -76,7 +76,7 @@ func (mr *membershipRepository) Update(ctx context.Context, membership entity.Me
 
 func (mr *membershipRepository) ListRoomMemberships(ctx context.Context, channelID string) ([]entity.Membership, error) {
 	query := `
-	SELECT Memberships.user_id, Memberships.workspace_id, Memberships.name, Memberships.profile_image_url, Memberships.is_admin, Memberships.is_deleted
+	SELECT Memberships.id, Memberships.user_id, Memberships.workspace_id, Memberships.name, Memberships.profile_image_url, Memberships.is_admin, Memberships.is_deleted
 	FROM Memberships
 	JOIN Membership_Rooms ON Memberships.id = Membership_Rooms.membership_id
 	WHERE Membership_Rooms.room_id = ?;
@@ -93,11 +93,13 @@ func (mr *membershipRepository) ListRoomMemberships(ctx context.Context, channel
 	for rows.Next() {
 		var membership entity.Membership
 		err = rows.Scan(
+			&membership.ID,
 			&membership.UserID,
 			&membership.WorkspaceID,
 			&membership.Name,
 			&membership.ProfileImageURL,
 			&membership.IsAdmin,
+			&membership.IsDeleted,
 		)
 		if err != nil {
 			log.Error("Failed to scan membership", log.Ferror(err))

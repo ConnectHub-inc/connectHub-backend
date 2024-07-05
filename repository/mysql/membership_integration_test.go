@@ -19,7 +19,14 @@ func Test_MembershipRepository(t *testing.T) {
 	channelID := uuid.New().String()
 	membershipID := userID + "_" + workspaceID
 
+	user := entity.User{
+		ID:       userID,
+		Email:    "test@gmail.com",
+		Password: "password123",
+	}
+
 	membership := entity.Membership{
+		ID:              membershipID,
 		UserID:          userID,
 		WorkspaceID:     workspaceID,
 		Name:            "test",
@@ -41,11 +48,15 @@ func Test_MembershipRepository(t *testing.T) {
 		RoomID:       channelID,
 	}
 
+	userRepo := NewUserRepository(db, &dialect)
 	membershipRepo := NewMembershipRepository(db, &dialect)
 	roomRepo := NewRoomRepository(db, &dialect)
 	membershipRoomRepo := NewMembershipRoomRepository(db, &dialect)
 
-	err := membershipRepo.Create(ctx, membership)
+	err := userRepo.Create(ctx, user)
+	ValidateErr(t, err, nil)
+
+	err = membershipRepo.Create(ctx, membership)
 	ValidateErr(t, err, nil)
 
 	getMembership, err := membershipRepo.Get(ctx, membershipID)
@@ -75,4 +86,14 @@ func Test_MembershipRepository(t *testing.T) {
 	if len(getMemberships) != 1 {
 		t.Errorf("Expected 1 membership, got %d", len(getMemberships))
 	}
+
+	// clean up
+	err = membershipRoomRepo.Delete(ctx, membershipID, channelID)
+	ValidateErr(t, err, nil)
+	err = roomRepo.Delete(ctx, channelID)
+	ValidateErr(t, err, nil)
+	err = membershipRepo.Delete(ctx, membershipID)
+	ValidateErr(t, err, nil)
+	err = userRepo.Delete(ctx, userID)
+	ValidateErr(t, err, nil)
 }

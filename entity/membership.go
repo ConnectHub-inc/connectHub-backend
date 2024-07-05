@@ -6,6 +6,7 @@ import (
 )
 
 type Membership struct {
+	ID              string `json:"id" db:"id"`
 	UserID          string `json:"user_id" db:"user_id"`
 	WorkspaceID     string `json:"workspace_id" db:"workspace_id"`
 	Name            string `json:"name" db:"name"`
@@ -16,6 +17,7 @@ type Membership struct {
 
 func NewMembership(userID, workspaceID, name, profileImageURL string, isAdmin, isDeleted bool) Membership {
 	return Membership{
+		ID:              userID + "_" + workspaceID,
 		UserID:          userID,
 		WorkspaceID:     workspaceID,
 		Name:            name,

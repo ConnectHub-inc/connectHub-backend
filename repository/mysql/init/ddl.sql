@@ -38,34 +38,34 @@ CREATE TABLE Users (
 );
 
 CREATE TABLE Memberships (
+    id CHAR(73) PRIMARY KEY,
     user_id CHAR(36) NOT NULL,
     workspace_id CHAR(36) NOT NULL,
     name VARCHAR(50) NOT NULL,
     profile_image_url VARCHAR(255) NOT NULL,
     is_admin BOOLEAN NOT NULL DEFAULT FALSE,
     is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
-    PRIMARY KEY (user_id, workspace_id),
     FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE,
     FOREIGN KEY (workspace_id) REFERENCES Workspaces(id) ON DELETE CASCADE
 );
 
 CREATE TABLE Membership_Rooms (
-    membership_id CHAR(36) NOT NULL,
+    membership_id CHAR(73) NOT NULL,
     room_id CHAR(36) NOT NULL,
     PRIMARY KEY (membership_id, room_id),
-    FOREIGN KEY (membership_id) REFERENCES Memberships(user_id, workspace_id) ON DELETE CASCADE,
+    FOREIGN KEY (membership_id) REFERENCES Memberships(id) ON DELETE CASCADE,
     FOREIGN KEY (room_id) REFERENCES Rooms(id) ON DELETE CASCADE
 );
 
 CREATE TABLE Messages (
     id CHAR(36) PRIMARY KEY, -- UUIDは36文字の文字列として格納されます
-    membership_id CHAR(36) NOT NULL,
+    membership_id CHAR(73) NOT NULL,
     room_id CHAR(36) NOT NULL,
     action_tag_id CHAR(36) NOT NULL,
     text TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (membership_id) REFERENCES Memberships(user_id, workspace_id) ON DELETE CASCADE,
+    FOREIGN KEY (membership_id) REFERENCES Memberships(id) ON DELETE CASCADE,
     FOREIGN KEY (room_id) REFERENCES Rooms(id) ON DELETE CASCADE,
     FOREIGN KEY (action_tag_id) REFERENCES ActionTags(id) ON DELETE CASCADE
 );

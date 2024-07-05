@@ -24,10 +24,10 @@ INSERT INTO Users (id, email, password) VALUES
 ('5fe0e240-6b49-11ee-b686-0242c0a87001', 'alice.johnson@example.com', 'hashed_password_3');
 
 -- ユーザーとワークスペースの関係データを挿入
-INSERT INTO Memberships (user_id, workspace_id, name, profile_image_url, is_admin, is_deleted) VALUES
-('5fe0e23e-6b49-11ee-b686-0242c0a87001', '5fe0e237-6b49-11ee-b686-0242c0a87001', 'John Doe', 'https://example.com/profile_image_1', false, false),
-('5fe0e23f-6b49-11ee-b686-0242c0a87001', '5fe0e237-6b49-11ee-b686-0242c0a87001', 'Jane Smith', 'https://example.com/profile_image_2', false, false),
-('5fe0e240-6b49-11ee-b686-0242c0a87001', '5fe0e238-6b49-11ee-b686-0242c0a87001', 'Alice Johnson', 'https://example.com/profile_image_3', false, false);
+INSERT INTO Memberships (id, user_id, workspace_id, name, profile_image_url, is_admin, is_deleted) VALUES
+(CONCAT('5fe0e23e-6b49-11ee-b686-0242c0a87001', '_', '5fe0e237-6b49-11ee-b686-0242c0a87001'), '5fe0e23e-6b49-11ee-b686-0242c0a87001', '5fe0e237-6b49-11ee-b686-0242c0a87001', 'John Doe', 'https://example.com/profile_image_1', false, false),
+(CONCAT('5fe0e23f-6b49-11ee-b686-0242c0a87001', '_', '5fe0e237-6b49-11ee-b686-0242c0a87001'), '5fe0e23f-6b49-11ee-b686-0242c0a87001', '5fe0e237-6b49-11ee-b686-0242c0a87001', 'Jane Smith', 'https://example.com/profile_image_2', false, false),
+(CONCAT('5fe0e240-6b49-11ee-b686-0242c0a87001', '_', '5fe0e238-6b49-11ee-b686-0242c0a87001'), '5fe0e240-6b49-11ee-b686-0242c0a87001', '5fe0e238-6b49-11ee-b686-0242c0a87001', 'Alice Johnson', 'https://example.com/profile_image_3', false, false);
 
 -- ユーザーとルームの関係データを挿入
 INSERT INTO Membership_Rooms (membership_id, room_id) VALUES

@@ -22,25 +22,15 @@ func NewRoomRepository(db *sql.DB, dialect *goqu.DialectWrapper) repository.Room
 }
 
 func (rr *roomRepository) ListMembershipRooms(ctx context.Context, membershipID string) ([]entity.Room, error) {
-	var membership entity.Membership
-	userID, workspaceID, err := membership.SplitMembershipID(membershipID)
-	if err != nil {
-		log.Error("Failed to split membership ID", log.Ferror(err))
-		return nil, err
-	}
-
 	query := `
 	SELECT Rooms.id, Rooms.workspace_id, Rooms.name, Rooms.description, Rooms.private
 	FROM Rooms
-	JOIN Workspaces ON Rooms.workspace_id = Workspaces.id
-	JOIN Memberships ON Workspaces.id = Memberships.workspace_id
 	JOIN Membership_Rooms ON Rooms.id = Membership_Rooms.room_id
-	WHERE Memberships.user_id = ?
-	  AND Memberships.workspace_id = ?
-  	  AND Membership_Rooms.user_id = ?;
+	JOIN Memberships ON Membership_Rooms.membership_id = Memberships.id
+	WHERE Memberships.id = ?
 	`
 
-	rows, err := rr.db.QueryContext(ctx, query, userID, workspaceID, userID)
+	rows, err := rr.db.QueryContext(ctx, query, membershipID)
 	if err != nil {
 		log.Error("Failed to query rooms", log.Ferror(err))
 		return nil, err
