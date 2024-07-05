@@ -130,8 +130,13 @@ func (mh *membershipHandler) ListRoomMemberships(w http.ResponseWriter, r *http.
 	}
 }
 
+type CreateMembershipRequest struct {
+	Name            string `json:"name"`
+	ProfileImageURL string `json:"profile_image_url"`
+	IsAdmin         bool   `json:"is_admin"`
+}
+
 func (mh *membershipHandler) CreateMembership(w http.ResponseWriter, r *http.Request) {
-	// TODO: 一旦簡単に実装するため、後でリファクタリングする
 	ctx := r.Context()
 	workspaceID := chi.URLParam(r, "workspace_id")
 	user, err := mh.auc.GetUserFromContext(ctx)
@@ -141,13 +146,15 @@ func (mh *membershipHandler) CreateMembership(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	params := &usecase.CreateMembershipParams{
-		UserID:          user.ID,
-		WorkspaceID:     workspaceID,
-		Name:            "test",
-		ProfileImageURL: "test",
-		IsAdmin:         false,
+	var requestBody CreateMembershipRequest
+	if ok := isValidCreateMembershipRequest(r.Body, &requestBody); !ok {
+		log.Info("Invalid membership create request", log.Fstring("method", r.Method), log.Fstring("url", r.URL.String()))
+		http.Error(w, "Invalid membership create request", http.StatusBadRequest)
+		return
 	}
+	defer r.Body.Close()
+
+	params := convertCreateMembershipReqeuestToParams(requestBody, user.ID, workspaceID)
 	if err = mh.muc.CreateMembership(ctx, params); err != nil {
 		log.Error("Failed to create membership", log.Ferror(err))
 		http.Error(w, "Failed to create membership", http.StatusInternalServerError)
@@ -155,6 +162,33 @@ func (mh *membershipHandler) CreateMembership(w http.ResponseWriter, r *http.Req
 	}
 
 	w.WriteHeader(http.StatusCreated)
+}
+
+func isValidCreateMembershipRequest(body io.ReadCloser, requestBody *CreateMembershipRequest) bool {
+	if err := json.NewDecoder(body).Decode(requestBody); err != nil {
+		log.Error("Invalid request body", log.Ferror(err))
+		return false
+	}
+	if requestBody.Name == "" ||
+		requestBody.ProfileImageURL == "" {
+		log.Info(
+			"Missing required fields",
+			log.Fstring("name", requestBody.Name),
+			log.Fstring("profile_image_url", requestBody.ProfileImageURL),
+		)
+		return false
+	}
+	return true
+}
+
+func convertCreateMembershipReqeuestToParams(req CreateMembershipRequest, userID, workspaceID string) *usecase.CreateMembershipParams {
+	return &usecase.CreateMembershipParams{
+		UserID:          userID,
+		WorkspaceID:     workspaceID,
+		Name:            req.Name,
+		ProfileImageURL: req.ProfileImageURL,
+		IsAdmin:         req.IsAdmin,
+	}
 }
 
 type UpdateMembershipRequest struct {
@@ -183,16 +217,16 @@ func (mh *membershipHandler) UpdateMembership(w http.ResponseWriter, r *http.Req
 
 	var requestBody UpdateMembershipRequest
 	if ok := isValidUpdateMembershipRequest(r.Body, &requestBody); !ok {
-		log.Info("Invalid user udpate request", log.Fstring("method", r.Method), log.Fstring("url", r.URL.String()))
-		http.Error(w, "Invalid user update request", http.StatusBadRequest)
+		log.Info("Invalid membership udpate request", log.Fstring("method", r.Method), log.Fstring("url", r.URL.String()))
+		http.Error(w, "Invalid membership update request", http.StatusBadRequest)
 		return
 	}
 	defer r.Body.Close()
 
 	params := convertUpdateMembershipReqeuestToParams(requestBody)
 	if err = mh.muc.UpdateMembership(ctx, params, *membership); err != nil {
-		log.Error("Failed to update user", log.Ferror(err))
-		http.Error(w, "Failed to update user", http.StatusInternalServerError)
+		log.Error("Failed to update membership", log.Ferror(err))
+		http.Error(w, "Failed to update membership", http.StatusInternalServerError)
 		return
 	}
 
