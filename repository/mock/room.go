@@ -123,19 +123,19 @@ func (mr *MockRoomRepositoryMockRecorder) List(ctx, qcs interface{}) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockRoomRepository)(nil).List), ctx, qcs)
 }
 
-// ListUserWorkspaceRooms mocks base method.
-func (m *MockRoomRepository) ListUserWorkspaceRooms(ctx context.Context, userID, workspaceID string) ([]entity.Room, error) {
+// ListMembershipRooms mocks base method.
+func (m *MockRoomRepository) ListMembershipRooms(ctx context.Context, membershipID string) ([]entity.Room, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListUserWorkspaceRooms", ctx, userID, workspaceID)
+	ret := m.ctrl.Call(m, "ListMembershipRooms", ctx, membershipID)
 	ret0, _ := ret[0].([]entity.Room)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ListUserWorkspaceRooms indicates an expected call of ListUserWorkspaceRooms.
-func (mr *MockRoomRepositoryMockRecorder) ListUserWorkspaceRooms(ctx, userID, workspaceID interface{}) *gomock.Call {
+// ListMembershipRooms indicates an expected call of ListMembershipRooms.
+func (mr *MockRoomRepositoryMockRecorder) ListMembershipRooms(ctx, membershipID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListUserWorkspaceRooms", reflect.TypeOf((*MockRoomRepository)(nil).ListUserWorkspaceRooms), ctx, userID, workspaceID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListMembershipRooms", reflect.TypeOf((*MockRoomRepository)(nil).ListMembershipRooms), ctx, membershipID)
 }
 
 // Update mocks base method.

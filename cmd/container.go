@@ -38,25 +38,29 @@ func BuildContainer(ctx context.Context) (*dig.Container, error) {
 		mysql.NewMySQLDB,
 		mysql.NewTransactionRepository,
 		mysql.NewUserRepository,
+		mysql.NewMembershipRepository,
 		mysql.NewMessageRepository,
 		mysql.NewRoomRepository,
-		mysql.NewUserRoomRepository,
+		mysql.NewMembershipRoomRepository,
 		redis.NewRedisClient,
 		redis.NewUserRepository,
 		redis.NewMessageRepository,
 		redis.NewPubSubRepository,
 		usecase.NewUserUseCase,
+		usecase.NewMembershipUseCase,
 		usecase.NewMessageUseCase,
 		usecase.NewRoomUseCase,
-		usecase.NewUserRoomUseCase,
+		usecase.NewMembershipRoomUseCase,
 		usecase.NewAuthUseCase,
 		handler.NewWebsocketHandler,
 		handler.NewUserHandler,
+		handler.NewMembershipHandler,
 		middleware.NewAuthMiddleware,
 		ws.NewHub,
 		func(
 			serverConfig *config.ServerConfig,
 			wsHandler *handler.WebsocketHandler,
+			membershipHandler handler.MembershipHandler,
 			userHandler handler.UserHandler,
 			authMiddleware middleware.AuthMiddleware,
 			hub *ws.Hub,
@@ -83,14 +87,13 @@ func BuildContainer(ctx context.Context) (*dig.Container, error) {
 
 			// r.Use(middleware.Logging)
 			r.Route("/api", func(r chi.Router) {
-				r.Route("/workspaces", func(r chi.Router) {
+				r.Route("/membership", func(r chi.Router) {
 					r.Use(authMiddleware.Authenticate)
-					r.Get("/{workspace_id}/users", userHandler.ListWorkspaceUsers)
-				})
-
-				r.Route("/rooms", func(r chi.Router) {
-					r.Use(authMiddleware.Authenticate)
-					r.Get("/{room_id}/users", userHandler.ListWorkspaceUsers)
+					r.Get("/list/{workspace_id}", membershipHandler.ListMemberships)
+					r.Get("/list-room/{channel_id}", membershipHandler.ListRoomMemberships)
+					r.Get("/get/{workspace_id}", membershipHandler.GetMembership)
+					r.Post("/create/{workspace_id}", membershipHandler.CreateMembership)
+					r.Put("/update/{workspace_id}", membershipHandler.UpdateMembership)
 				})
 
 				r.Route("/user", func(r chi.Router) {
@@ -98,8 +101,6 @@ func BuildContainer(ctx context.Context) (*dig.Container, error) {
 					r.Post("/login", userHandler.Login)
 					r.Group(func(r chi.Router) {
 						r.Use(authMiddleware.Authenticate)
-						r.Get("/get/{workspace_id}", userHandler.GetUser)
-						r.Put("/update", userHandler.UpdateUser)
 						r.Get("/logout", userHandler.Logout)
 					})
 				})

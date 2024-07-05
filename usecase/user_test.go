@@ -3,7 +3,6 @@ package usecase
 import (
 	"context"
 	"fmt"
-	"reflect"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -18,167 +17,6 @@ type CreateUserAndGenerateTokenArg struct {
 	ctx      context.Context
 	email    string
 	passward string
-}
-
-type UpdateUserArg struct {
-	ctx    context.Context
-	params *UpdateUserParams
-	user   entity.User
-}
-
-func TestUserUseCase_ListWorkspaceUsers(t *testing.T) {
-	t.Parallel()
-
-	workspaceID := "f6db2530-cd9b-4ac1-8dc1-38c795e6eec2"
-	users := []entity.User{
-		{
-			ID:              "f6db2530-cd9b-4ac1-8dc1-38c795e6eec2",
-			Name:            "test",
-			Email:           "test@gmail.com",
-			ProfileImageURL: "https://test.com",
-		},
-	}
-
-	patterns := []struct {
-		name  string
-		setup func(
-			m *mock.MockUserRepository,
-			m1 *mock.MockUserCacheRepository,
-		)
-		arg     string
-		want    []entity.User
-		wantErr error
-	}{
-		{
-			name: "success",
-			setup: func(m *mock.MockUserRepository, m1 *mock.MockUserCacheRepository) {
-				m.EXPECT().ListWorkspaceUsers(
-					gomock.Any(),
-					workspaceID,
-				).Return(users, nil)
-			},
-			arg:  workspaceID,
-			want: users,
-		},
-		{
-			name: "Fail: failed to list workspace users",
-			setup: func(m *mock.MockUserRepository, m1 *mock.MockUserCacheRepository) {
-				m.EXPECT().ListWorkspaceUsers(
-					gomock.Any(),
-					workspaceID,
-				).Return(nil, fmt.Errorf("failed to list workspace users"))
-			},
-			arg:     workspaceID,
-			want:    nil,
-			wantErr: fmt.Errorf("failed to list workspace users"),
-		},
-	}
-
-	for _, tt := range patterns {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			ctrl := gomock.NewController(t)
-			ur := mock.NewMockUserRepository(ctrl)
-			cr := mock.NewMockUserCacheRepository(ctrl)
-
-			if tt.setup != nil {
-				tt.setup(ur, cr)
-			}
-
-			usecase := NewUserUseCase(ur, cr)
-			getUsers, err := usecase.ListWorkspaceUsers(context.Background(), tt.arg)
-
-			if (err != nil) != (tt.wantErr != nil) {
-				t.Errorf("ListWorkspaceUsers() error = %v, wantErr %v", err, tt.wantErr)
-			} else if err != nil && tt.wantErr != nil && err.Error() != tt.wantErr.Error() {
-				t.Errorf("ListWorkspaceUsers() error = %v, wantErr %v", err, tt.wantErr)
-			}
-
-			if err == nil && len(getUsers) != len(tt.want) {
-				t.Errorf("ListWorkspaceUsers() = %v, want %v", getUsers, tt.want)
-			}
-		})
-	}
-}
-
-func TestUserUseCase_ListRoomUsers(t *testing.T) {
-	t.Parallel()
-
-	channelID := "f6db2530-cd9b-4ac1-8dc1-38c795e6eec2"
-	users := []entity.User{
-		{
-			ID:              "f6db2530-cd9b-4ac1-8dc1-38c795e6eec2",
-			Name:            "test",
-			Email:           "test@gmail.com",
-			ProfileImageURL: "https://test.com",
-		},
-	}
-
-	patterns := []struct {
-		name  string
-		setup func(
-			m *mock.MockUserRepository,
-			m1 *mock.MockUserCacheRepository,
-		)
-		arg     string
-		want    []entity.User
-		wantErr error
-	}{
-		{
-			name: "success",
-			setup: func(m *mock.MockUserRepository, m1 *mock.MockUserCacheRepository) {
-				m.EXPECT().ListRoomUsers(
-					gomock.Any(),
-					channelID,
-				).Return(users, nil)
-			},
-			arg:     channelID,
-			want:    users,
-			wantErr: nil,
-		},
-		{
-			name: "Fail: failed to list room users",
-			setup: func(m *mock.MockUserRepository, m1 *mock.MockUserCacheRepository) {
-				m.EXPECT().ListRoomUsers(
-					gomock.Any(),
-					channelID,
-				).Return(nil, fmt.Errorf("failed to list room users"))
-			},
-			arg:     channelID,
-			want:    nil,
-			wantErr: fmt.Errorf("failed to list room users"),
-		},
-	}
-
-	for _, tt := range patterns {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			ctrl := gomock.NewController(t)
-			ur := mock.NewMockUserRepository(ctrl)
-			cr := mock.NewMockUserCacheRepository(ctrl)
-
-			if tt.setup != nil {
-				tt.setup(ur, cr)
-			}
-
-			usecase := NewUserUseCase(ur, cr)
-			getUsers, err := usecase.ListRoomUsers(context.Background(), tt.arg)
-
-			if (err != nil) != (tt.wantErr != nil) {
-				t.Errorf("ListRoomUsers() error = %v, wantErr %v", err, tt.wantErr)
-			} else if err != nil && tt.wantErr != nil && err.Error() != tt.wantErr.Error() {
-				t.Errorf("ListRoomUsers() error = %v, wantErr %v", err, tt.wantErr)
-			}
-
-			if !reflect.DeepEqual(getUsers, tt.want) {
-				t.Errorf("ListRoomUsers() = %v, want %v", getUsers, tt.want)
-			}
-		})
-	}
 }
 
 func TestUserUseCase_CreateUserAndGenerateToken(t *testing.T) {
@@ -218,7 +56,7 @@ func TestUserUseCase_CreateUserAndGenerateToken(t *testing.T) {
 				m.EXPECT().List(
 					gomock.Any(),
 					[]repository.QueryCondition{{Field: "Email", Value: "test@gmail.com"}},
-				).Return([]entity.User{{Name: "test", Email: "test@gmail.com"}}, nil)
+				).Return([]entity.User{{Email: "test@gmail.com"}}, nil)
 			},
 			arg: CreateUserAndGenerateTokenArg{
 				ctx:      context.Background(),
@@ -255,94 +93,6 @@ func TestUserUseCase_CreateUserAndGenerateToken(t *testing.T) {
 	}
 }
 
-func TestUserUseCase_UpdateUser(t *testing.T) {
-	t.Parallel()
-
-	userID := "f6db2530-cd9b-4ac1-8dc1-38c795e6eec2"
-	user := entity.User{
-		ID:              userID,
-		Name:            "test",
-		Email:           "test@gmail.com",
-		Password:        "password123",
-		ProfileImageURL: "https://test.com",
-	}
-
-	patterns := []struct {
-		name  string
-		setup func(
-			m *mock.MockUserRepository,
-			m1 *mock.MockUserCacheRepository,
-		)
-		arg     UpdateUserArg
-		wantErr error
-	}{
-		{
-			name: "success",
-			setup: func(m *mock.MockUserRepository, m1 *mock.MockUserCacheRepository) {
-				m.EXPECT().Update(
-					gomock.Any(),
-					userID,
-					entity.User{
-						ID:              userID,
-						Name:            "update_test",
-						Email:           "test@gmail.com",
-						Password:        "password123",
-						ProfileImageURL: "https://test.com",
-					},
-				).Return(nil)
-			},
-			arg: UpdateUserArg{
-				ctx: context.Background(),
-				params: &UpdateUserParams{
-					ID:              userID,
-					Name:            "update_test",
-					Email:           "test@gmail.com",
-					ProfileImageURL: "https://test.com",
-				},
-				user: user,
-			},
-			wantErr: nil,
-		},
-		{
-			name: "Fail: don't have permission to update user",
-			arg: UpdateUserArg{
-				ctx: context.Background(),
-				params: &UpdateUserParams{
-					ID:              "f6db2530-cd9b-4ac1-8dc1-38c795e6eec3",
-					Name:            "update_test",
-					Email:           "test@gmail.com",
-					ProfileImageURL: "https://test.com",
-				},
-				user: user,
-			},
-			wantErr: fmt.Errorf("don't have permission to update user"),
-		},
-	}
-	for _, tt := range patterns {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			ctrl := gomock.NewController(t)
-			ur := mock.NewMockUserRepository(ctrl)
-			cr := mock.NewMockUserCacheRepository(ctrl)
-
-			if tt.setup != nil {
-				tt.setup(ur, cr)
-			}
-
-			usecase := NewUserUseCase(ur, cr)
-			err := usecase.UpdateUser(tt.arg.ctx, tt.arg.params, tt.arg.user)
-
-			if (err != nil) != (tt.wantErr != nil) {
-				t.Errorf("UpdateUser() error = %v, wantErr %v", err, tt.wantErr)
-			} else if err != nil && tt.wantErr != nil && err.Error() != tt.wantErr.Error() {
-				t.Errorf("UpdateUser() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
 func TestUserUseCase_LoginAndGenerateToken(t *testing.T) {
 	patterns := []struct {
 		name  string
@@ -365,7 +115,6 @@ func TestUserUseCase_LoginAndGenerateToken(t *testing.T) {
 					[]entity.User{
 						{
 							ID:       "f6db2530-cd9b-4ac1-8dc1-38c795e6eec2",
-							Name:     "test",
 							Email:    "test@gmail.com",
 							Password: passward,
 						},
@@ -399,7 +148,6 @@ func TestUserUseCase_LoginAndGenerateToken(t *testing.T) {
 					[]entity.User{
 						{
 							ID:       "f6db2530-cd9b-4ac1-8dc1-38c795e6eec2",
-							Name:     "test",
 							Email:    "test@gmail.com",
 							Password: passward,
 						},
@@ -428,7 +176,6 @@ func TestUserUseCase_LoginAndGenerateToken(t *testing.T) {
 					[]entity.User{
 						{
 							ID:       "f6db2530-cd9b-4ac1-8dc1-38c795e6eec2",
-							Name:     "test",
 							Email:    "test@gmail.com",
 							Password: passward,
 						},

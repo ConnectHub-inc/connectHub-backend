@@ -21,14 +21,14 @@ type WebsocketHandler struct {
 	auc usecase.AuthUseCase
 	psr repository.PubSubRepository
 	muc usecase.MessageUseCase
-	uru usecase.UserRoomUseCase
+	uru usecase.MembershipRoomUseCase
 }
 
 func NewWebsocketHandler(
 	auc usecase.AuthUseCase,
 	psr repository.PubSubRepository,
 	muc usecase.MessageUseCase,
-	uru usecase.UserRoomUseCase,
+	uru usecase.MembershipRoomUseCase,
 ) *WebsocketHandler {
 	return &WebsocketHandler{
 		auc: auc,
@@ -52,7 +52,7 @@ func (wsh *WebsocketHandler) WebSocket(hub *ws.Hub, w http.ResponseWriter, r *ht
 		return
 	}
 
-	client := ws.NewClient(user.ID, user.Name, conn, hub, wsh.psr, wsh.muc, wsh.uru)
+	client := ws.NewClient(user.ID, conn, hub, wsh.psr, wsh.muc, wsh.uru)
 
 	go client.WritePump()
 	go client.ReadPump()

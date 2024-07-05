@@ -9,7 +9,7 @@ import (
 
 type RoomRepository interface {
 	List(ctx context.Context, qcs []QueryCondition) ([]entity.Room, error)
-	ListUserWorkspaceRooms(ctx context.Context, userID, workspaceID string) ([]entity.Room, error)
+	ListMembershipRooms(ctx context.Context, membershipID string) ([]entity.Room, error)
 	Get(ctx context.Context, id string) (*entity.Room, error)
 	Create(ctx context.Context, room entity.Room) error
 	BatchCreate(ctx context.Context, rooms []entity.Room) error

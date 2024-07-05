@@ -9,9 +9,6 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-
-	entity "github.com/tusmasoma/connectHub-backend/entity"
-	usecase "github.com/tusmasoma/connectHub-backend/usecase"
 )
 
 // MockUserUseCase is a mock of UserUseCase interface.
@@ -52,36 +49,6 @@ func (mr *MockUserUseCaseMockRecorder) CreateUserAndGenerateToken(ctx, email, pa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUserAndGenerateToken", reflect.TypeOf((*MockUserUseCase)(nil).CreateUserAndGenerateToken), ctx, email, passward)
 }
 
-// ListRoomUsers mocks base method.
-func (m *MockUserUseCase) ListRoomUsers(ctx context.Context, channelID string) ([]entity.User, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListRoomUsers", ctx, channelID)
-	ret0, _ := ret[0].([]entity.User)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ListRoomUsers indicates an expected call of ListRoomUsers.
-func (mr *MockUserUseCaseMockRecorder) ListRoomUsers(ctx, channelID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListRoomUsers", reflect.TypeOf((*MockUserUseCase)(nil).ListRoomUsers), ctx, channelID)
-}
-
-// ListWorkspaceUsers mocks base method.
-func (m *MockUserUseCase) ListWorkspaceUsers(ctx context.Context, workspaceID string) ([]entity.User, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListWorkspaceUsers", ctx, workspaceID)
-	ret0, _ := ret[0].([]entity.User)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ListWorkspaceUsers indicates an expected call of ListWorkspaceUsers.
-func (mr *MockUserUseCaseMockRecorder) ListWorkspaceUsers(ctx, workspaceID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListWorkspaceUsers", reflect.TypeOf((*MockUserUseCase)(nil).ListWorkspaceUsers), ctx, workspaceID)
-}
-
 // LoginAndGenerateToken mocks base method.
 func (m *MockUserUseCase) LoginAndGenerateToken(ctx context.Context, email, passward string) (string, error) {
 	m.ctrl.T.Helper()
@@ -109,18 +76,4 @@ func (m *MockUserUseCase) LogoutUser(ctx context.Context, userID string) error {
 func (mr *MockUserUseCaseMockRecorder) LogoutUser(ctx, userID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LogoutUser", reflect.TypeOf((*MockUserUseCase)(nil).LogoutUser), ctx, userID)
-}
-
-// UpdateUser mocks base method.
-func (m *MockUserUseCase) UpdateUser(ctx context.Context, params *usecase.UpdateUserParams, user entity.User) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateUser", ctx, params, user)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpdateUser indicates an expected call of UpdateUser.
-func (mr *MockUserUseCaseMockRecorder) UpdateUser(ctx, params, user interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUser", reflect.TypeOf((*MockUserUseCase)(nil).UpdateUser), ctx, params, user)
 }
