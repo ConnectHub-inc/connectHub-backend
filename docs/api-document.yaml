@@ -109,6 +109,32 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GetMembershipResponse'
+  /api/membership/create/{workspace_id}:
+    post:
+      tags:
+        - membership
+      summary: メンバーシップ作成API
+      description: |
+        メンバーシップ情報を作成します。
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: workspace_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ワークスペースID
+      requestBody:
+        description: Request Body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMembershipRequest'
+        required: true
+      responses:
+        200:
+          description: A successful response.
   /api/membership/update/{workspace_id}:
     put:
       tags:
@@ -233,6 +259,18 @@ components:
               private:
                 type: boolean
                 description: プライベートルームかどうか
+    CreateMembershipRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: ユーザの名前
+        profile_image_url:
+          type: string
+          description: ユーザのプロフィール画像
+        is_admin:
+          type: boolean
+          description: 管理者権限を持つかどうか
     UpdateMembershipRequest:
       type: object
       properties:
