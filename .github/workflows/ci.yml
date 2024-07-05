@@ -105,12 +105,12 @@ jobs:
           file: ./coverage.txt
           slug: tusmasoma/connecthub-backend
 
-      #- name: Run E2E tests
-      #  run: make e2e-test
-      #  env:
-      #    LOCAL_ENV_FILE: ${{ secrets.LOCAL_ENV_FILE }}
-      #    PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
-      #    PUBLIC_KEY: ${{ secrets.PUBLIC_KEY }}
+      - name: Run E2E tests
+        run: make e2e-test
+        env:
+          LOCAL_ENV_FILE: ${{ secrets.LOCAL_ENV_FILE }}
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          PUBLIC_KEY: ${{ secrets.PUBLIC_KEY }}
   lint:
     needs: build
     runs-on: ubuntu-latest

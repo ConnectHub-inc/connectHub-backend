@@ -6,7 +6,7 @@ import (
 )
 
 type Membership struct {
-	ID              string `json:"id" db:"id"`
+	ID              string `json:"membership_id" db:"id"`
 	UserID          string `json:"user_id" db:"user_id"`
 	WorkspaceID     string `json:"workspace_id" db:"workspace_id"`
 	Name            string `json:"name" db:"name"`

@@ -15,6 +15,7 @@ import (
 
 type MembershipHandler interface {
 	GetMembership(w http.ResponseWriter, r *http.Request)
+	CreateMembership(w http.ResponseWriter, r *http.Request)
 	ListMemberships(w http.ResponseWriter, r *http.Request)
 	ListRoomMemberships(w http.ResponseWriter, r *http.Request)
 	UpdateMembership(w http.ResponseWriter, r *http.Request)
@@ -127,6 +128,33 @@ func (mh *membershipHandler) ListRoomMemberships(w http.ResponseWriter, r *http.
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+}
+
+func (mh *membershipHandler) CreateMembership(w http.ResponseWriter, r *http.Request) {
+	// TODO: 一旦簡単に実装するため、後でリファクタリングする
+	ctx := r.Context()
+	workspaceID := chi.URLParam(r, "workspace_id")
+	user, err := mh.auc.GetUserFromContext(ctx)
+	if err != nil {
+		log.Error("Failed to get UserInfo from context", log.Ferror(err))
+		http.Error(w, fmt.Sprintf("Failed to get UserInfo from context: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	params := &usecase.CreateMembershipParams{
+		UserID:          user.ID,
+		WorkspaceID:     workspaceID,
+		Name:            "test",
+		ProfileImageURL: "test",
+		IsAdmin:         false,
+	}
+	if err = mh.muc.CreateMembership(ctx, params); err != nil {
+		log.Error("Failed to create membership", log.Ferror(err))
+		http.Error(w, "Failed to create membership", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
 }
 
 type UpdateMembershipRequest struct {

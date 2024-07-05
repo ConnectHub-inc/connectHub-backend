@@ -98,10 +98,10 @@ func (h *Hub) FindRoomByName(name string) *Room {
 	return nil
 }
 
-func (h *Hub) CreateRoom(userID, roomName string, roomPrivate bool) *Room {
+func (h *Hub) CreateRoom(membershipID, roomName string, roomPrivate bool) *Room {
 	room := NewRoom(roomName, roomPrivate, h.pubsubRepo, h.messageCacheRepo)
 
-	if err := h.roomUseCase.CreateRoom(context.Background(), userID, entity.Room{
+	if err := h.roomUseCase.CreateRoom(context.Background(), membershipID, entity.Room{
 		ID:          room.ID,
 		WorkspaceID: h.ID,
 		Name:        room.Name,

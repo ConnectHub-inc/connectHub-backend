@@ -92,6 +92,7 @@ func BuildContainer(ctx context.Context) (*dig.Container, error) {
 					r.Get("/list/{workspace_id}", membershipHandler.ListMemberships)
 					r.Get("/list-room/{channel_id}", membershipHandler.ListRoomMemberships)
 					r.Get("/get/{workspace_id}", membershipHandler.GetMembership)
+					r.Post("/create/{workspace_id}", membershipHandler.CreateMembership)
 					r.Put("/update/{workspace_id}", membershipHandler.UpdateMembership)
 				})
 

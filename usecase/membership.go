@@ -14,6 +14,7 @@ type MembershipUseCase interface {
 	ListMemberships(ctx context.Context, workspaceID string) ([]entity.Membership, error)
 	ListRoomMemberships(ctx context.Context, channelID string) ([]entity.Membership, error)
 	GetMembership(ctx context.Context, membershipID string) (*entity.Membership, error)
+	CreateMembership(ctx context.Context, params *CreateMembershipParams) error
 	UpdateMembership(ctx context.Context, params *UpdateMembershipParams, membership entity.Membership) error
 }
 
@@ -52,6 +53,23 @@ func (muc *membershipUseCase) GetMembership(ctx context.Context, membershipID st
 		return nil, err
 	}
 	return membership, nil
+}
+
+type CreateMembershipParams struct {
+	UserID          string `json:"userID"`
+	WorkspaceID     string `json:"workspaceID"`
+	Name            string `json:"name"`
+	ProfileImageURL string `json:"profile_image_url"`
+	IsAdmin         bool   `json:"is_admin"`
+}
+
+func (muc *membershipUseCase) CreateMembership(ctx context.Context, params *CreateMembershipParams) error {
+	membership := entity.NewMembership(params.UserID, params.WorkspaceID, params.Name, params.ProfileImageURL, params.IsAdmin, false)
+	if err := muc.mr.Create(ctx, membership); err != nil {
+		log.Error("Failed to create membership")
+		return err
+	}
+	return nil
 }
 
 type UpdateMembershipParams struct {

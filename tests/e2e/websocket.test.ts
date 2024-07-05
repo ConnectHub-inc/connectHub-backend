@@ -9,7 +9,7 @@ describe("WebSocket E2E Tests with Go Server", () => {
   let clientID: string;
   let channelID: string;
   let msgID: string;
-  let userIDofMsg: string;
+  let membershipIDofMsg: string;
 
   // 全てのテストの前に実行されるセットアップ処理
   beforeAll(async () => {
@@ -29,6 +29,14 @@ describe("WebSocket E2E Tests with Go Server", () => {
       const headers = {
         Authorization: `Bearer ${authToken}`,
       };
+
+      // TODO: Membershipsの作成をする必要がある
+      const _ = await axios.post(
+        "http://localhost:8083/api/membership/create/2f3e9441-4ddc-4234-903e-6ecf83501b39",
+        {},
+        { headers }
+      );
+
       ws = new WebSocket("ws://localhost:8083/ws", { headers });
 
       await new Promise<void>((resolve, reject) => {
@@ -86,7 +94,7 @@ describe("WebSocket E2E Tests with Go Server", () => {
       sender_id: clientID,
       content: {
         id: "",
-        user_id: "",
+        membership_id: "",
         text: "testChannel",
         created: "2024-06-11T15:48:00Z",
         updated: null,
@@ -125,7 +133,7 @@ describe("WebSocket E2E Tests with Go Server", () => {
       sender_id: clientID,
       content: {
         id: "",
-        user_id: "",
+        membership_id: "",
         text: "送信したいメッセージの内容",
         created_at: "2024-06-11T15:48:00Z",
         updated_at: null,
@@ -139,14 +147,14 @@ describe("WebSocket E2E Tests with Go Server", () => {
         expect(receivedMessage.target_id).toBe(testMessage.target_id);
         //expect(receivedMessage.sender_id).toBe(testMessage.sender_id);
         expect(receivedMessage.content.id).not.toBe("");
-        expect(receivedMessage.content.user_id).not.toBe("");
+        expect(receivedMessage.content.membership_id).not.toBe("");
         expect(receivedMessage.content.text).toBe(testMessage.content.text);
         expect(receivedMessage.content.created_at).toBe(
           testMessage.content.created_at
         );
         console.log("SUCCESS: CREATE_MESSAGE");
         msgID = receivedMessage.content.id;
-        userIDofMsg = receivedMessage.content.user_id;
+        membershipIDofMsg = receivedMessage.content.membership_id;
         done();
       }
     });
@@ -173,7 +181,7 @@ describe("WebSocket E2E Tests with Go Server", () => {
       sender_id: clientID,
       content: {
         id: "",
-        user_id: "",
+        membership_id: "",
         text: "",
         created_at: "2024-06-11T15:48:00Z",
         updated_at: null,
@@ -189,7 +197,7 @@ describe("WebSocket E2E Tests with Go Server", () => {
         expect(Array.isArray(receivedMessage.contents)).toBe(true);
         expect(receivedMessage.contents.length).toBeGreaterThan(0);
         expect(receivedMessage.contents[0]).toHaveProperty("id");
-        expect(receivedMessage.contents[0]).toHaveProperty("user_id");
+        expect(receivedMessage.contents[0]).toHaveProperty("membership_id");
         expect(receivedMessage.contents[0]).toHaveProperty("text");
         expect(receivedMessage.contents[0].text).toBe(
           "送信したいメッセージの内容"
@@ -222,7 +230,7 @@ describe("WebSocket E2E Tests with Go Server", () => {
       sender_id: clientID,
       content: {
         id: msgID,
-        user_id: userIDofMsg,
+        membership_id: membershipIDofMsg,
         text: "更新したいメッセージの内容",
         created_at: "2024-06-11T15:48:00Z",
         updated_at: "2024-07-12T15:48:00Z",
@@ -236,8 +244,8 @@ describe("WebSocket E2E Tests with Go Server", () => {
         expect(receivedMessage.target_id).toBe(testMessage.target_id);
         //expect(receivedMessage.sender_id).toBe(testMessage.sender_id);
         expect(receivedMessage.content.id).toBe(testMessage.content.id);
-        expect(receivedMessage.content.user_id).toBe(
-          testMessage.content.user_id
+        expect(receivedMessage.content.membership_id).toBe(
+          testMessage.content.membership_id
         );
         expect(receivedMessage.content.text).toBe(testMessage.content.text);
         expect(receivedMessage.content.created_at).toBe(
@@ -273,7 +281,7 @@ describe("WebSocket E2E Tests with Go Server", () => {
       sender_id: clientID,
       content: {
         id: msgID,
-        user_id: userIDofMsg,
+        membership_id: membershipIDofMsg,
         text: "",
         created_at: "2024-06-11T15:48:00Z",
         updated_at: null,
@@ -286,8 +294,8 @@ describe("WebSocket E2E Tests with Go Server", () => {
         expect(receivedMessage.action_tag).toBe(testMessage.action_tag);
         expect(receivedMessage.target_id).toBe(testMessage.target_id);
         //expect(receivedMessage.sender_id).toBe(testMessage.sender_id);
-        expect(receivedMessage.content.user_id).toBe(
-          testMessage.content.user_id
+        expect(receivedMessage.content.membership_id).toBe(
+          testMessage.content.membership_id
         );
         expect(receivedMessage.content.text).toBe(testMessage.content.text);
         expect(receivedMessage.content.created_at).toBe(

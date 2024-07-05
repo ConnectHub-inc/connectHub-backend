@@ -37,6 +37,20 @@ func (m *MockMembershipUseCase) EXPECT() *MockMembershipUseCaseMockRecorder {
 	return m.recorder
 }
 
+// CreateMembership mocks base method.
+func (m *MockMembershipUseCase) CreateMembership(ctx context.Context, params *usecase.CreateMembershipParams) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateMembership", ctx, params)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateMembership indicates an expected call of CreateMembership.
+func (mr *MockMembershipUseCaseMockRecorder) CreateMembership(ctx, params interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMembership", reflect.TypeOf((*MockMembershipUseCase)(nil).CreateMembership), ctx, params)
+}
+
 // GetMembership mocks base method.
 func (m *MockMembershipUseCase) GetMembership(ctx context.Context, membershipID string) (*entity.Membership, error) {
 	m.ctrl.T.Helper()
