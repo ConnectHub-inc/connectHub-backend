@@ -62,7 +62,8 @@ CREATE TABLE Memberships (
     is_admin BOOLEAN NOT NULL DEFAULT FALSE,
     is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
     FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE,
-    FOREIGN KEY (workspace_id) REFERENCES Workspaces(id) ON DELETE CASCADE
+    FOREIGN KEY (workspace_id) REFERENCES Workspaces(id) ON DELETE CASCADE,
+    UNIQUE (user_id, workspace_id)
 );
 
 CREATE TABLE Membership_Rooms (

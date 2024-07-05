@@ -33,7 +33,11 @@ describe("WebSocket E2E Tests with Go Server", () => {
       // TODO: Membershipsの作成をする必要がある
       const _ = await axios.post(
         "http://localhost:8083/api/membership/create/2f3e9441-4ddc-4234-903e-6ecf83501b39",
-        {},
+        {
+          name: "Test User",
+          profile_image_url: "http://example.com/image.jpg",
+          is_admin: false
+        },
         { headers }
       );
 
@@ -88,6 +92,7 @@ describe("WebSocket E2E Tests with Go Server", () => {
 
   // 公開チャンネルの作成をテスト
   test("TEST: Create Public Channel", (done) => {
+    const testChannel = `test_${Date.now()}_Channel`;
     const createChannelMessage = {
       action_tag: "CREATE_PUBLIC_ROOM",
       target_id: "",
@@ -95,7 +100,7 @@ describe("WebSocket E2E Tests with Go Server", () => {
       content: {
         id: "",
         membership_id: "",
-        text: "testChannel",
+        text: testChannel,
         created: "2024-06-11T15:48:00Z",
         updated: null,
       },
@@ -104,7 +109,7 @@ describe("WebSocket E2E Tests with Go Server", () => {
     ws.once("message", (data) => {
       const receivedMessage = JSON.parse(data.toString());
       if (receivedMessage.action_tag === "CREATE_PUBLIC_ROOM") {
-        expect(receivedMessage.content.text).toBe("testChannel");
+        expect(receivedMessage.content.text).toBe(testChannel);
         channelID = receivedMessage.target_id;
         console.log("SUCCESS: CREATE_PUBLIC_CHANNEL");
         done();
