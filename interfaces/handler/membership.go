@@ -161,7 +161,7 @@ func (mh *membershipHandler) CreateMembership(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
+	w.WriteHeader(http.StatusOK)
 }
 
 func isValidCreateMembershipRequest(body io.ReadCloser, requestBody *CreateMembershipRequest) bool {

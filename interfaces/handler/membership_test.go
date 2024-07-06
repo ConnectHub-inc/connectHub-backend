@@ -233,6 +233,106 @@ func TestMembershipHandler_ListRoomMemberships(t *testing.T) {
 	}
 }
 
+func TestMembershipHandler_CreateMembership(t *testing.T) {
+	t.Parallel()
+
+	userID := uuid.New().String()
+	workspaceID := uuid.New().String()
+	user := &entity.User{
+		ID:       userID,
+		Email:    "test@gmail.com",
+		Password: "password123",
+	}
+
+	patterns := []struct {
+		name  string
+		setup func(
+			m *mock.MockMembershipUseCase,
+			m1 *mock.MockAuthUseCase,
+		)
+		in         func() *http.Request
+		wantStatus int
+	}{
+		{
+			name: "success",
+			setup: func(m *mock.MockMembershipUseCase, m1 *mock.MockAuthUseCase) {
+				m1.EXPECT().GetUserFromContext(gomock.Any()).Return(
+					user,
+					nil,
+				)
+				m.EXPECT().CreateMembership(
+					gomock.Any(),
+					&usecase.CreateMembershipParams{
+						UserID:          userID,
+						WorkspaceID:     workspaceID,
+						Name:            "test",
+						ProfileImageURL: "https://test.com",
+						IsAdmin:         false,
+					},
+				).Return(nil)
+			},
+			in: func() *http.Request {
+				userCreateReq := CreateMembershipRequest{
+					Name:            "test",
+					ProfileImageURL: "https://test.com",
+					IsAdmin:         false,
+				}
+				reqBody, _ := json.Marshal(userCreateReq)
+				url := fmt.Sprintf("/api/membership/create/%s", workspaceID)
+				req, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(reqBody))
+				req.Header.Set("Content-Type", "application/json")
+				return req
+			},
+			wantStatus: http.StatusOK,
+		},
+		{
+			name: "Fail: invalid request",
+			setup: func(m *mock.MockMembershipUseCase, m1 *mock.MockAuthUseCase) {
+				m1.EXPECT().GetUserFromContext(gomock.Any()).Return(
+					user,
+					nil,
+				)
+			},
+			in: func() *http.Request {
+				userCreateReq := CreateMembershipRequest{
+					Name: "",
+				}
+				reqBody, _ := json.Marshal(userCreateReq)
+				url := fmt.Sprintf("/api/membership/create/%s", workspaceID)
+				req, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(reqBody))
+				req.Header.Set("Content-Type", "application/json")
+				return req
+			},
+			wantStatus: http.StatusBadRequest,
+		},
+	}
+	for _, tt := range patterns {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			ctrl := gomock.NewController(t)
+			muc := mock.NewMockMembershipUseCase(ctrl)
+			ruc := mock.NewMockRoomUseCase(ctrl)
+			auc := mock.NewMockAuthUseCase(ctrl)
+
+			if tt.setup != nil {
+				tt.setup(muc, auc)
+			}
+
+			handler := NewMembershipHandler(muc, ruc, auc)
+			recorder := httptest.NewRecorder()
+
+			r := chi.NewRouter()
+			r.Post("/api/membership/create/{workspace_id}", handler.CreateMembership)
+			r.ServeHTTP(recorder, tt.in())
+
+			if status := recorder.Code; status != tt.wantStatus {
+				t.Fatalf("handler returned wrong status code: got %v want %v", status, tt.wantStatus)
+			}
+		})
+	}
+}
+
 func TestMembershipHandler_UpdateMembership(t *testing.T) {
 	t.Parallel()
 
