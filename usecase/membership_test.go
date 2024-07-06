@@ -200,6 +200,79 @@ func TestMembershipUseCase_ListRoomMemberships(t *testing.T) {
 	}
 }
 
+func TestMembershipUseCase_CreateMembership(t *testing.T) {
+	t.Parallel()
+
+	userID := uuid.New().String()
+	workspaceID := uuid.New().String()
+	membershipID := userID + "_" + workspaceID
+
+	patterns := []struct {
+		name  string
+		setup func(
+			m *mock.MockMembershipRepository,
+		)
+		arg struct {
+			ctx    context.Context
+			params *CreateMembershipParams
+		}
+		wantErr error
+	}{
+		{
+			name: "success",
+			setup: func(m *mock.MockMembershipRepository) {
+				m.EXPECT().Create(
+					gomock.Any(),
+					entity.Membership{
+						ID:              membershipID,
+						UserID:          userID,
+						WorkspaceID:     workspaceID,
+						Name:            "test",
+						ProfileImageURL: "https://test.com",
+						IsAdmin:         false,
+					},
+				).Return(nil)
+			},
+			arg: struct {
+				ctx    context.Context
+				params *CreateMembershipParams
+			}{
+				ctx: context.Background(),
+				params: &CreateMembershipParams{
+					UserID:          userID,
+					WorkspaceID:     workspaceID,
+					Name:            "test",
+					ProfileImageURL: "https://test.com",
+					IsAdmin:         false,
+				},
+			},
+			wantErr: nil,
+		},
+	}
+	for _, tt := range patterns {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			ctrl := gomock.NewController(t)
+			mr := mock.NewMockMembershipRepository(ctrl)
+
+			if tt.setup != nil {
+				tt.setup(mr)
+			}
+
+			usecase := NewMembershipUseCase(mr)
+			err := usecase.CreateMembership(tt.arg.ctx, tt.arg.params)
+
+			if (err != nil) != (tt.wantErr != nil) {
+				t.Errorf("CreateMembership() error = %v, wantErr %v", err, tt.wantErr)
+			} else if err != nil && tt.wantErr != nil && err.Error() != tt.wantErr.Error() {
+				t.Errorf("CreateMembership() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
 func TestMembershipUseCase_UpdateMembership(t *testing.T) {
 	t.Parallel()
 	userID := uuid.New().String()
