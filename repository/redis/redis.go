@@ -9,8 +9,7 @@ import (
 	"github.com/tusmasoma/connectHub-backend/internal/log"
 )
 
-func NewRedisClient() *redis.Client {
-	ctx := context.Background()
+func NewRedisClient(ctx context.Context) *redis.Client {
 	conf, err := config.NewCacheConfig(ctx)
 	if err != nil || conf == nil {
 		log.Error("Failed to load cache config: %s\n", log.Ferror(err))

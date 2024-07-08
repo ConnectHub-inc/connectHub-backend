@@ -75,9 +75,7 @@ func TxFromCtx(ctx context.Context) *sql.Tx {
 	return tx
 }
 
-func NewMySQLDB() (*sql.DB, error) {
-	ctx := context.Background()
-
+func NewMySQLDB(ctx context.Context) (*sql.DB, error) {
 	conf, err := config.NewDBConfig(ctx)
 	if err != nil {
 		log.Error("Failed to load database config", log.Ferror(err))

@@ -46,7 +46,8 @@ func Test_NewRedisClient(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup(t)
 
-			got := NewRedisClient()
+			ctx := context.Background()
+			got := NewRedisClient(ctx)
 
 			if tt.want != nil {
 				assert.NotNil(t, got, "Client should not be nil")

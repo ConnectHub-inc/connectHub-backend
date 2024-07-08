@@ -158,6 +158,8 @@ func (client *Client) disconnect() {
 }
 
 func (client *Client) handleNewMessage(jsonMessage []byte) {
+	ctx := context.Background()
+
 	var message entity.WSMessage
 	if err := json.Unmarshal(jsonMessage, &message); err != nil {
 		log.Error("Error unmarshalling JSON message", log.Ferror(err))
@@ -168,29 +170,29 @@ func (client *Client) handleNewMessage(jsonMessage []byte) {
 
 	switch message.Action {
 	case config.ListMessagesAction:
-		client.handleListMessages(message)
+		client.handleListMessages(ctx, message)
 	case config.CreateMessageAction:
-		client.handleCreateMessage(message)
+		client.handleCreateMessage(ctx, message)
 	case config.DeleteMessageAction:
-		client.handleDeleteMessage(message)
+		client.handleDeleteMessage(ctx, message)
 	case config.UpdateMessageAction:
-		client.handleUpdateMessage(message)
+		client.handleUpdateMessage(ctx, message)
 	case config.CreatePublicRoomAction:
-		client.handleCreatePublicRoom(message)
+		client.handleCreatePublicRoom(ctx, message)
 	case config.JoinPublicRoomAction:
-		client.handleJoinPublicRoom(message)
+		client.handleJoinPublicRoom(ctx, message)
 	case config.LeavePublicRoomAction:
-		client.handleLeavePublicRoom(message)
+		client.handleLeavePublicRoom(ctx, message)
 	default:
 		log.Warn("Unknown message action", log.Fstring("action", message.Action))
 	}
 }
 
-func (client *Client) handleListMessages(message entity.WSMessage) {
+func (client *Client) handleListMessages(ctx context.Context, message entity.WSMessage) {
 	roomID := message.TargetID
 	start := time.Unix(0, 0)                       // Unixエポックの開始
 	end := time.Unix(1<<63-62135596801, 999999999) //nolint:gomnd // Unixエポックの終了
-	msgs, err := client.muc.ListMessages(context.Background(), roomID, start, end)
+	msgs, err := client.muc.ListMessages(ctx, roomID, start, end)
 	if err != nil {
 		log.Error("Failed to list messages", log.Ferror(err))
 		return
@@ -204,12 +206,12 @@ func (client *Client) handleListMessages(message entity.WSMessage) {
 	client.send <- response.Encode()
 }
 
-func (client *Client) handleCreateMessage(message entity.WSMessage) {
+func (client *Client) handleCreateMessage(ctx context.Context, message entity.WSMessage) {
 	roomID := message.TargetID
 	message.Content.ID = uuid.New().String()
 	message.Content.MembershipID = client.UserID + "_" + client.hub.ID
 
-	if err := client.muc.CreateMessage(context.Background(), roomID, message.Content); err != nil {
+	if err := client.muc.CreateMessage(ctx, roomID, message.Content); err != nil {
 		log.Error("Failed to create message", log.Ferror(err))
 		return
 	}
@@ -222,11 +224,11 @@ func (client *Client) handleCreateMessage(message entity.WSMessage) {
 	}
 }
 
-func (client *Client) handleDeleteMessage(message entity.WSMessage) {
+func (client *Client) handleDeleteMessage(ctx context.Context, message entity.WSMessage) {
 	roomID := message.TargetID
 	membershipID := client.UserID + "_" + client.hub.ID
 
-	if err := client.muc.DeleteMessage(context.Background(), message.Content, membershipID, roomID); err != nil {
+	if err := client.muc.DeleteMessage(ctx, message.Content, membershipID, roomID); err != nil {
 		log.Error("Failed to delete message", log.Ferror(err))
 		return
 	}
@@ -239,9 +241,9 @@ func (client *Client) handleDeleteMessage(message entity.WSMessage) {
 	}
 }
 
-func (client *Client) handleUpdateMessage(message entity.WSMessage) {
+func (client *Client) handleUpdateMessage(ctx context.Context, message entity.WSMessage) {
 	membershipID := client.UserID + "_" + client.hub.ID
-	if err := client.muc.UpdateMessage(context.Background(), message.Content, membershipID); err != nil {
+	if err := client.muc.UpdateMessage(ctx, message.Content, membershipID); err != nil {
 		log.Error("Failed to update message", log.Ferror(err))
 		return
 	}
@@ -255,7 +257,7 @@ func (client *Client) handleUpdateMessage(message entity.WSMessage) {
 	}
 }
 
-func (client *Client) handleCreatePublicRoom(message entity.WSMessage) {
+func (client *Client) handleCreatePublicRoom(ctx context.Context, message entity.WSMessage) {
 	roomName := message.Content.Text
 	membershipID := client.UserID + "_" + client.hub.ID
 	room := client.hub.FindRoomByName(roomName)
@@ -264,7 +266,7 @@ func (client *Client) handleCreatePublicRoom(message entity.WSMessage) {
 		return
 	}
 
-	room = client.hub.CreateRoom(membershipID, roomName, false)
+	room = client.hub.CreateRoom(ctx, membershipID, roomName, false)
 	if room == nil {
 		log.Error("Failed to create room", log.Fstring("roomName", roomName))
 		return
@@ -295,8 +297,7 @@ func (client *Client) handleCreatePublicRoom(message entity.WSMessage) {
 	}
 }
 
-func (client *Client) handleJoinPublicRoom(message entity.WSMessage) {
-	ctx := context.Background()
+func (client *Client) handleJoinPublicRoom(ctx context.Context, message entity.WSMessage) {
 	roomID := message.TargetID
 	membershipID := client.UserID + "_" + client.hub.ID
 	room := client.hub.FindRoomByID(roomID)
@@ -333,8 +334,7 @@ func (client *Client) handleJoinPublicRoom(message entity.WSMessage) {
 	}
 }
 
-func (client *Client) handleLeavePublicRoom(message entity.WSMessage) {
-	ctx := context.Background()
+func (client *Client) handleLeavePublicRoom(ctx context.Context, message entity.WSMessage) {
 	roomID := message.TargetID
 	membershipID := client.UserID + "_" + client.hub.ID
 	room := client.hub.FindRoomByID(roomID)
