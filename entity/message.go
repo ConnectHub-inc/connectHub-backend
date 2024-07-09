@@ -10,6 +10,26 @@ import (
 	"github.com/tusmasoma/connectHub-backend/internal/log"
 )
 
+const (
+	ListMessagesAction     = "LIST_MESSAGES"
+	CreateMessageAction    = "CREATE_MESSAGE"
+	DeleteMessageAction    = "DELETE_MESSAGE"
+	UpdateMessageAction    = "UPDATE_MESSAGE"
+	CreatePublicRoomAction = "CREATE_PUBLIC_ROOM"
+	JoinPublicRoomAction   = "JOIN_PUBLIC_ROOM"
+	LeavePublicRoomAction  = "LEAVE_PUBLIC_ROOM"
+)
+
+var validActions = map[string]bool{
+	ListMessagesAction:     true,
+	CreateMessageAction:    true,
+	DeleteMessageAction:    true,
+	UpdateMessageAction:    true,
+	CreatePublicRoomAction: true,
+	JoinPublicRoomAction:   true,
+	LeavePublicRoomAction:  true,
+}
+
 type Message struct {
 	ID           string     `json:"id" db:"id"`
 	MembershipID string     `json:"membership_id" db:"membership_id"`
@@ -67,10 +87,16 @@ func NewMessage(membershipID, text string) (*Message, error) {
 }
 
 func NewWSMessage(action string, content Message, targetID, senderID string) (*WSMessage, error) {
-	if action == "" || targetID == "" || senderID == "" {
+	if !validActions[action] {
 		log.Warn(
-			"Action, TargetID and SenderID are required",
+			"Invalid action",
 			log.Fstring("action", action),
+		)
+		return nil, fmt.Errorf("invalid action: %s", action)
+	}
+	if targetID == "" || senderID == "" {
+		log.Warn(
+			"TargetID and SenderID are required",
 			log.Fstring("targetID", targetID),
 			log.Fstring("senderID", senderID),
 		)
@@ -85,10 +111,16 @@ func NewWSMessage(action string, content Message, targetID, senderID string) (*W
 }
 
 func NewWSMessages(action string, contents []Message, targetID, senderID string) (*WSMessages, error) {
-	if action == "" || len(contents) == 0 || targetID == "" || senderID == "" {
+	if !validActions[action] {
 		log.Warn(
-			"action, contents, targetID and senderID are required",
+			"Invalid action",
 			log.Fstring("action", action),
+		)
+		return nil, fmt.Errorf("invalid action: %s", action)
+	}
+	if len(contents) == 0 || targetID == "" || senderID == "" {
+		log.Warn(
+			"Contents, TargetID and SenderID are required",
 			log.Fstring("targetID", targetID),
 			log.Fstring("senderID", senderID),
 		)

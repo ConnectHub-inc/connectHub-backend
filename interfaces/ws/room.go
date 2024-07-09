@@ -83,7 +83,7 @@ func (room *Room) notifyClientJoined(client *Client) {
 	}
 
 	message, err := entity.NewWSMessage(
-		config.CreateMessageAction,
+		entity.CreateMessageAction,
 		*content,
 		room.ID,
 		client.ID,
