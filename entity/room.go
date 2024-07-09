@@ -3,7 +3,6 @@ package entity
 import (
 	"fmt"
 
-	"github.com/google/uuid"
 	"github.com/tusmasoma/connectHub-backend/internal/log"
 )
 
@@ -15,7 +14,11 @@ type Room struct {
 	Private     bool   `json:"private" db:"private"`
 }
 
-func NewRoom(workspaceID, name, description string, private bool) (*Room, error) {
+func NewRoom(id, workspaceID, name, description string, private bool) (*Room, error) {
+	if id == "" {
+		log.Warn("ID is required", log.Fstring("id", id))
+		return nil, fmt.Errorf("id is required")
+	}
 	if workspaceID == "" {
 		log.Warn("WorkspaceID is required", log.Fstring("workspaceID", workspaceID))
 		return nil, fmt.Errorf("workspaceID is required")
@@ -25,7 +28,7 @@ func NewRoom(workspaceID, name, description string, private bool) (*Room, error)
 		return nil, fmt.Errorf("name is required")
 	}
 	return &Room{
-		ID:          uuid.New().String(),
+		ID:          id,
 		WorkspaceID: workspaceID,
 		Name:        name,
 		Description: description,

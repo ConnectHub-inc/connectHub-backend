@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/tusmasoma/connectHub-backend/config"
-	"github.com/tusmasoma/connectHub-backend/entity"
 	"github.com/tusmasoma/connectHub-backend/internal/log"
 	"github.com/tusmasoma/connectHub-backend/repository"
 	"github.com/tusmasoma/connectHub-backend/usecase"
@@ -101,11 +100,12 @@ func (h *Hub) FindRoomByName(name string) *Room {
 func (h *Hub) CreateRoom(ctx context.Context, membershipID, roomName string, roomPrivate bool) *Room {
 	room := NewRoom(roomName, roomPrivate, h.pubsubRepo, h.messageCacheRepo)
 
-	if err := h.roomUseCase.CreateRoom(ctx, membershipID, entity.Room{
-		ID:          room.ID,
-		WorkspaceID: h.ID,
-		Name:        room.Name,
-		Private:     room.Private,
+	if err := h.roomUseCase.CreateRoom(ctx, usecase.CreateRoomParams{
+		ID:           room.ID,
+		MembershipID: membershipID,
+		WorkspaceID:  h.ID,
+		Name:         room.Name,
+		Private:      room.Private,
 	}); err != nil {
 		log.Error("Failed to create room", log.Fstring("name", roomName))
 		return nil

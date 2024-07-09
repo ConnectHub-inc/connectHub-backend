@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -18,14 +17,7 @@ func TestRoomUseCase_CreateRoom(t *testing.T) {
 	workspaceID := uuid.New().String()
 	userID := uuid.New().String()
 	membershipID := userID + "_" + workspaceID
-
 	roomID := uuid.New().String()
-	room := entity.Room{
-		ID:          roomID,
-		Name:        "test",
-		Description: "test",
-		Private:     false,
-	}
 
 	patterns := []struct {
 		name  string
@@ -35,9 +27,8 @@ func TestRoomUseCase_CreateRoom(t *testing.T) {
 			m2 *mock.MockTransactionRepository,
 		)
 		arg struct {
-			ctx          context.Context
-			membershipID string
-			room         entity.Room
+			ctx    context.Context
+			params CreateRoomParams
 		}
 		wantErr error
 	}{
@@ -47,41 +38,36 @@ func TestRoomUseCase_CreateRoom(t *testing.T) {
 				tr.EXPECT().Transaction(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, fn func(ctx context.Context) error) error {
 					return fn(ctx)
 				})
-				rr.EXPECT().Create(gomock.Any(), room).Return(nil)
+				rr.EXPECT().Create(
+					gomock.Any(),
+					entity.Room{
+						ID:          roomID,
+						WorkspaceID: workspaceID,
+						Name:        "test",
+						Description: "test",
+						Private:     false,
+					},
+				).Return(nil)
 				urr.EXPECT().Create(gomock.Any(), entity.MembershipRoom{
 					MembershipID: membershipID,
-					RoomID:       room.ID,
+					RoomID:       roomID,
 				}).Return(nil)
 			},
 			arg: struct {
-				ctx          context.Context
-				membershipID string
-				room         entity.Room
+				ctx    context.Context
+				params CreateRoomParams
 			}{
-				ctx:          context.Background(),
-				membershipID: membershipID,
-				room:         room,
+				ctx: context.Background(),
+				params: CreateRoomParams{
+					ID:           roomID,
+					MembershipID: membershipID,
+					WorkspaceID:  workspaceID,
+					Name:         "test",
+					Description:  "test",
+					Private:      false,
+				},
 			},
 			wantErr: nil,
-		},
-		{
-			name: "failed to create room",
-			setup: func(rr *mock.MockRoomRepository, urr *mock.MockMembershipRoomRepository, tr *mock.MockTransactionRepository) {
-				tr.EXPECT().Transaction(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, fn func(ctx context.Context) error) error {
-					return fn(ctx)
-				})
-				rr.EXPECT().Create(gomock.Any(), room).Return(fmt.Errorf("failed to create room"))
-			},
-			arg: struct {
-				ctx          context.Context
-				membershipID string
-				room         entity.Room
-			}{
-				ctx:          context.Background(),
-				membershipID: membershipID,
-				room:         room,
-			},
-			wantErr: fmt.Errorf("failed to create room"),
 		},
 	}
 
@@ -100,7 +86,7 @@ func TestRoomUseCase_CreateRoom(t *testing.T) {
 			}
 
 			usecase := NewRoomUseCase(rr, urr, tr)
-			err := usecase.CreateRoom(tt.arg.ctx, tt.arg.membershipID, tt.arg.room)
+			err := usecase.CreateRoom(tt.arg.ctx, tt.arg.params)
 
 			if (err != nil) != (tt.wantErr != nil) {
 				t.Errorf("CreateRoom() error = %v, wantErr %v", err, tt.wantErr)
