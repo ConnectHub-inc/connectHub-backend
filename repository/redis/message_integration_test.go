@@ -15,9 +15,9 @@ func Test_MessageRepository(t *testing.T) {
 	channelID := uuid.New().String()
 	membershipID := uuid.New().String()
 	msgs := []entity.Message{
-		{ID: uuid.New().String(), MembershipID: membershipID, Text: "content1", CreatedAt: time.Now(), UpdatedAt: time.Now()},
-		{ID: uuid.New().String(), MembershipID: membershipID, Text: "content2", CreatedAt: time.Now(), UpdatedAt: time.Now()},
-		{ID: uuid.New().String(), MembershipID: membershipID, Text: "content3", CreatedAt: time.Now(), UpdatedAt: time.Now()},
+		{ID: uuid.New().String(), MembershipID: membershipID, Text: "content1", CreatedAt: time.Now(), UpdatedAt: nil},
+		{ID: uuid.New().String(), MembershipID: membershipID, Text: "content2", CreatedAt: time.Now(), UpdatedAt: nil},
+		{ID: uuid.New().String(), MembershipID: membershipID, Text: "content3", CreatedAt: time.Now(), UpdatedAt: nil},
 	}
 
 	repo := NewMessageRepository(client)

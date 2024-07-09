@@ -3,7 +3,6 @@ package ws
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -284,17 +283,17 @@ func (client *Client) handleCreatePublicRoom(ctx context.Context, message entity
 
 	time.Sleep(5 * time.Second) //nolint:gomnd // TODO: time.Sleepを使うのは避ける
 
-	room.broadcast <- &entity.WSMessage{
-		Action:   config.CreatePublicRoomAction,
-		TargetID: room.ID,
-		SenderID: client.ID,
-		Content: entity.Message{
-			ID:           uuid.New().String(),
-			MembershipID: membershipID,
-			Text:         room.Name,
-			CreatedAt:    time.Now(),
-		},
+	content, err := entity.NewMessage(membershipID, room.Name)
+	if err != nil {
+		log.Error("Failed to create message", log.Ferror(err))
+		return
 	}
+	msg, err := entity.NewWSMessage(config.CreatePublicRoomAction, *content, room.ID, client.ID)
+	if err != nil {
+		log.Error("Failed to create message", log.Ferror(err))
+		return
+	}
+	room.broadcast <- msg
 }
 
 func (client *Client) handleJoinPublicRoom(ctx context.Context, message entity.WSMessage) {
@@ -321,17 +320,17 @@ func (client *Client) handleJoinPublicRoom(ctx context.Context, message entity.W
 		}
 	}
 
-	room.broadcast <- &entity.WSMessage{
-		Action:   config.JoinPublicRoomAction,
-		TargetID: room.ID,
-		SenderID: client.ID,
-		Content: entity.Message{
-			ID:           uuid.New().String(),
-			MembershipID: membershipID,
-			Text:         fmt.Sprintf(config.WelcomeMessage, "client.Name"), // TODO: add client.Name field
-			CreatedAt:    time.Now(),
-		},
+	content, err := entity.NewMessage(membershipID, room.Name)
+	if err != nil {
+		log.Error("Failed to create message", log.Ferror(err))
+		return
 	}
+	msg, err := entity.NewWSMessage(config.JoinPublicRoomAction, *content, room.ID, client.ID)
+	if err != nil {
+		log.Error("Failed to create message", log.Ferror(err))
+		return
+	}
+	room.broadcast <- msg
 }
 
 func (client *Client) handleLeavePublicRoom(ctx context.Context, message entity.WSMessage) {
@@ -358,17 +357,17 @@ func (client *Client) handleLeavePublicRoom(ctx context.Context, message entity.
 		}
 	}
 
-	room.broadcast <- &entity.WSMessage{
-		Action:   config.LeavePublicRoomAction,
-		TargetID: room.ID,
-		SenderID: client.ID,
-		Content: entity.Message{
-			ID:           uuid.New().String(),
-			MembershipID: membershipID,
-			Text:         fmt.Sprintf(config.GoodbyeMessage, "client.Name"), // TODO: add client.Name field
-			CreatedAt:    time.Now(),
-		},
+	content, err := entity.NewMessage(membershipID, room.Name)
+	if err != nil {
+		log.Error("Failed to create message", log.Ferror(err))
+		return
 	}
+	msg, err := entity.NewWSMessage(config.LeavePublicRoomAction, *content, room.ID, client.ID)
+	if err != nil {
+		log.Error("Failed to create message", log.Ferror(err))
+		return
+	}
+	room.broadcast <- msg
 }
 
 func (client *Client) isInRoom(room *Room) bool {
