@@ -74,6 +74,31 @@ func (mr *membershipRepository) Update(ctx context.Context, membership entity.Me
 	return nil
 }
 
+func (mr *membershipRepository) SoftDelete(ctx context.Context, id string) error {
+	executor := mr.db
+	if tx := TxFromCtx(ctx); tx != nil {
+		executor = tx
+	}
+
+	query, _, err := mr.dialect.Update(mr.tableName).Set(
+		goqu.Record{"is_deleted": true},
+	).Where(
+		goqu.C("id").Eq(id),
+	).ToSQL()
+	if err != nil {
+		log.Error("Failed to generate SQL query", log.Ferror(err))
+		return err
+	}
+
+	_, err = executor.ExecContext(ctx, query)
+	if err != nil {
+		log.Error("Failed to execute query", log.Ferror(err))
+		return err
+	}
+
+	return nil
+}
+
 func (mr *membershipRepository) ListRoomMemberships(ctx context.Context, channelID string) ([]entity.Membership, error) {
 	query := `
 	SELECT Memberships.id, Memberships.user_id, Memberships.workspace_id, Memberships.name, Memberships.profile_image_url, Memberships.is_admin, Memberships.is_deleted

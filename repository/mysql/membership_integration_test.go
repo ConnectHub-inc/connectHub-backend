@@ -53,6 +53,7 @@ func Test_MembershipRepository(t *testing.T) {
 	roomRepo := NewRoomRepository(db, &dialect)
 	membershipRoomRepo := NewMembershipRoomRepository(db, &dialect)
 
+	// test get
 	err := userRepo.Create(ctx, user)
 	ValidateErr(t, err, nil)
 
@@ -65,6 +66,7 @@ func Test_MembershipRepository(t *testing.T) {
 		t.Errorf("Get() got = %v, want %v", getMembership, membership)
 	}
 
+	// test update
 	membership.Name = "updated"
 	err = membershipRepo.Update(ctx, membership)
 	ValidateErr(t, err, nil)
@@ -75,6 +77,7 @@ func Test_MembershipRepository(t *testing.T) {
 		t.Errorf("Expected membership name 'updated', got %s", getMembership.Name)
 	}
 
+	// test list room memberships
 	err = roomRepo.Create(ctx, room)
 	ValidateErr(t, err, nil)
 
@@ -85,6 +88,16 @@ func Test_MembershipRepository(t *testing.T) {
 	ValidateErr(t, err, nil)
 	if len(getMemberships) != 1 {
 		t.Errorf("Expected 1 membership, got %d", len(getMemberships))
+	}
+
+	// test soft delete
+	err = membershipRepo.SoftDelete(ctx, membershipID)
+	ValidateErr(t, err, nil)
+
+	getMembership, err = membershipRepo.Get(ctx, membershipID)
+	ValidateErr(t, err, nil)
+	if !getMembership.IsDeleted {
+		t.Errorf("Expected membership to be deleted, got %v", getMembership.IsDeleted)
 	}
 
 	// clean up

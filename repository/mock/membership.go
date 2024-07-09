@@ -52,17 +52,17 @@ func (mr *MockMembershipRepositoryMockRecorder) Create(ctx, membership interface
 }
 
 // Delete mocks base method.
-func (m *MockMembershipRepository) Delete(ctx context.Context, ID string) error {
+func (m *MockMembershipRepository) Delete(ctx context.Context, id string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", ctx, ID)
+	ret := m.ctrl.Call(m, "Delete", ctx, id)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Delete indicates an expected call of Delete.
-func (mr *MockMembershipRepositoryMockRecorder) Delete(ctx, ID interface{}) *gomock.Call {
+func (mr *MockMembershipRepositoryMockRecorder) Delete(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockMembershipRepository)(nil).Delete), ctx, ID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockMembershipRepository)(nil).Delete), ctx, id)
 }
 
 // Get mocks base method.
@@ -108,6 +108,20 @@ func (m *MockMembershipRepository) ListRoomMemberships(ctx context.Context, chan
 func (mr *MockMembershipRepositoryMockRecorder) ListRoomMemberships(ctx, channelID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListRoomMemberships", reflect.TypeOf((*MockMembershipRepository)(nil).ListRoomMemberships), ctx, channelID)
+}
+
+// SoftDelete mocks base method.
+func (m *MockMembershipRepository) SoftDelete(ctx context.Context, id string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SoftDelete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SoftDelete indicates an expected call of SoftDelete.
+func (mr *MockMembershipRepositoryMockRecorder) SoftDelete(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SoftDelete", reflect.TypeOf((*MockMembershipRepository)(nil).SoftDelete), ctx, id)
 }
 
 // Update mocks base method.

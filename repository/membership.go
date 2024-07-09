@@ -13,5 +13,6 @@ type MembershipRepository interface {
 	Get(ctx context.Context, id string) (*entity.Membership, error)
 	Create(ctx context.Context, membership entity.Membership) error
 	Update(ctx context.Context, membership entity.Membership) error
-	Delete(ctx context.Context, ID string) error
+	Delete(ctx context.Context, id string) error
+	SoftDelete(ctx context.Context, id string) error
 }
