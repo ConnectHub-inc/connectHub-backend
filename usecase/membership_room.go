@@ -25,9 +25,12 @@ func NewMembershipRoomUseCase(mrr repository.MembershipRoomRepository) Membershi
 }
 
 func (mruc *membershipRoomUseCase) CreateMembershipRoom(ctx context.Context, membershipID, roomID string) error {
-	membershipRoom := entity.NewMembershipRoom(membershipID, roomID)
-
-	if err := mruc.mrr.Create(ctx, membershipRoom); err != nil {
+	membershipRoom, err := entity.NewMembershipRoom(membershipID, roomID)
+	if err != nil {
+		log.Error("Failed to create membership room", log.Ferror(err))
+		return err
+	}
+	if err = mruc.mrr.Create(ctx, *membershipRoom); err != nil {
 		log.Error("Failed to create membership room", log.Fstring("membershipID", membershipID), log.Fstring("roomID", roomID))
 		return err
 	}

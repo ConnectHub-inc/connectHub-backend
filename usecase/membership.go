@@ -64,8 +64,12 @@ type CreateMembershipParams struct {
 }
 
 func (muc *membershipUseCase) CreateMembership(ctx context.Context, params *CreateMembershipParams) error {
-	membership := entity.NewMembership(params.UserID, params.WorkspaceID, params.Name, params.ProfileImageURL, params.IsAdmin, false)
-	if err := muc.mr.Create(ctx, membership); err != nil {
+	membership, err := entity.NewMembership(params.UserID, params.WorkspaceID, params.Name, params.ProfileImageURL, params.IsAdmin)
+	if err != nil {
+		log.Error("Failed to create membership", log.Ferror(err))
+		return err
+	}
+	if err = muc.mr.Create(ctx, *membership); err != nil {
 		log.Error("Failed to create membership")
 		return err
 	}
