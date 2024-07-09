@@ -35,8 +35,12 @@ func (ruc *roomUseCase) CreateRoom(ctx context.Context, membershipID string, roo
 			return err
 		}
 
-		membershipRoom := entity.NewMembershipRoom(membershipID, room.ID)
-		if err := ruc.mrr.Create(ctx, membershipRoom); err != nil {
+		membershipRoom, err := entity.NewMembershipRoom(membershipID, room.ID)
+		if err != nil {
+			log.Error("Failed to create membership room", log.Ferror(err))
+			return err
+		}
+		if err := ruc.mrr.Create(ctx, *membershipRoom); err != nil {
 			log.Error(
 				"Failed to create membership room",
 				log.Fstring("membershipID", membershipID),
