@@ -12,8 +12,8 @@ import (
 )
 
 type UserUseCase interface {
-	CreateUserAndGenerateToken(ctx context.Context, email string, passward string) (string, error)
-	LoginAndGenerateToken(ctx context.Context, email string, passward string) (string, error)
+	CreateUserAndGenerateToken(ctx context.Context, email string, password string) (string, error)
+	LoginAndGenerateToken(ctx context.Context, email string, password string) (string, error)
 	LogoutUser(ctx context.Context, userID string) error
 }
 
@@ -29,8 +29,8 @@ func NewUserUseCase(ur repository.UserRepository, cr repository.UserCacheReposit
 	}
 }
 
-func (uuc *userUseCase) CreateUserAndGenerateToken(ctx context.Context, email string, passward string) (string, error) {
-	user, err := uuc.CreateUser(ctx, email, passward)
+func (uuc *userUseCase) CreateUserAndGenerateToken(ctx context.Context, email string, password string) (string, error) {
+	user, err := uuc.CreateUser(ctx, email, password)
 	if err != nil {
 		log.Error("Failed to create user", log.Fstring("email", email))
 		return "", err
@@ -45,7 +45,7 @@ func (uuc *userUseCase) CreateUserAndGenerateToken(ctx context.Context, email st
 	return jwt, nil
 }
 
-func (uuc *userUseCase) CreateUser(ctx context.Context, email string, passward string) (*entity.User, error) {
+func (uuc *userUseCase) CreateUser(ctx context.Context, email string, password string) (*entity.User, error) {
 	users, err := uuc.ur.List(ctx, []repository.QueryCondition{{Field: "Email", Value: email}})
 	if err != nil {
 		log.Error("Error retrieving user by email", log.Fstring("email", email))
@@ -56,21 +56,20 @@ func (uuc *userUseCase) CreateUser(ctx context.Context, email string, passward s
 		return nil, fmt.Errorf("user with this email already exists")
 	}
 
-	password, err := auth.PasswordEncrypt(passward)
+	user, err := entity.NewUser(email, password)
 	if err != nil {
-		log.Error("Failed to encrypt password")
+		log.Error("Failed to create user", log.Ferror(err))
 		return nil, err
 	}
-	user := entity.NewUser(email, password)
 
-	if err = uuc.ur.Create(ctx, user); err != nil {
+	if err = uuc.ur.Create(ctx, *user); err != nil {
 		log.Error("Failed to create user", log.Fstring("email", email))
 		return nil, err
 	}
-	return &user, nil
+	return user, nil
 }
 
-func (uuc *userUseCase) LoginAndGenerateToken(ctx context.Context, email string, passward string) (string, error) {
+func (uuc *userUseCase) LoginAndGenerateToken(ctx context.Context, email string, password string) (string, error) {
 	var user entity.User
 	// emailでMySQLにユーザー情報問い合わせ
 	users, err := uuc.ur.List(ctx, []repository.QueryCondition{{Field: "Email", Value: email}})
@@ -89,7 +88,7 @@ func (uuc *userUseCase) LoginAndGenerateToken(ctx context.Context, email string,
 	}
 
 	// Clientから送られてきたpasswordをハッシュ化したものとMySQLから返されたハッシュ化されたpasswordを比較する
-	if err = auth.CompareHashAndPassword(user.Password, passward); err != nil {
+	if err = auth.CompareHashAndPassword(user.Password, password); err != nil {
 		log.Info("Password does not match", log.Fstring("email", email))
 		return "", err
 	}
