@@ -2,17 +2,40 @@ package entity
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
+
+	"github.com/google/uuid"
 
 	"github.com/tusmasoma/connectHub-backend/internal/log"
 )
 
+const (
+	ListMessagesAction     = "LIST_MESSAGES"
+	CreateMessageAction    = "CREATE_MESSAGE"
+	DeleteMessageAction    = "DELETE_MESSAGE"
+	UpdateMessageAction    = "UPDATE_MESSAGE"
+	CreatePublicRoomAction = "CREATE_PUBLIC_ROOM"
+	JoinPublicRoomAction   = "JOIN_PUBLIC_ROOM"
+	LeavePublicRoomAction  = "LEAVE_PUBLIC_ROOM"
+)
+
+var validActions = map[string]bool{
+	ListMessagesAction:     true,
+	CreateMessageAction:    true,
+	DeleteMessageAction:    true,
+	UpdateMessageAction:    true,
+	CreatePublicRoomAction: true,
+	JoinPublicRoomAction:   true,
+	LeavePublicRoomAction:  true,
+}
+
 type Message struct {
-	ID           string    `json:"id" db:"id"`
-	MembershipID string    `json:"membership_id" db:"membership_id"`
-	Text         string    `json:"text" db:"text"`
-	CreatedAt    time.Time `json:"created_at" db:"created_at"`
-	UpdatedAt    time.Time `json:"updated_at" db:"updated_at"`
+	ID           string     `json:"id" db:"id"`
+	MembershipID string     `json:"membership_id" db:"membership_id"`
+	Text         string     `json:"text" db:"text"`
+	CreatedAt    time.Time  `json:"created_at" db:"created_at"`
+	UpdatedAt    *time.Time `json:"updated_at" db:"updated_at"`
 }
 
 type WSMessage struct {
@@ -43,4 +66,70 @@ func (messages *WSMessages) Encode() []byte {
 		log.Error("Failed to encode messages", log.Ferror(err))
 	}
 	return json
+}
+
+func NewMessage(membershipID, text string) (*Message, error) {
+	if membershipID == "" || text == "" {
+		log.Warn(
+			"MembershipID and Text are required",
+			log.Fstring("membershipID", membershipID),
+			log.Fstring("text", text),
+		)
+		return nil, fmt.Errorf("id, membershipID and text are required")
+	}
+	return &Message{
+		ID:           uuid.New().String(),
+		MembershipID: membershipID,
+		Text:         text,
+		CreatedAt:    time.Now(),
+		UpdatedAt:    nil,
+	}, nil
+}
+
+func NewWSMessage(action string, content Message, targetID, senderID string) (*WSMessage, error) {
+	if !validActions[action] {
+		log.Warn(
+			"Invalid action",
+			log.Fstring("action", action),
+		)
+		return nil, fmt.Errorf("invalid action: %s", action)
+	}
+	if targetID == "" || senderID == "" {
+		log.Warn(
+			"TargetID and SenderID are required",
+			log.Fstring("targetID", targetID),
+			log.Fstring("senderID", senderID),
+		)
+		return nil, fmt.Errorf("action, targetID and senderID are required")
+	}
+	return &WSMessage{
+		Action:   action,
+		Content:  content,
+		TargetID: targetID,
+		SenderID: senderID,
+	}, nil
+}
+
+func NewWSMessages(action string, contents []Message, targetID, senderID string) (*WSMessages, error) {
+	if !validActions[action] {
+		log.Warn(
+			"Invalid action",
+			log.Fstring("action", action),
+		)
+		return nil, fmt.Errorf("invalid action: %s", action)
+	}
+	if len(contents) == 0 || targetID == "" || senderID == "" {
+		log.Warn(
+			"Contents, TargetID and SenderID are required",
+			log.Fstring("targetID", targetID),
+			log.Fstring("senderID", senderID),
+		)
+		return nil, fmt.Errorf("action, contents, targetID and senderID are required")
+	}
+	return &WSMessages{
+		Action:   action,
+		Contents: contents,
+		TargetID: targetID,
+		SenderID: senderID,
+	}, nil
 }

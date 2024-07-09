@@ -3,7 +3,6 @@ package ws
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/google/uuid"
 
@@ -74,17 +73,26 @@ func (room *Room) unregisterClientInRoom(client *Client) {
 
 func (room *Room) notifyClientJoined(client *Client) {
 	membershipID := client.UserID + "_" + client.hub.ID
-	message := &entity.WSMessage{
-		Action: config.CreateMessageAction,
-		Content: entity.Message{
-			ID:           uuid.New().String(),
-			MembershipID: membershipID,
-			Text:         fmt.Sprintf(config.WelcomeMessage, "client.Name"), // TODO: add client.Name field
-			CreatedAt:    time.Now(),
-		},
-		TargetID: room.ID,
-		SenderID: client.ID,
+	content, err := entity.NewMessage(
+		membershipID,
+		fmt.Sprintf(config.WelcomeMessage, "client.Name"),
+	)
+	if err != nil {
+		log.Error("Failed to create message", log.Ferror(err))
+		return
 	}
+
+	message, err := entity.NewWSMessage(
+		entity.CreateMessageAction,
+		*content,
+		room.ID,
+		client.ID,
+	)
+	if err != nil {
+		log.Error("Failed to create message", log.Ferror(err))
+		return
+	}
+
 	room.broadcastToClientsInRoom(message.Encode())
 }
 

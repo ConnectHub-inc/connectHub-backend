@@ -11,6 +11,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 
 	entity "github.com/tusmasoma/connectHub-backend/entity"
+	usecase "github.com/tusmasoma/connectHub-backend/usecase"
 )
 
 // MockRoomUseCase is a mock of RoomUseCase interface.
@@ -37,17 +38,17 @@ func (m *MockRoomUseCase) EXPECT() *MockRoomUseCaseMockRecorder {
 }
 
 // CreateRoom mocks base method.
-func (m *MockRoomUseCase) CreateRoom(ctx context.Context, membershipID string, room entity.Room) error {
+func (m *MockRoomUseCase) CreateRoom(ctx context.Context, params usecase.CreateRoomParams) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateRoom", ctx, membershipID, room)
+	ret := m.ctrl.Call(m, "CreateRoom", ctx, params)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CreateRoom indicates an expected call of CreateRoom.
-func (mr *MockRoomUseCaseMockRecorder) CreateRoom(ctx, membershipID, room interface{}) *gomock.Call {
+func (mr *MockRoomUseCaseMockRecorder) CreateRoom(ctx, params interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRoom", reflect.TypeOf((*MockRoomUseCase)(nil).CreateRoom), ctx, membershipID, room)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRoom", reflect.TypeOf((*MockRoomUseCase)(nil).CreateRoom), ctx, params)
 }
 
 // ListMembershipRooms mocks base method.

@@ -3,7 +3,6 @@ package ws
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -169,19 +168,19 @@ func (client *Client) handleNewMessage(jsonMessage []byte) {
 	message.SenderID = client.ID
 
 	switch message.Action {
-	case config.ListMessagesAction:
+	case entity.ListMessagesAction:
 		client.handleListMessages(ctx, message)
-	case config.CreateMessageAction:
+	case entity.CreateMessageAction:
 		client.handleCreateMessage(ctx, message)
-	case config.DeleteMessageAction:
+	case entity.DeleteMessageAction:
 		client.handleDeleteMessage(ctx, message)
-	case config.UpdateMessageAction:
+	case entity.UpdateMessageAction:
 		client.handleUpdateMessage(ctx, message)
-	case config.CreatePublicRoomAction:
+	case entity.CreatePublicRoomAction:
 		client.handleCreatePublicRoom(ctx, message)
-	case config.JoinPublicRoomAction:
+	case entity.JoinPublicRoomAction:
 		client.handleJoinPublicRoom(ctx, message)
-	case config.LeavePublicRoomAction:
+	case entity.LeavePublicRoomAction:
 		client.handleLeavePublicRoom(ctx, message)
 	default:
 		log.Warn("Unknown message action", log.Fstring("action", message.Action))
@@ -199,7 +198,7 @@ func (client *Client) handleListMessages(ctx context.Context, message entity.WSM
 	}
 
 	response := entity.WSMessages{
-		Action:   config.ListMessagesAction,
+		Action:   entity.ListMessagesAction,
 		TargetID: roomID,
 		Contents: msgs,
 	}
@@ -284,17 +283,17 @@ func (client *Client) handleCreatePublicRoom(ctx context.Context, message entity
 
 	time.Sleep(5 * time.Second) //nolint:gomnd // TODO: time.Sleepを使うのは避ける
 
-	room.broadcast <- &entity.WSMessage{
-		Action:   config.CreatePublicRoomAction,
-		TargetID: room.ID,
-		SenderID: client.ID,
-		Content: entity.Message{
-			ID:           uuid.New().String(),
-			MembershipID: membershipID,
-			Text:         room.Name,
-			CreatedAt:    time.Now(),
-		},
+	content, err := entity.NewMessage(membershipID, room.Name)
+	if err != nil {
+		log.Error("Failed to create message", log.Ferror(err))
+		return
 	}
+	msg, err := entity.NewWSMessage(entity.CreatePublicRoomAction, *content, room.ID, client.ID)
+	if err != nil {
+		log.Error("Failed to create message", log.Ferror(err))
+		return
+	}
+	room.broadcast <- msg
 }
 
 func (client *Client) handleJoinPublicRoom(ctx context.Context, message entity.WSMessage) {
@@ -321,17 +320,17 @@ func (client *Client) handleJoinPublicRoom(ctx context.Context, message entity.W
 		}
 	}
 
-	room.broadcast <- &entity.WSMessage{
-		Action:   config.JoinPublicRoomAction,
-		TargetID: room.ID,
-		SenderID: client.ID,
-		Content: entity.Message{
-			ID:           uuid.New().String(),
-			MembershipID: membershipID,
-			Text:         fmt.Sprintf(config.WelcomeMessage, "client.Name"), // TODO: add client.Name field
-			CreatedAt:    time.Now(),
-		},
+	content, err := entity.NewMessage(membershipID, room.Name)
+	if err != nil {
+		log.Error("Failed to create message", log.Ferror(err))
+		return
 	}
+	msg, err := entity.NewWSMessage(entity.JoinPublicRoomAction, *content, room.ID, client.ID)
+	if err != nil {
+		log.Error("Failed to create message", log.Ferror(err))
+		return
+	}
+	room.broadcast <- msg
 }
 
 func (client *Client) handleLeavePublicRoom(ctx context.Context, message entity.WSMessage) {
@@ -358,17 +357,17 @@ func (client *Client) handleLeavePublicRoom(ctx context.Context, message entity.
 		}
 	}
 
-	room.broadcast <- &entity.WSMessage{
-		Action:   config.LeavePublicRoomAction,
-		TargetID: room.ID,
-		SenderID: client.ID,
-		Content: entity.Message{
-			ID:           uuid.New().String(),
-			MembershipID: membershipID,
-			Text:         fmt.Sprintf(config.GoodbyeMessage, "client.Name"), // TODO: add client.Name field
-			CreatedAt:    time.Now(),
-		},
+	content, err := entity.NewMessage(membershipID, room.Name)
+	if err != nil {
+		log.Error("Failed to create message", log.Ferror(err))
+		return
 	}
+	msg, err := entity.NewWSMessage(entity.LeavePublicRoomAction, *content, room.ID, client.ID)
+	if err != nil {
+		log.Error("Failed to create message", log.Ferror(err))
+		return
+	}
+	room.broadcast <- msg
 }
 
 func (client *Client) isInRoom(room *Room) bool {
