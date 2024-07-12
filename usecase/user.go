@@ -12,7 +12,7 @@ import (
 )
 
 type UserUseCase interface {
-	CreateUserAndGenerateToken(ctx context.Context, email string, password string) (string, error)
+	SignUpAndGenerateToken(ctx context.Context, email string, password string) (string, error)
 	LoginAndGenerateToken(ctx context.Context, email string, password string) (string, error)
 	LogoutUser(ctx context.Context, userID string) error
 }
@@ -29,7 +29,7 @@ func NewUserUseCase(ur repository.UserRepository, cr repository.UserCacheReposit
 	}
 }
 
-func (uuc *userUseCase) CreateUserAndGenerateToken(ctx context.Context, email string, password string) (string, error) {
+func (uuc *userUseCase) SignUpAndGenerateToken(ctx context.Context, email string, password string) (string, error) {
 	user, err := uuc.CreateUser(ctx, email, password)
 	if err != nil {
 		log.Error("Failed to create user", log.Fstring("email", email))

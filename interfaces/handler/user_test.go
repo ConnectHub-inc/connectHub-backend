@@ -27,7 +27,7 @@ func TestUserHandler_SignUp(t *testing.T) {
 		{
 			name: "success",
 			setup: func(m *mock.MockUserUseCase, m1 *mock.MockAuthUseCase) {
-				m.EXPECT().CreateUserAndGenerateToken(
+				m.EXPECT().SignUpAndGenerateToken(
 					gomock.Any(),
 					"test@gmail.com",
 					"password123",

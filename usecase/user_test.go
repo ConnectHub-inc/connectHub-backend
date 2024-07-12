@@ -78,12 +78,12 @@ func TestUserUseCase_CreateUserAndGenerateToken(t *testing.T) {
 			}
 
 			usecase := NewUserUseCase(ur, cr)
-			jwt, err := usecase.CreateUserAndGenerateToken(tt.arg.ctx, tt.arg.email, tt.arg.passward)
+			jwt, err := usecase.SignUpAndGenerateToken(tt.arg.ctx, tt.arg.email, tt.arg.passward)
 
 			if (err != nil) != (tt.wantErr != nil) {
-				t.Errorf("CreateUserAndGenerateToken() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("SignUpAndGenerateToken() error = %v, wantErr %v", err, tt.wantErr)
 			} else if err != nil && tt.wantErr != nil && err.Error() != tt.wantErr.Error() {
-				t.Errorf("CreateUserAndGenerateToken() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("SignUpAndGenerateToken() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
 			if tt.wantErr == nil && jwt == "" {

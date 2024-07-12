@@ -34,21 +34,6 @@ func (m *MockUserUseCase) EXPECT() *MockUserUseCaseMockRecorder {
 	return m.recorder
 }
 
-// CreateUserAndGenerateToken mocks base method.
-func (m *MockUserUseCase) CreateUserAndGenerateToken(ctx context.Context, email, password string) (string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateUserAndGenerateToken", ctx, email, password)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CreateUserAndGenerateToken indicates an expected call of CreateUserAndGenerateToken.
-func (mr *MockUserUseCaseMockRecorder) CreateUserAndGenerateToken(ctx, email, password interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUserAndGenerateToken", reflect.TypeOf((*MockUserUseCase)(nil).CreateUserAndGenerateToken), ctx, email, password)
-}
-
 // LoginAndGenerateToken mocks base method.
 func (m *MockUserUseCase) LoginAndGenerateToken(ctx context.Context, email, password string) (string, error) {
 	m.ctrl.T.Helper()
@@ -76,4 +61,19 @@ func (m *MockUserUseCase) LogoutUser(ctx context.Context, userID string) error {
 func (mr *MockUserUseCaseMockRecorder) LogoutUser(ctx, userID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LogoutUser", reflect.TypeOf((*MockUserUseCase)(nil).LogoutUser), ctx, userID)
+}
+
+// SignUpAndGenerateToken mocks base method.
+func (m *MockUserUseCase) SignUpAndGenerateToken(ctx context.Context, email, password string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SignUpAndGenerateToken", ctx, email, password)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SignUpAndGenerateToken indicates an expected call of SignUpAndGenerateToken.
+func (mr *MockUserUseCaseMockRecorder) SignUpAndGenerateToken(ctx, email, password interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SignUpAndGenerateToken", reflect.TypeOf((*MockUserUseCase)(nil).SignUpAndGenerateToken), ctx, email, password)
 }

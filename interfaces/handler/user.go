@@ -51,7 +51,7 @@ func (uh *userHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	jwt, err := uh.uuc.CreateUserAndGenerateToken(ctx, requestBody.Email, requestBody.Password)
+	jwt, err := uh.uuc.SignUpAndGenerateToken(ctx, requestBody.Email, requestBody.Password)
 	if err != nil {
 		log.Error("Failed to create user and generate token", log.Fstring("email", requestBody.Email), log.Ferror(err))
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
