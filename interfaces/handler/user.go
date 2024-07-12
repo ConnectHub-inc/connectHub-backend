@@ -11,7 +11,7 @@ import (
 )
 
 type UserHandler interface {
-	CreateUser(w http.ResponseWriter, r *http.Request)
+	SignUp(w http.ResponseWriter, r *http.Request)
 	Login(w http.ResponseWriter, r *http.Request)
 	Logout(w http.ResponseWriter, r *http.Request)
 }
@@ -30,7 +30,7 @@ func NewUserHandler(uuc usecase.UserUseCase, ruc usecase.RoomUseCase, auc usecas
 	}
 }
 
-type CreateUserRequest struct {
+type SignUpRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
@@ -40,13 +40,13 @@ type LoginRequest struct {
 	Password string `json:"password"`
 }
 
-func (uh *userHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
+func (uh *userHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	var requestBody CreateUserRequest
-	if ok := isValidCreateUserRequest(r.Body, &requestBody); !ok {
-		log.Info("Invalid user create request", log.Fstring("method", r.Method), log.Fstring("url", r.URL.String()))
-		http.Error(w, "Invalid user create request", http.StatusBadRequest)
+	var requestBody SignUpRequest
+	if ok := isValidSignUpRequest(r.Body, &requestBody); !ok {
+		log.Info("Invalid sign up request", log.Fstring("method", r.Method), log.Fstring("url", r.URL.String()))
+		http.Error(w, "Invalid sign up request", http.StatusBadRequest)
 		return
 	}
 	defer r.Body.Close()
@@ -58,12 +58,12 @@ func (uh *userHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Info("User created successfully", log.Fstring("email", requestBody.Email))
+	log.Info("User sign up successfully", log.Fstring("email", requestBody.Email))
 	w.Header().Set("Authorization", "Bearer "+jwt)
 	w.WriteHeader(http.StatusOK)
 }
 
-func isValidCreateUserRequest(body io.ReadCloser, requestBody *CreateUserRequest) bool {
+func isValidSignUpRequest(body io.ReadCloser, requestBody *SignUpRequest) bool {
 	// リクエストボディのJSONを構造体にデコード
 	if err := json.NewDecoder(body).Decode(requestBody); err != nil {
 		log.Error("Invalid request body", log.Ferror(err))

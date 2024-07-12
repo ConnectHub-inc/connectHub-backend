@@ -17,7 +17,7 @@ describe("WebSocket E2E Tests with Go Server", () => {
       // 認証リクエストを送信してトークンを取得
       const uniqueEmail = `e2e_test_${Date.now()}@test.com`;
       const response = await axios.post(
-        "http://localhost:8083/api/user/create",
+        "http://localhost:8083/api/user/signup",
         {
           email: uniqueEmail,
           password: "e2e_test_password",

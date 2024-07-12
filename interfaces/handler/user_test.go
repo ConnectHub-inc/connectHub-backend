@@ -13,7 +13,7 @@ import (
 	"github.com/tusmasoma/connectHub-backend/usecase/mock"
 )
 
-func TestUserHandler_CreateUser(t *testing.T) {
+func TestUserHandler_SignUp(t *testing.T) {
 	t.Parallel()
 	patterns := []struct {
 		name  string
@@ -37,9 +37,9 @@ func TestUserHandler_CreateUser(t *testing.T) {
 				)
 			},
 			in: func() *http.Request {
-				userCreateReq := CreateUserRequest{Email: "test@gmail.com", Password: "password123"}
-				reqBody, _ := json.Marshal(userCreateReq)
-				req, _ := http.NewRequest(http.MethodPost, "/api/user/create", bytes.NewBuffer(reqBody))
+				signUpReq := SignUpRequest{Email: "test@gmail.com", Password: "password123"}
+				reqBody, _ := json.Marshal(signUpReq)
+				req, _ := http.NewRequest(http.MethodPost, "/api/user/signup", bytes.NewBuffer(reqBody))
 				req.Header.Set("Content-Type", "application/json")
 				return req
 			},
@@ -48,9 +48,9 @@ func TestUserHandler_CreateUser(t *testing.T) {
 		{
 			name: "Fail: invalid request",
 			in: func() *http.Request {
-				userCreateReq := CreateUserRequest{Email: "test@gmail.com"}
+				userCreateReq := SignUpRequest{Email: "test@gmail.com"}
 				reqBody, _ := json.Marshal(userCreateReq)
-				req, _ := http.NewRequest(http.MethodPost, "/api/user/create", bytes.NewBuffer(reqBody))
+				req, _ := http.NewRequest(http.MethodPost, "/api/user/signup", bytes.NewBuffer(reqBody))
 				req.Header.Set("Content-Type", "application/json")
 				return req
 			},
@@ -72,7 +72,7 @@ func TestUserHandler_CreateUser(t *testing.T) {
 
 			handler := NewUserHandler(uuc, ruc, auc)
 			recorder := httptest.NewRecorder()
-			handler.CreateUser(recorder, tt.in())
+			handler.SignUp(recorder, tt.in())
 
 			if status := recorder.Code; status != tt.wantStatus {
 				t.Fatalf("handler returned wrong status code: got %v want %v", status, tt.wantStatus)
