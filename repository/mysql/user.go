@@ -6,7 +6,6 @@ import (
 	"errors"
 
 	"github.com/doug-martin/goqu/v9"
-	"github.com/doug-martin/goqu/v9/exp"
 
 	"github.com/tusmasoma/connectHub-backend/entity"
 	"github.com/tusmasoma/connectHub-backend/internal/log"
@@ -29,17 +28,14 @@ func (ur *userRepository) LockUserByEmail(ctx context.Context, email string) (bo
 		executor = tx
 	}
 
-	query, _, err := ur.dialect.Select("*").From(ur.tableName).Where(
-		goqu.C("email").Eq(email),
-	).ForUpdate(exp.NoWait).Limit(1).ToSQL()
-	if err != nil {
-		log.Error("Failed to generate SQL query", log.Ferror(err))
-		return false, err
-	}
-
 	var user entity.User
-	row := executor.QueryRowContext(ctx, query)
-	if err = ur.structScanRow(&user, row); err != nil {
+	query := "SELECT * FROM Users WHERE email = ? LIMIT 1 FOR UPDATE"
+	row := executor.QueryRowContext(ctx, query, email)
+	if err := row.Scan(
+		&user.ID,
+		&user.Email,
+		&user.Password,
+	); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			log.Info("No user found with the provided email", log.Fstring("email", email))
 			return false, nil
