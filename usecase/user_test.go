@@ -25,18 +25,22 @@ func TestUserUseCase_CreateUserAndGenerateToken(t *testing.T) {
 		setup func(
 			m *mock.MockUserRepository,
 			m1 *mock.MockUserCacheRepository,
+			m2 *mock.MockTransactionRepository,
 		)
 		arg     CreateUserAndGenerateTokenArg
 		wantErr error
 	}{
 		{
 			name: "success",
-			setup: func(m *mock.MockUserRepository, m1 *mock.MockUserCacheRepository) {
+			setup: func(m *mock.MockUserRepository, m1 *mock.MockUserCacheRepository, m2 *mock.MockTransactionRepository) {
 				t.Setenv("PRIVATE_KEY_PATH", "../.certificate/private_key.pem")
-				m.EXPECT().List(
+				m2.EXPECT().Transaction(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, fn func(ctx context.Context) error) error {
+					return fn(ctx)
+				})
+				m.EXPECT().LockUserByEmail(
 					gomock.Any(),
-					[]repository.QueryCondition{{Field: "Email", Value: "test@gmail.com"}},
-				).Return([]entity.User{}, nil)
+					"test@gmail.com",
+				).Return(false, nil)
 				m.EXPECT().Create(
 					gomock.Any(),
 					gomock.Any(),
@@ -52,11 +56,14 @@ func TestUserUseCase_CreateUserAndGenerateToken(t *testing.T) {
 		},
 		{
 			name: "Fail: Username already exists",
-			setup: func(m *mock.MockUserRepository, m1 *mock.MockUserCacheRepository) {
-				m.EXPECT().List(
+			setup: func(m *mock.MockUserRepository, m1 *mock.MockUserCacheRepository, m2 *mock.MockTransactionRepository) {
+				m2.EXPECT().Transaction(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, fn func(ctx context.Context) error) error {
+					return fn(ctx)
+				})
+				m.EXPECT().LockUserByEmail(
 					gomock.Any(),
-					[]repository.QueryCondition{{Field: "Email", Value: "test@gmail.com"}},
-				).Return([]entity.User{{Email: "test@gmail.com"}}, nil)
+					"test@gmail.com",
+				).Return(true, nil)
 			},
 			arg: CreateUserAndGenerateTokenArg{
 				ctx:      context.Background(),
@@ -72,12 +79,13 @@ func TestUserUseCase_CreateUserAndGenerateToken(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			ur := mock.NewMockUserRepository(ctrl)
 			cr := mock.NewMockUserCacheRepository(ctrl)
+			tr := mock.NewMockTransactionRepository(ctrl)
 
 			if tt.setup != nil {
-				tt.setup(ur, cr)
+				tt.setup(ur, cr, tr)
 			}
 
-			usecase := NewUserUseCase(ur, cr)
+			usecase := NewUserUseCase(ur, cr, tr)
 			jwt, err := usecase.SignUpAndGenerateToken(tt.arg.ctx, tt.arg.email, tt.arg.passward)
 
 			if (err != nil) != (tt.wantErr != nil) {
@@ -201,12 +209,13 @@ func TestUserUseCase_LoginAndGenerateToken(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			ur := mock.NewMockUserRepository(ctrl)
 			cr := mock.NewMockUserCacheRepository(ctrl)
+			tr := mock.NewMockTransactionRepository(ctrl)
 
 			if tt.setup != nil {
 				tt.setup(ur, cr)
 			}
 
-			usecase := NewUserUseCase(ur, cr)
+			usecase := NewUserUseCase(ur, cr, tr)
 			jwt, err := usecase.LoginAndGenerateToken(tt.arg.ctx, tt.arg.email, tt.arg.passward)
 
 			if (err != nil) != (tt.wantErr != nil) {
