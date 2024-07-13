@@ -23,7 +23,7 @@ func NewUserRepository(db *sql.DB, dialect *goqu.DialectWrapper) repository.User
 	}
 }
 
-func (ur *userRepository) LockUserByEmail(ctx context.Context, email string) (*entity.User, error) {
+func (ur *userRepository) LockUserByEmail(ctx context.Context, email string) (bool, error) {
 	executor := ur.db
 	if tx := TxFromCtx(ctx); tx != nil {
 		executor = tx
@@ -34,7 +34,7 @@ func (ur *userRepository) LockUserByEmail(ctx context.Context, email string) (*e
 	).ForUpdate(exp.NoWait).Limit(1).ToSQL()
 	if err != nil {
 		log.Error("Failed to generate SQL query", log.Ferror(err))
-		return nil, err
+		return false, err
 	}
 
 	var user entity.User
@@ -42,10 +42,10 @@ func (ur *userRepository) LockUserByEmail(ctx context.Context, email string) (*e
 	if err = ur.structScanRow(&user, row); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			log.Info("No user found with the provided email", log.Fstring("email", email))
-			return nil, sql.ErrNoRows
+			return false, nil
 		}
 		log.Error("Failed to scan row", log.Ferror(err))
-		return nil, err
+		return false, err
 	}
-	return &user, nil
+	return true, nil
 }

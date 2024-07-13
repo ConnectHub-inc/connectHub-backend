@@ -2,7 +2,6 @@ package mysql
 
 import (
 	"context"
-	"database/sql"
 	"testing"
 
 	"github.com/doug-martin/goqu/v9"
@@ -25,16 +24,16 @@ func Test_UserRepository(t *testing.T) {
 	ValidateErr(t, err, nil)
 
 	// Test LockUserByEmail
-	getUser, err := repo.LockUserByEmail(ctx, "test@gmail.com")
+	exists, err := repo.LockUserByEmail(ctx, "test@gmail.com")
 	ValidateErr(t, err, nil)
-	if getUser == nil {
+	if !exists {
 		t.Fatalf("Failed to get user by email")
 	}
 
 	// Test LockUserByEmail
-	getUser, err = repo.LockUserByEmail(ctx, "fail@gmail.com")
-	ValidateErr(t, err, sql.ErrNoRows)
-	if getUser != nil {
+	exists, err = repo.LockUserByEmail(ctx, "fail@gmail.com")
+	ValidateErr(t, err, nil)
+	if exists {
 		t.Fatalf("Failed to get user by email")
 	}
 

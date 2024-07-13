@@ -96,10 +96,10 @@ func (mr *MockUserRepositoryMockRecorder) List(ctx, qcs interface{}) *gomock.Cal
 }
 
 // LockUserByEmail mocks base method.
-func (m *MockUserRepository) LockUserByEmail(ctx context.Context, email string) (*entity.User, error) {
+func (m *MockUserRepository) LockUserByEmail(ctx context.Context, email string) (bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "LockUserByEmail", ctx, email)
-	ret0, _ := ret[0].(*entity.User)
+	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
