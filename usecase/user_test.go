@@ -13,13 +13,13 @@ import (
 	"github.com/tusmasoma/connectHub-backend/repository/mock"
 )
 
-type CreateUserAndGenerateTokenArg struct {
+type SignUpAndGenerateTokenArg struct {
 	ctx      context.Context
 	email    string
 	passward string
 }
 
-func TestUserUseCase_CreateUserAndGenerateToken(t *testing.T) {
+func TestUserUseCase_SignUpAndGenerateToken(t *testing.T) {
 	patterns := []struct {
 		name  string
 		setup func(
@@ -27,7 +27,7 @@ func TestUserUseCase_CreateUserAndGenerateToken(t *testing.T) {
 			m1 *mock.MockUserCacheRepository,
 			m2 *mock.MockTransactionRepository,
 		)
-		arg     CreateUserAndGenerateTokenArg
+		arg     SignUpAndGenerateTokenArg
 		wantErr error
 	}{
 		{
@@ -47,7 +47,7 @@ func TestUserUseCase_CreateUserAndGenerateToken(t *testing.T) {
 				).Return(nil)
 				m1.EXPECT().SetUserSession(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 			},
-			arg: CreateUserAndGenerateTokenArg{
+			arg: SignUpAndGenerateTokenArg{
 				ctx:      context.Background(),
 				email:    "test@gmail.com",
 				passward: "password123",
@@ -65,7 +65,7 @@ func TestUserUseCase_CreateUserAndGenerateToken(t *testing.T) {
 					"test@gmail.com",
 				).Return(true, nil)
 			},
-			arg: CreateUserAndGenerateTokenArg{
+			arg: SignUpAndGenerateTokenArg{
 				ctx:      context.Background(),
 				email:    "test@gmail.com",
 				passward: "password123",
@@ -101,6 +101,12 @@ func TestUserUseCase_CreateUserAndGenerateToken(t *testing.T) {
 	}
 }
 
+type LoginAndGenerateTokenArg struct {
+	ctx      context.Context
+	email    string
+	passward string
+}
+
 func TestUserUseCase_LoginAndGenerateToken(t *testing.T) {
 	patterns := []struct {
 		name  string
@@ -108,7 +114,7 @@ func TestUserUseCase_LoginAndGenerateToken(t *testing.T) {
 			m *mock.MockUserRepository,
 			m1 *mock.MockUserCacheRepository,
 		)
-		arg     CreateUserAndGenerateTokenArg
+		arg     LoginAndGenerateTokenArg
 		wantErr error
 	}{
 		{
@@ -138,7 +144,7 @@ func TestUserUseCase_LoginAndGenerateToken(t *testing.T) {
 					gomock.Any(),
 				).Return(nil)
 			},
-			arg: CreateUserAndGenerateTokenArg{
+			arg: LoginAndGenerateTokenArg{
 				ctx:      context.Background(),
 				email:    "test@gmail.com",
 				passward: "password123",
@@ -166,7 +172,7 @@ func TestUserUseCase_LoginAndGenerateToken(t *testing.T) {
 					"f6db2530-cd9b-4ac1-8dc1-38c795e6eec2",
 				).Return("session", nil)
 			},
-			arg: CreateUserAndGenerateTokenArg{
+			arg: LoginAndGenerateTokenArg{
 				ctx:      context.Background(),
 				email:    "test@gmail.com",
 				passward: "password123",
@@ -194,7 +200,7 @@ func TestUserUseCase_LoginAndGenerateToken(t *testing.T) {
 					"f6db2530-cd9b-4ac1-8dc1-38c795e6eec2",
 				).Return("", nil)
 			},
-			arg: CreateUserAndGenerateTokenArg{
+			arg: LoginAndGenerateTokenArg{
 				ctx:      context.Background(),
 				email:    "test@gmail.com",
 				passward: "password123",
