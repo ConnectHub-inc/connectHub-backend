@@ -20,12 +20,14 @@ type UserUseCase interface {
 type userUseCase struct {
 	ur repository.UserRepository
 	cr repository.UserCacheRepository
+	tr repository.TransactionRepository
 }
 
-func NewUserUseCase(ur repository.UserRepository, cr repository.UserCacheRepository) UserUseCase {
+func NewUserUseCase(ur repository.UserRepository, cr repository.UserCacheRepository, tr repository.TransactionRepository) UserUseCase {
 	return &userUseCase{
 		ur: ur,
 		cr: cr,
+		tr: tr,
 	}
 }
 
@@ -46,26 +48,37 @@ func (uuc *userUseCase) SignUpAndGenerateToken(ctx context.Context, email string
 }
 
 func (uuc *userUseCase) CreateUser(ctx context.Context, email string, password string) (*entity.User, error) {
-	users, err := uuc.ur.List(ctx, []repository.QueryCondition{{Field: "Email", Value: email}})
-	if err != nil {
-		log.Error("Error retrieving user by email", log.Fstring("email", email))
-		return nil, err
-	}
-	if len(users) > 0 {
-		log.Info("User with this email already exists", log.Fstring("email", email))
-		return nil, fmt.Errorf("user with this email already exists")
-	}
+	var user *entity.User
 
-	user, err := entity.NewUser(email, password)
-	if err != nil {
-		log.Error("Failed to create user", log.Ferror(err))
-		return nil, err
-	}
+	err := uuc.tr.Transaction(ctx, func(ctx context.Context) error {
+		exists, err := uuc.ur.LockUserByEmail(ctx, email)
+		if err != nil {
+			log.Error("Error retrieving user by email", log.Fstring("email", email))
+			return err
+		}
+		if exists {
+			log.Info("User with this email already exists", log.Fstring("email", email))
+			return fmt.Errorf("user with this email already exists")
+		}
 
-	if err = uuc.ur.Create(ctx, *user); err != nil {
+		user, err = entity.NewUser(email, password)
+		if err != nil {
+			log.Error("Failed to create user", log.Ferror(err))
+			return err
+		}
+
+		if err = uuc.ur.Create(ctx, *user); err != nil {
+			log.Error("Failed to create user", log.Fstring("email", email))
+			return err
+		}
+
+		return nil
+	})
+	if err != nil {
 		log.Error("Failed to create user", log.Fstring("email", email))
 		return nil, err
 	}
+
 	return user, nil
 }
 
