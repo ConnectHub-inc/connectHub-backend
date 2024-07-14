@@ -11,6 +11,8 @@ describe("WebSocket E2E Tests with Go Server", () => {
   let msgID: string;
   let membershipIDofMsg: string;
 
+  const workspaceID = "2f3e9441-4ddc-4234-903e-6ecf83501b39";
+
   // 全てのテストの前に実行されるセットアップ処理
   beforeAll(async () => {
     try {
@@ -31,8 +33,8 @@ describe("WebSocket E2E Tests with Go Server", () => {
       };
 
       // TODO: Membershipsの作成をする必要がある
-      const _ = await axios.post(
-        "http://localhost:8083/api/membership/create/2f3e9441-4ddc-4234-903e-6ecf83501b39",
+      const response2 = await axios.post(
+        `http://localhost:8083/api/membership/create/${workspaceID}`,
         {
           name: "Test User",
           profile_image_url: "http://example.com/image.jpg",
@@ -41,7 +43,15 @@ describe("WebSocket E2E Tests with Go Server", () => {
         { headers }
       );
 
-      ws = new WebSocket("ws://localhost:8083/ws", { headers });
+      const _ = await axios.post(
+        "http://localhost:8083/api/workspace/create",
+        {
+          name: "TestWorkspace"
+        },
+        { headers }
+      );
+
+      ws = new WebSocket(`ws://localhost:8083/ws/${workspaceID}`, { headers });
 
       await new Promise<void>((resolve, reject) => {
         ws.on("open", () => {

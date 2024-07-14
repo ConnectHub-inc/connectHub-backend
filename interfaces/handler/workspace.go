@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -16,13 +17,23 @@ type WorkspaceHandler interface {
 }
 
 type workspaceHandler struct {
+	hm  *ws.HubManager
+	auc usecase.AuthUseCase
 	ruc usecase.RoomUseCase
 	psr repository.PubSubRepository
 	mcr repository.MessageCacheRepository
 }
 
-func NewWorkspaceHandler(ruc usecase.RoomUseCase, psr repository.PubSubRepository, mcr repository.MessageCacheRepository) WorkspaceHandler {
+func NewWorkspaceHandler(
+	hm *ws.HubManager,
+	auc usecase.AuthUseCase,
+	ruc usecase.RoomUseCase,
+	psr repository.PubSubRepository,
+	mcr repository.MessageCacheRepository,
+) WorkspaceHandler {
 	return &workspaceHandler{
+		hm:  hm,
+		auc: auc,
 		ruc: ruc,
 		psr: psr,
 		mcr: mcr,
@@ -34,7 +45,13 @@ type CreateWorkspaceRequest struct {
 }
 
 func (wh *workspaceHandler) CreateWorkspace(w http.ResponseWriter, r *http.Request) {
-	// ctx := r.Context() // not used
+	ctx := r.Context()
+	_, err := wh.auc.GetUserFromContext(ctx)
+	if err != nil {
+		log.Error("Failed to get UserInfo from context", log.Ferror(err))
+		http.Error(w, fmt.Sprintf("Failed to get UserInfo from context: %v", err), http.StatusInternalServerError)
+		return
+	}
 
 	var requestBody CreateWorkspaceRequest
 	if ok := isValidCreateWorkspaceRequest(r.Body, &requestBody); !ok {
@@ -44,6 +61,7 @@ func (wh *workspaceHandler) CreateWorkspace(w http.ResponseWriter, r *http.Reque
 	}
 	defer r.Body.Close()
 
+	log.Info("Creating workspace ...", log.Fstring("name", requestBody.Name))
 	hub := ws.NewHub(
 		requestBody.Name,
 		wh.ruc,
@@ -52,6 +70,15 @@ func (wh *workspaceHandler) CreateWorkspace(w http.ResponseWriter, r *http.Reque
 	)
 
 	go hub.Run()
+
+	wh.hm.Add(hub.ID, hub)
+
+	// membershipID := user.ID + "_" + hub.ID
+	// hub.CreateRoom(ctx, membershipID, "general", false)
+	// hub.CreateRoom(ctx, membershipID, "random", false)
+
+	log.Info("Workspace created", log.Fstring("name", requestBody.Name))
+	w.WriteHeader(http.StatusOK)
 }
 
 func isValidCreateWorkspaceRequest(body io.ReadCloser, requestBody *CreateWorkspaceRequest) bool {
