@@ -30,9 +30,19 @@ describe("WebSocket E2E Tests with Go Server", () => {
         Authorization: `Bearer ${authToken}`,
       };
 
+      // テスト用のworkspaceを作成
+      const response2 = await axios.post(
+        "http://localhost:8083/api/workspace/create",
+        {
+          name: "TestWorkspace"
+        },
+        { headers }
+      );
+      const workspaceID = response2.data.workspace_id;
+
       // TODO: Membershipsの作成をする必要がある
-      const _ = await axios.post(
-        "http://localhost:8083/api/membership/create/2f3e9441-4ddc-4234-903e-6ecf83501b39",
+      const response3 = await axios.post(
+        `http://localhost:8083/api/membership/create/${workspaceID}`,
         {
           name: "Test User",
           profile_image_url: "http://example.com/image.jpg",
@@ -41,7 +51,7 @@ describe("WebSocket E2E Tests with Go Server", () => {
         { headers }
       );
 
-      ws = new WebSocket("ws://localhost:8083/ws", { headers });
+      ws = new WebSocket(`ws://localhost:8083/ws/${workspaceID}`, { headers });
 
       await new Promise<void>((resolve, reject) => {
         ws.on("open", () => {

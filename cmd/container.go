@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"net/http"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/go-chi/chi"
@@ -20,7 +19,7 @@ import (
 	"github.com/tusmasoma/connectHub-backend/usecase"
 )
 
-func BuildContainer(ctx context.Context) (*dig.Container, error) {
+func BuildContainer(ctx context.Context) (*dig.Container, error) { //nolint:funlen
 	container := dig.New()
 
 	if err := container.Provide(func() context.Context {
@@ -39,6 +38,7 @@ func BuildContainer(ctx context.Context) (*dig.Container, error) {
 		mysql.NewTransactionRepository,
 		mysql.NewUserRepository,
 		mysql.NewMembershipRepository,
+		mysql.NewWorkspaceRepository,
 		mysql.NewMessageRepository,
 		mysql.NewRoomRepository,
 		mysql.NewMembershipRoomRepository,
@@ -48,22 +48,24 @@ func BuildContainer(ctx context.Context) (*dig.Container, error) {
 		redis.NewPubSubRepository,
 		usecase.NewUserUseCase,
 		usecase.NewMembershipUseCase,
+		usecase.NewWorkspaceUseCase,
 		usecase.NewMessageUseCase,
 		usecase.NewRoomUseCase,
 		usecase.NewMembershipRoomUseCase,
 		usecase.NewAuthUseCase,
+		ws.NewHubManager,
 		handler.NewWebsocketHandler,
+		handler.NewWorkspaceHandler,
 		handler.NewUserHandler,
 		handler.NewMembershipHandler,
 		middleware.NewAuthMiddleware,
-		ws.NewHub,
 		func(
 			serverConfig *config.ServerConfig,
 			wsHandler *handler.WebsocketHandler,
+			workspaceHandler handler.WorkspaceHandler,
 			membershipHandler handler.MembershipHandler,
 			userHandler handler.UserHandler,
 			authMiddleware middleware.AuthMiddleware,
-			hub *ws.Hub,
 		) *chi.Mux {
 			r := chi.NewRouter()
 			r.Use(cors.Handler(cors.Options{
@@ -76,17 +78,18 @@ func BuildContainer(ctx context.Context) (*dig.Container, error) {
 				OptionsPassthrough: true,
 			}))
 
-			go hub.Run()
-
 			r.Group(func(r chi.Router) {
 				r.Use(authMiddleware.Authenticate)
-				r.Get("/ws", func(w http.ResponseWriter, r *http.Request) {
-					wsHandler.WebSocket(hub, w, r)
-				})
+				r.Get("/ws/{workspace_id}", wsHandler.WebSocket)
 			})
 
 			// r.Use(middleware.Logging)
 			r.Route("/api", func(r chi.Router) {
+				r.Route("/workspace", func(r chi.Router) {
+					r.Use(authMiddleware.Authenticate)
+					r.Post("/create", workspaceHandler.CreateWorkspace)
+				})
+
 				r.Route("/membership", func(r chi.Router) {
 					r.Use(authMiddleware.Authenticate)
 					r.Get("/list/{workspace_id}", membershipHandler.ListMemberships)

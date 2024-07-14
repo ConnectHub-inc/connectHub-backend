@@ -2,6 +2,9 @@ package ws
 
 import (
 	"context"
+	"sync"
+
+	"github.com/google/uuid"
 
 	"github.com/tusmasoma/connectHub-backend/config"
 	"github.com/tusmasoma/connectHub-backend/internal/log"
@@ -9,8 +12,33 @@ import (
 	"github.com/tusmasoma/connectHub-backend/usecase"
 )
 
+type HubManager struct {
+	hubs map[string]*Hub
+	mu   sync.RWMutex
+}
+
+func NewHubManager() *HubManager {
+	return &HubManager{
+		hubs: make(map[string]*Hub),
+	}
+}
+
+func (hm *HubManager) Add(workspaceID string, hub *Hub) {
+	hm.mu.Lock()
+	defer hm.mu.Unlock()
+	hm.hubs[workspaceID] = hub
+}
+
+func (hm *HubManager) Get(workspaceID string) (*Hub, bool) {
+	hm.mu.RLock()
+	defer hm.mu.RUnlock()
+	hub, exists := hm.hubs[workspaceID]
+	return hub, exists
+}
+
 type Hub struct {
 	ID               string
+	Name             string
 	clients          map[*Client]bool
 	rooms            map[*Room]bool
 	Register         chan *Client
@@ -22,9 +50,10 @@ type Hub struct {
 }
 
 // NewWebsocketServer creates a new Hub type
-func NewHub(roomUseCase usecase.RoomUseCase, pubsubRepo repository.PubSubRepository, messageCacheRepo repository.MessageCacheRepository) *Hub {
+func NewHub(name string, roomUseCase usecase.RoomUseCase, pubsubRepo repository.PubSubRepository, messageCacheRepo repository.MessageCacheRepository) *Hub {
 	return &Hub{
-		ID:               "2f3e9441-4ddc-4234-903e-6ecf83501b39", // TODO: generate unique ID for the hub
+		ID:               uuid.New().String(),
+		Name:             name,
 		clients:          make(map[*Client]bool),
 		rooms:            make(map[*Room]bool),
 		Register:         make(chan *Client),

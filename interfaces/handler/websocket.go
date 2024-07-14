@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 
+	"github.com/go-chi/chi"
 	"github.com/gorilla/websocket"
 
 	"github.com/tusmasoma/connectHub-backend/config"
@@ -18,6 +19,7 @@ var upgrader = websocket.Upgrader{
 }
 
 type WebsocketHandler struct {
+	hm  *ws.HubManager
 	auc usecase.AuthUseCase
 	psr repository.PubSubRepository
 	muc usecase.MessageUseCase
@@ -25,12 +27,14 @@ type WebsocketHandler struct {
 }
 
 func NewWebsocketHandler(
+	hm *ws.HubManager,
 	auc usecase.AuthUseCase,
 	psr repository.PubSubRepository,
 	muc usecase.MessageUseCase,
 	uru usecase.MembershipRoomUseCase,
 ) *WebsocketHandler {
 	return &WebsocketHandler{
+		hm:  hm,
 		auc: auc,
 		psr: psr,
 		muc: muc,
@@ -38,11 +42,18 @@ func NewWebsocketHandler(
 	}
 }
 
-func (wsh *WebsocketHandler) WebSocket(hub *ws.Hub, w http.ResponseWriter, r *http.Request) {
+func (wsh *WebsocketHandler) WebSocket(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	user, err := wsh.auc.GetUserFromContext(ctx)
 	if err != nil {
 		http.Error(w, "Failed to get UserInfo from context", http.StatusInternalServerError)
+		return
+	}
+
+	workspaceID := chi.URLParam(r, "workspace_id")
+	hub, exists := wsh.hm.Get(workspaceID)
+	if !exists {
+		http.Error(w, "Workspace not found", http.StatusNotFound)
 		return
 	}
 
