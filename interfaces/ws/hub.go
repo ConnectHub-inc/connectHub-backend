@@ -52,7 +52,7 @@ type Hub struct {
 // NewWebsocketServer creates a new Hub type
 func NewHub(name string, roomUseCase usecase.RoomUseCase, pubsubRepo repository.PubSubRepository, messageCacheRepo repository.MessageCacheRepository) *Hub {
 	return &Hub{
-		ID:               uuid.New().String(), // TODO: generate unique ID for the hub
+		ID:               uuid.New().String(),
 		Name:             name,
 		clients:          make(map[*Client]bool),
 		rooms:            make(map[*Room]bool),
