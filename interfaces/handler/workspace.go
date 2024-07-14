@@ -97,7 +97,7 @@ func (wh *workspaceHandler) CreateWorkspace(w http.ResponseWriter, r *http.Reque
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	log.Info("Workspace created", log.Fstring("workspace_id", hub.ID), log.Fstring("name", workspaceName))
+	log.Info("Successfully Workspace created", log.Fstring("workspaceID", hub.ID), log.Fstring("name", workspaceName))
 }
 
 func isValidCreateWorkspaceRequest(body io.ReadCloser, requestBody *CreateWorkspaceRequest) bool {

@@ -69,4 +69,10 @@ func (wsh *WebsocketHandler) WebSocket(w http.ResponseWriter, r *http.Request) {
 	go client.ReadPump()
 
 	hub.Register <- client
+
+	log.Info(
+		"Successfully Client connected",
+		log.Fstring("userID", user.ID),
+		log.Fstring("workspaceID", workspaceID),
+	)
 }

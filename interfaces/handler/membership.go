@@ -80,6 +80,7 @@ func (mh *membershipHandler) GetMembership(w http.ResponseWriter, r *http.Reques
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	log.Info("Successfully retrieved membership", log.Fstring("membershipID", membershipID))
 }
 
 type ListMembershipsResponse struct {
@@ -104,6 +105,7 @@ func (mh *membershipHandler) ListMemberships(w http.ResponseWriter, r *http.Requ
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	log.Info("Successfully retrieved memberships in workspace", log.Fstring("workspaceID", workspaceID))
 }
 
 type ListRoomMembershipsResponse struct {
@@ -128,6 +130,7 @@ func (mh *membershipHandler) ListRoomMemberships(w http.ResponseWriter, r *http.
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	log.Info("Successfully retrieved memberships in room", log.Fstring("channelID", channelID))
 }
 
 type CreateMembershipRequest struct {
@@ -161,6 +164,7 @@ func (mh *membershipHandler) CreateMembership(w http.ResponseWriter, r *http.Req
 		return
 	}
 
+	log.Info("Successfully created membership", log.Fstring("userID", user.ID), log.Fstring("workspaceID", workspaceID))
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -230,6 +234,7 @@ func (mh *membershipHandler) UpdateMembership(w http.ResponseWriter, r *http.Req
 		return
 	}
 
+	log.Info("Successfully updated membership", log.Fstring("membershipID", membershipID))
 	w.WriteHeader(http.StatusOK)
 }
 

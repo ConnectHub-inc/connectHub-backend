@@ -100,6 +100,7 @@ func (am *authMiddleware) Authenticate(next http.Handler) http.Handler {
 		// コンテキストに userID を保存
 		ctx = context.WithValue(ctx, config.ContextUserIDKey, payload.UserID)
 
+		log.Info("Successfully Authentication", log.Fstring("userID", payload.UserID))
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

@@ -93,6 +93,7 @@ func (uh *userHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Info("User login successfully", log.Fstring("email", requestBody.Email))
 	w.Header().Set("Authorization", "Bearer "+jwt)
 	w.WriteHeader(http.StatusOK)
 }
@@ -125,5 +126,6 @@ func (uh *userHandler) Logout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Info("User logout successfully", log.Fstring("userID", user.ID))
 	w.WriteHeader(http.StatusOK)
 }
