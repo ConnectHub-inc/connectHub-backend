@@ -61,7 +61,6 @@ func (wh *workspaceHandler) CreateWorkspace(w http.ResponseWriter, r *http.Reque
 	}
 	defer r.Body.Close()
 
-	log.Info("Creating workspace ...", log.Fstring("name", requestBody.Name))
 	hub := ws.NewHub(
 		requestBody.Name,
 		wh.ruc,
