@@ -37,6 +37,20 @@ func (m *MockRoomUseCase) EXPECT() *MockRoomUseCaseMockRecorder {
 	return m.recorder
 }
 
+// BatchCreateDefaultChannels mocks base method.
+func (m *MockRoomUseCase) BatchCreateDefaultChannels(ctx context.Context, workspaceID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BatchCreateDefaultChannels", ctx, workspaceID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// BatchCreateDefaultChannels indicates an expected call of BatchCreateDefaultChannels.
+func (mr *MockRoomUseCaseMockRecorder) BatchCreateDefaultChannels(ctx, workspaceID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BatchCreateDefaultChannels", reflect.TypeOf((*MockRoomUseCase)(nil).BatchCreateDefaultChannels), ctx, workspaceID)
+}
+
 // CreateRoom mocks base method.
 func (m *MockRoomUseCase) CreateRoom(ctx context.Context, params usecase.CreateRoomParams) error {
 	m.ctrl.T.Helper()

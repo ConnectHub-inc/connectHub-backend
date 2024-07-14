@@ -85,10 +85,12 @@ func (h *Hub) Run() {
 }
 
 func (h *Hub) registerClient(client *Client) {
+	// TODO: HubにあるPublicなチャンネルにclientを登録する
 	h.clients[client] = true
 }
 
 func (h *Hub) unregisterClient(client *Client) {
+	// TODO: Hubにあるチャンネルからclientを削除する
 	delete(h.clients, client)
 }
 

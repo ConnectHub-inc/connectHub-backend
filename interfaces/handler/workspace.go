@@ -86,9 +86,12 @@ func (wh *workspaceHandler) CreateWorkspace(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	// membershipID := user.ID + "_" + hub.ID
-	// hub.CreateRoom(ctx, membershipID, "general", false)
-	// hub.CreateRoom(ctx, membershipID, "random", false)
+	// TODO: default channels should Run
+	if err = wh.ruc.BatchCreateDefaultChannels(ctx, hub.ID); err != nil {
+		log.Error("Failed to create default channels", log.Ferror(err))
+		http.Error(w, fmt.Sprintf("Failed to create default channels: %v", err), http.StatusInternalServerError)
+		return
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	if err = json.NewEncoder(w).Encode(CreateWorkspaceResponse{ID: hub.ID, Name: workspaceName}); err != nil {

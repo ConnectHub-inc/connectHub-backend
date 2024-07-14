@@ -4,6 +4,8 @@ package usecase
 import (
 	"context"
 
+	"github.com/google/uuid"
+
 	"github.com/tusmasoma/connectHub-backend/entity"
 	"github.com/tusmasoma/connectHub-backend/internal/log"
 	"github.com/tusmasoma/connectHub-backend/repository"
@@ -11,6 +13,7 @@ import (
 
 type RoomUseCase interface {
 	CreateRoom(ctx context.Context, params CreateRoomParams) error
+	BatchCreateDefaultChannels(ctx context.Context, workspaceID string) error
 	ListMembershipRooms(ctx context.Context, membershipID string) ([]entity.Room, error)
 }
 
@@ -68,6 +71,30 @@ func (ruc *roomUseCase) CreateRoom(ctx context.Context, params CreateRoomParams)
 	})
 	if err != nil {
 		log.Error("Failed to create room", log.Fstring("roomName", params.Name))
+		return err
+	}
+	return nil
+}
+
+func (ruc *roomUseCase) BatchCreateDefaultChannels(ctx context.Context, workspaceID string) error {
+	var rooms []entity.Room
+	for _, defaultChannel := range entity.DefaultChannels {
+		room, err := entity.NewRoom(
+			uuid.New().String(),
+			workspaceID,
+			defaultChannel.Name,
+			defaultChannel.Description,
+			false,
+		)
+		if err != nil {
+			log.Error("Failed to create default channel", log.Ferror(err))
+			return err
+		}
+		rooms = append(rooms, *room)
+	}
+
+	if err := ruc.rr.BatchCreate(ctx, rooms); err != nil {
+		log.Error("Failed to batch create default channels", log.Ferror(err))
 		return err
 	}
 	return nil
