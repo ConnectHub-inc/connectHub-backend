@@ -56,6 +56,7 @@ func BuildContainer(ctx context.Context) (*dig.Container, error) {
 		handler.NewUserHandler,
 		handler.NewMembershipHandler,
 		middleware.NewAuthMiddleware,
+		hubName,
 		ws.NewHub,
 		func(
 			serverConfig *config.ServerConfig,
@@ -124,4 +125,9 @@ func BuildContainer(ctx context.Context) (*dig.Container, error) {
 func provideMySQLDialect() *goqu.DialectWrapper {
 	dialect := goqu.Dialect("mysql")
 	return &dialect
+}
+
+// TODO: temporarily implemented
+func hubName() string {
+	return "WorkSpaceHub"
 }
