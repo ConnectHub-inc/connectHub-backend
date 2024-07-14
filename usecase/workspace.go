@@ -10,7 +10,7 @@ import (
 )
 
 type WorkspaceUseCase interface {
-	CreateWorkspace(ctx context.Context, name string) error
+	CreateWorkspace(ctx context.Context, id, name string) error
 }
 
 type workspaceUseCase struct {
@@ -23,8 +23,8 @@ func NewWorkspaceUseCase(wr repository.WorkspaceRepository) WorkspaceUseCase {
 	}
 }
 
-func (wuc *workspaceUseCase) CreateWorkspace(ctx context.Context, name string) error {
-	workspace, err := entity.NewWorkspace(name)
+func (wuc *workspaceUseCase) CreateWorkspace(ctx context.Context, id, name string) error {
+	workspace, err := entity.NewWorkspace(id, name)
 	if err != nil {
 		log.Error("Failed to create workspace", log.Ferror(err))
 		return err

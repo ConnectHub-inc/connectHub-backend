@@ -4,6 +4,8 @@ import (
 	"context"
 	"sync"
 
+	"github.com/google/uuid"
+
 	"github.com/tusmasoma/connectHub-backend/config"
 	"github.com/tusmasoma/connectHub-backend/internal/log"
 	"github.com/tusmasoma/connectHub-backend/repository"
@@ -50,7 +52,7 @@ type Hub struct {
 // NewWebsocketServer creates a new Hub type
 func NewHub(name string, roomUseCase usecase.RoomUseCase, pubsubRepo repository.PubSubRepository, messageCacheRepo repository.MessageCacheRepository) *Hub {
 	return &Hub{
-		ID:               "2f3e9441-4ddc-4234-903e-6ecf83501b39", // TODO: generate unique ID for the hub
+		ID:               uuid.New().String(), // TODO: generate unique ID for the hub
 		Name:             name,
 		clients:          make(map[*Client]bool),
 		rooms:            make(map[*Room]bool),

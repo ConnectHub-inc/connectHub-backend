@@ -19,7 +19,7 @@ import (
 	"github.com/tusmasoma/connectHub-backend/usecase"
 )
 
-func BuildContainer(ctx context.Context) (*dig.Container, error) {
+func BuildContainer(ctx context.Context) (*dig.Container, error) { //nolint:funlen
 	container := dig.New()
 
 	if err := container.Provide(func() context.Context {
@@ -38,6 +38,7 @@ func BuildContainer(ctx context.Context) (*dig.Container, error) {
 		mysql.NewTransactionRepository,
 		mysql.NewUserRepository,
 		mysql.NewMembershipRepository,
+		mysql.NewWorkspaceRepository,
 		mysql.NewMessageRepository,
 		mysql.NewRoomRepository,
 		mysql.NewMembershipRoomRepository,
@@ -47,6 +48,7 @@ func BuildContainer(ctx context.Context) (*dig.Container, error) {
 		redis.NewPubSubRepository,
 		usecase.NewUserUseCase,
 		usecase.NewMembershipUseCase,
+		usecase.NewWorkspaceUseCase,
 		usecase.NewMessageUseCase,
 		usecase.NewRoomUseCase,
 		usecase.NewMembershipRoomUseCase,

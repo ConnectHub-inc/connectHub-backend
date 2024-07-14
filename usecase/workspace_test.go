@@ -6,13 +6,18 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/google/uuid"
 
+	"github.com/tusmasoma/connectHub-backend/entity"
 	"github.com/tusmasoma/connectHub-backend/repository/mock"
 )
 
 func TestWorkspaceUseCase_CreateWorkspace(t *testing.T) {
 	t.Parallel()
 
+	workspaceID := uuid.New().String()
+	workspaceName := "test"
+	workspace, _ := entity.NewWorkspace(workspaceID, workspaceName)
 	patterns := []struct {
 		name  string
 		setup func(
@@ -20,6 +25,7 @@ func TestWorkspaceUseCase_CreateWorkspace(t *testing.T) {
 		)
 		arg struct {
 			ctx  context.Context
+			id   string
 			name string
 		}
 		wantErr error
@@ -29,25 +35,42 @@ func TestWorkspaceUseCase_CreateWorkspace(t *testing.T) {
 			setup: func(m *mock.MockWorkspaceRepository) {
 				m.EXPECT().Create(
 					gomock.Any(),
-					gomock.Any(),
+					*workspace,
 				).Return(nil)
 			},
 			arg: struct {
 				ctx  context.Context
+				id   string
 				name string
 			}{
 				ctx:  context.Background(),
-				name: "test",
+				id:   workspaceID,
+				name: workspaceName,
 			},
 			wantErr: nil,
+		},
+		{
+			name: "Fail: id is required",
+			arg: struct {
+				ctx  context.Context
+				id   string
+				name string
+			}{
+				ctx:  context.Background(),
+				id:   "",
+				name: workspaceName,
+			},
+			wantErr: fmt.Errorf("id is required"),
 		},
 		{
 			name: "Fail: name is required",
 			arg: struct {
 				ctx  context.Context
+				id   string
 				name string
 			}{
 				ctx:  context.Background(),
+				id:   workspaceID,
 				name: "",
 			},
 			wantErr: fmt.Errorf("name is required"),
@@ -66,7 +89,7 @@ func TestWorkspaceUseCase_CreateWorkspace(t *testing.T) {
 			}
 
 			usecase := NewWorkspaceUseCase(wr)
-			err := usecase.CreateWorkspace(tt.arg.ctx, tt.arg.name)
+			err := usecase.CreateWorkspace(tt.arg.ctx, tt.arg.id, tt.arg.name)
 
 			if (err != nil) != (tt.wantErr != nil) {
 				t.Errorf("CreateWorkspace() error = %v, wantErr %v", err, tt.wantErr)

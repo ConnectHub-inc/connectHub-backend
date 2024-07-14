@@ -3,6 +3,8 @@ package entity
 import (
 	"fmt"
 	"testing"
+
+	"github.com/google/uuid"
 )
 
 func TestEntity_NewWorkspace(t *testing.T) {
@@ -11,6 +13,7 @@ func TestEntity_NewWorkspace(t *testing.T) {
 	patterns := []struct {
 		name string
 		arg  struct {
+			id   string
 			name string
 		}
 		wantErr error
@@ -18,17 +21,32 @@ func TestEntity_NewWorkspace(t *testing.T) {
 		{
 			name: "success",
 			arg: struct {
+				id   string
 				name string
 			}{
+				id:   uuid.New().String(),
 				name: "test",
 			},
 			wantErr: nil,
 		},
 		{
-			name: "Fail: name is required",
+			name: "Fail: id is required",
 			arg: struct {
+				id   string
 				name string
 			}{
+				id:   "",
+				name: "test",
+			},
+			wantErr: fmt.Errorf("id is required"),
+		},
+		{
+			name: "Fail: name is required",
+			arg: struct {
+				id   string
+				name string
+			}{
+				id:   uuid.New().String(),
 				name: "",
 			},
 			wantErr: fmt.Errorf("name is required"),
@@ -40,7 +58,7 @@ func TestEntity_NewWorkspace(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			_, err := NewWorkspace(tt.arg.name)
+			_, err := NewWorkspace(tt.arg.id, tt.arg.name)
 
 			if (err != nil) != (tt.wantErr != nil) {
 				t.Errorf("NewWorkspace() error = %v, wantErr %v", err, tt.wantErr)

@@ -19,6 +19,7 @@ type WorkspaceHandler interface {
 type workspaceHandler struct {
 	hm  *ws.HubManager
 	auc usecase.AuthUseCase
+	wuc usecase.WorkspaceUseCase
 	ruc usecase.RoomUseCase
 	psr repository.PubSubRepository
 	mcr repository.MessageCacheRepository
@@ -27,6 +28,7 @@ type workspaceHandler struct {
 func NewWorkspaceHandler(
 	hm *ws.HubManager,
 	auc usecase.AuthUseCase,
+	wuc usecase.WorkspaceUseCase,
 	ruc usecase.RoomUseCase,
 	psr repository.PubSubRepository,
 	mcr repository.MessageCacheRepository,
@@ -34,6 +36,7 @@ func NewWorkspaceHandler(
 	return &workspaceHandler{
 		hm:  hm,
 		auc: auc,
+		wuc: wuc,
 		ruc: ruc,
 		psr: psr,
 		mcr: mcr,
@@ -41,6 +44,11 @@ func NewWorkspaceHandler(
 }
 
 type CreateWorkspaceRequest struct {
+	Name string `json:"name"`
+}
+
+type CreateWorkspaceResponse struct {
+	ID   string `json:"workspace_id"`
 	Name string `json:"name"`
 }
 
@@ -61,23 +69,35 @@ func (wh *workspaceHandler) CreateWorkspace(w http.ResponseWriter, r *http.Reque
 	}
 	defer r.Body.Close()
 
+	workspaceName := requestBody.Name
 	hub := ws.NewHub(
-		requestBody.Name,
+		workspaceName,
 		wh.ruc,
 		wh.psr,
 		wh.mcr,
 	)
 
 	go hub.Run()
-
 	wh.hm.Add(hub.ID, hub)
+
+	if err = wh.wuc.CreateWorkspace(ctx, hub.ID, workspaceName); err != nil {
+		log.Error("Failed to create workspace", log.Ferror(err))
+		http.Error(w, fmt.Sprintf("Failed to create workspace: %v", err), http.StatusInternalServerError)
+		return
+	}
 
 	// membershipID := user.ID + "_" + hub.ID
 	// hub.CreateRoom(ctx, membershipID, "general", false)
 	// hub.CreateRoom(ctx, membershipID, "random", false)
 
-	log.Info("Workspace created", log.Fstring("name", requestBody.Name))
-	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	if err = json.NewEncoder(w).Encode(CreateWorkspaceResponse{ID: hub.ID, Name: workspaceName}); err != nil {
+		log.Error("Failed to encode workspace to JSON", log.Ferror(err))
+		http.Error(w, "Failed to encode workspace to JSON", http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	log.Info("Workspace created", log.Fstring("workspace_id", hub.ID), log.Fstring("name", workspaceName))
 }
 
 func isValidCreateWorkspaceRequest(body io.ReadCloser, requestBody *CreateWorkspaceRequest) bool {

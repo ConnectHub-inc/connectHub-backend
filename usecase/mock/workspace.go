@@ -35,15 +35,15 @@ func (m *MockWorkspaceUseCase) EXPECT() *MockWorkspaceUseCaseMockRecorder {
 }
 
 // CreateWorkspace mocks base method.
-func (m *MockWorkspaceUseCase) CreateWorkspace(ctx context.Context, name string) error {
+func (m *MockWorkspaceUseCase) CreateWorkspace(ctx context.Context, id, name string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateWorkspace", ctx, name)
+	ret := m.ctrl.Call(m, "CreateWorkspace", ctx, id, name)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CreateWorkspace indicates an expected call of CreateWorkspace.
-func (mr *MockWorkspaceUseCaseMockRecorder) CreateWorkspace(ctx, name interface{}) *gomock.Call {
+func (mr *MockWorkspaceUseCaseMockRecorder) CreateWorkspace(ctx, id, name interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateWorkspace", reflect.TypeOf((*MockWorkspaceUseCase)(nil).CreateWorkspace), ctx, name)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateWorkspace", reflect.TypeOf((*MockWorkspaceUseCase)(nil).CreateWorkspace), ctx, id, name)
 }
