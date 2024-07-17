@@ -16,7 +16,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/ory/dockertest v3.3.5+incompatible
 	github.com/sethvargo/go-envconfig v0.9.0
-	github.com/slack-go/slack v0.13.0
+	github.com/slack-go/slack v0.13.1
 	github.com/stretchr/testify v1.9.0
 	go.uber.org/dig v1.17.1
 	golang.org/x/crypto v0.24.0
