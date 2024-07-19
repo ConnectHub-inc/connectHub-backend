@@ -86,10 +86,6 @@ func (wh *workspaceHandler) CreateWorkspace(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	// membershipID := user.ID + "_" + hub.ID
-	// hub.CreateRoom(ctx, membershipID, "general", false)
-	// hub.CreateRoom(ctx, membershipID, "random", false)
-
 	w.Header().Set("Content-Type", "application/json")
 	if err = json.NewEncoder(w).Encode(CreateWorkspaceResponse{ID: hub.ID, Name: workspaceName}); err != nil {
 		log.Error("Failed to encode workspace to JSON", log.Ferror(err))
