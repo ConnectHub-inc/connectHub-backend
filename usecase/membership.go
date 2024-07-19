@@ -88,10 +88,10 @@ func (muc *membershipUseCase) CreateMembership(ctx context.Context, params *Crea
 
 		channels, err := muc.cr.List(ctx, []repository.QueryCondition{
 			{
-				Field: "WorkspaceID", Value: params.WorkspaceID,
+				Field: "workspace_id", Value: params.WorkspaceID,
 			},
 			{
-				Field: "Private", Value: false,
+				Field: "private", Value: false,
 			},
 		})
 		if err != nil {
