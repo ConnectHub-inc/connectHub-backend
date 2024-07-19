@@ -37,6 +37,20 @@ func (m *MockMembershipChannelRepository) EXPECT() *MockMembershipChannelReposit
 	return m.recorder
 }
 
+// BatchCreate mocks base method.
+func (m *MockMembershipChannelRepository) BatchCreate(ctx context.Context, membershipChannels []entity.MembershipChannel) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BatchCreate", ctx, membershipChannels)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// BatchCreate indicates an expected call of BatchCreate.
+func (mr *MockMembershipChannelRepositoryMockRecorder) BatchCreate(ctx, membershipChannels interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BatchCreate", reflect.TypeOf((*MockMembershipChannelRepository)(nil).BatchCreate), ctx, membershipChannels)
+}
+
 // Create mocks base method.
 func (m *MockMembershipChannelRepository) Create(ctx context.Context, membershipChannel entity.MembershipChannel) error {
 	m.ctrl.T.Helper()

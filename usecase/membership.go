@@ -19,12 +19,23 @@ type MembershipUseCase interface {
 }
 
 type membershipUseCase struct {
-	mr repository.MembershipRepository
+	mr  repository.MembershipRepository
+	mcr repository.MembershipChannelRepository
+	cr  repository.ChannelRepository
+	tr  repository.TransactionRepository
 }
 
-func NewMembershipUseCase(mr repository.MembershipRepository) MembershipUseCase {
+func NewMembershipUseCase(
+	mr repository.MembershipRepository,
+	mcr repository.MembershipChannelRepository,
+	cr repository.ChannelRepository,
+	tr repository.TransactionRepository,
+) MembershipUseCase {
 	return &membershipUseCase{
-		mr: mr,
+		mr:  mr,
+		mcr: mcr,
+		cr:  cr,
+		tr:  tr,
 	}
 }
 
@@ -64,13 +75,49 @@ type CreateMembershipParams struct {
 }
 
 func (muc *membershipUseCase) CreateMembership(ctx context.Context, params *CreateMembershipParams) error {
-	membership, err := entity.NewMembership(params.UserID, params.WorkspaceID, params.Name, params.ProfileImageURL, params.IsAdmin)
+	err := muc.tr.Transaction(ctx, func(ctx context.Context) error {
+		membership, err := entity.NewMembership(params.UserID, params.WorkspaceID, params.Name, params.ProfileImageURL, params.IsAdmin)
+		if err != nil {
+			log.Error("Failed to create membership", log.Ferror(err))
+			return err
+		}
+		if err = muc.mr.Create(ctx, *membership); err != nil {
+			log.Error("Failed to create membership", log.Ferror(err))
+			return err
+		}
+
+		channels, err := muc.cr.List(ctx, []repository.QueryCondition{
+			{
+				Field: "WorkspaceID", Value: params.WorkspaceID,
+			},
+			{
+				Field: "Private", Value: false,
+			},
+		})
+		if err != nil {
+			log.Error("Failed to list channels", log.Ferror(err))
+			return err
+		}
+
+		var membershipChannels []entity.MembershipChannel
+		for _, channel := range channels {
+			var membershipChannel *entity.MembershipChannel
+			membershipChannel, err = entity.NewMembershipChannel(membership.ID, channel.ID)
+			if err != nil {
+				log.Error("Failed to create membership channel", log.Ferror(err))
+				return err
+			}
+			membershipChannels = append(membershipChannels, *membershipChannel)
+		}
+		if err = muc.mcr.BatchCreate(ctx, membershipChannels); err != nil {
+			log.Error("Failed to batch create membership channels", log.Ferror(err))
+			return err
+		}
+
+		return nil
+	})
 	if err != nil {
 		log.Error("Failed to create membership", log.Ferror(err))
-		return err
-	}
-	if err = muc.mr.Create(ctx, *membership); err != nil {
-		log.Error("Failed to create membership")
 		return err
 	}
 	return nil
