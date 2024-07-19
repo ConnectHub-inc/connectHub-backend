@@ -7,10 +7,10 @@ import (
 	"github.com/tusmasoma/connectHub-backend/entity"
 )
 
-type MembershipRoomRepository interface {
-	List(ctx context.Context, qcs []QueryCondition) ([]entity.MembershipRoom, error)
-	Get(ctx context.Context, membershipID, roomID string) (*entity.MembershipRoom, error)
-	Create(ctx context.Context, membershipRoom entity.MembershipRoom) error
-	Update(ctx context.Context, id string, membershipRoom entity.MembershipRoom) error
-	Delete(ctx context.Context, membershipID, roomID string) error
+type MembershipChannelRepository interface {
+	List(ctx context.Context, qcs []QueryCondition) ([]entity.MembershipChannel, error)
+	Get(ctx context.Context, membershipID, channelID string) (*entity.MembershipChannel, error)
+	Create(ctx context.Context, membershipChannel entity.MembershipChannel) error
+	Update(ctx context.Context, id string, membershipChannel entity.MembershipChannel) error
+	Delete(ctx context.Context, membershipID, channelID string) error
 }

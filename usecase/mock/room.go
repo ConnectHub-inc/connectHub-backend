@@ -14,54 +14,54 @@ import (
 	usecase "github.com/tusmasoma/connectHub-backend/usecase"
 )
 
-// MockRoomUseCase is a mock of RoomUseCase interface.
-type MockRoomUseCase struct {
+// MockChannelUseCase is a mock of ChannelUseCase interface.
+type MockChannelUseCase struct {
 	ctrl     *gomock.Controller
-	recorder *MockRoomUseCaseMockRecorder
+	recorder *MockChannelUseCaseMockRecorder
 }
 
-// MockRoomUseCaseMockRecorder is the mock recorder for MockRoomUseCase.
-type MockRoomUseCaseMockRecorder struct {
-	mock *MockRoomUseCase
+// MockChannelUseCaseMockRecorder is the mock recorder for MockChannelUseCase.
+type MockChannelUseCaseMockRecorder struct {
+	mock *MockChannelUseCase
 }
 
-// NewMockRoomUseCase creates a new mock instance.
-func NewMockRoomUseCase(ctrl *gomock.Controller) *MockRoomUseCase {
-	mock := &MockRoomUseCase{ctrl: ctrl}
-	mock.recorder = &MockRoomUseCaseMockRecorder{mock}
+// NewMockChannelUseCase creates a new mock instance.
+func NewMockChannelUseCase(ctrl *gomock.Controller) *MockChannelUseCase {
+	mock := &MockChannelUseCase{ctrl: ctrl}
+	mock.recorder = &MockChannelUseCaseMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockRoomUseCase) EXPECT() *MockRoomUseCaseMockRecorder {
+func (m *MockChannelUseCase) EXPECT() *MockChannelUseCaseMockRecorder {
 	return m.recorder
 }
 
-// CreateRoom mocks base method.
-func (m *MockRoomUseCase) CreateRoom(ctx context.Context, params usecase.CreateRoomParams) error {
+// CreateChannel mocks base method.
+func (m *MockChannelUseCase) CreateChannel(ctx context.Context, params usecase.CreateChannelParams) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateRoom", ctx, params)
+	ret := m.ctrl.Call(m, "CreateChannel", ctx, params)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// CreateRoom indicates an expected call of CreateRoom.
-func (mr *MockRoomUseCaseMockRecorder) CreateRoom(ctx, params interface{}) *gomock.Call {
+// CreateChannel indicates an expected call of CreateChannel.
+func (mr *MockChannelUseCaseMockRecorder) CreateChannel(ctx, params interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRoom", reflect.TypeOf((*MockRoomUseCase)(nil).CreateRoom), ctx, params)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateChannel", reflect.TypeOf((*MockChannelUseCase)(nil).CreateChannel), ctx, params)
 }
 
-// ListMembershipRooms mocks base method.
-func (m *MockRoomUseCase) ListMembershipRooms(ctx context.Context, membershipID string) ([]entity.Room, error) {
+// ListMembershipChannels mocks base method.
+func (m *MockChannelUseCase) ListMembershipChannels(ctx context.Context, membershipID string) ([]entity.Channel, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListMembershipRooms", ctx, membershipID)
-	ret0, _ := ret[0].([]entity.Room)
+	ret := m.ctrl.Call(m, "ListMembershipChannels", ctx, membershipID)
+	ret0, _ := ret[0].([]entity.Channel)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ListMembershipRooms indicates an expected call of ListMembershipRooms.
-func (mr *MockRoomUseCaseMockRecorder) ListMembershipRooms(ctx, membershipID interface{}) *gomock.Call {
+// ListMembershipChannels indicates an expected call of ListMembershipChannels.
+func (mr *MockChannelUseCaseMockRecorder) ListMembershipChannels(ctx, membershipID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListMembershipRooms", reflect.TypeOf((*MockRoomUseCase)(nil).ListMembershipRooms), ctx, membershipID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListMembershipChannels", reflect.TypeOf((*MockChannelUseCase)(nil).ListMembershipChannels), ctx, membershipID)
 }

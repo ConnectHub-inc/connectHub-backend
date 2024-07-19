@@ -20,7 +20,7 @@ type workspaceHandler struct {
 	hm  *ws.HubManager
 	auc usecase.AuthUseCase
 	wuc usecase.WorkspaceUseCase
-	ruc usecase.RoomUseCase
+	ruc usecase.ChannelUseCase
 	psr repository.PubSubRepository
 	mcr repository.MessageCacheRepository
 }
@@ -29,7 +29,7 @@ func NewWorkspaceHandler(
 	hm *ws.HubManager,
 	auc usecase.AuthUseCase,
 	wuc usecase.WorkspaceUseCase,
-	ruc usecase.RoomUseCase,
+	ruc usecase.ChannelUseCase,
 	psr repository.PubSubRepository,
 	mcr repository.MessageCacheRepository,
 ) WorkspaceHandler {

@@ -12,7 +12,7 @@ import (
 	"github.com/tusmasoma/connectHub-backend/repository"
 )
 
-type Room struct {
+type Channel struct {
 	ID           string `json:"id"`
 	Name         string `json:"name"`
 	Private      bool   `json:"private"`
@@ -24,13 +24,13 @@ type Room struct {
 	msgCacheRepo repository.MessageCacheRepository
 }
 
-func NewRoom(
+func NewChannel(
 	name string,
 	private bool,
 	pubsubRepo repository.PubSubRepository,
 	msgCacheRepo repository.MessageCacheRepository,
-) *Room {
-	return &Room{
+) *Channel {
+	return &Channel{
 		ID:           uuid.New().String(),
 		Name:         name,
 		Private:      private,
@@ -43,35 +43,35 @@ func NewRoom(
 	}
 }
 
-func (room *Room) Run(ctx context.Context) {
-	go room.subscribeToRoomMessages(ctx)
+func (channel *Channel) Run(ctx context.Context) {
+	go channel.subscribeToChannelMessages(ctx)
 
 	for {
 		select {
-		case client := <-room.register:
-			room.registerClientInRoom(client)
+		case client := <-channel.register:
+			channel.registerClientInChannel(client)
 
-		case client := <-room.unregister:
-			room.unregisterClientInRoom(client)
+		case client := <-channel.unregister:
+			channel.unregisterClientInChannel(client)
 
-		case message := <-room.broadcast:
-			room.publishRoomMessage(ctx, message)
+		case message := <-channel.broadcast:
+			channel.publishChannelMessage(ctx, message)
 		}
 	}
 }
 
-func (room *Room) registerClientInRoom(client *Client) {
-	if !room.Private {
-		room.notifyClientJoined(client)
+func (channel *Channel) registerClientInChannel(client *Client) {
+	if !channel.Private {
+		channel.notifyClientJoined(client)
 	}
-	room.clients[client] = true
+	channel.clients[client] = true
 }
 
-func (room *Room) unregisterClientInRoom(client *Client) {
-	delete(room.clients, client)
+func (channel *Channel) unregisterClientInChannel(client *Client) {
+	delete(channel.clients, client)
 }
 
-func (room *Room) notifyClientJoined(client *Client) {
+func (channel *Channel) notifyClientJoined(client *Client) {
 	membershipID := client.UserID + "_" + client.hub.ID
 	content, err := entity.NewMessage(
 		membershipID,
@@ -85,7 +85,7 @@ func (room *Room) notifyClientJoined(client *Client) {
 	message, err := entity.NewWSMessage(
 		entity.CreateMessageAction,
 		*content,
-		room.ID,
+		channel.ID,
 		client.ID,
 	)
 	if err != nil {
@@ -93,28 +93,28 @@ func (room *Room) notifyClientJoined(client *Client) {
 		return
 	}
 
-	room.broadcastToClientsInRoom(message.Encode())
+	channel.broadcastToClientsInChannel(message.Encode())
 }
 
-func (room *Room) broadcastToClientsInRoom(message []byte) {
-	for client := range room.clients {
+func (channel *Channel) broadcastToClientsInChannel(message []byte) {
+	for client := range channel.clients {
 		client.send <- message
 	}
 }
 
-func (room *Room) publishRoomMessage(ctx context.Context, message *entity.WSMessage) {
-	if err := room.pubsubRepo.Publish(ctx, room.ID, message.Encode()); err != nil {
+func (channel *Channel) publishChannelMessage(ctx context.Context, message *entity.WSMessage) {
+	if err := channel.pubsubRepo.Publish(ctx, channel.ID, message.Encode()); err != nil {
 		log.Error("Failed to publish message", log.Ferror(err))
 	}
 }
 
-func (room *Room) subscribeToRoomMessages(ctx context.Context) {
-	pubsub := room.pubsubRepo.Subscribe(ctx, room.ID)
+func (channel *Channel) subscribeToChannelMessages(ctx context.Context) {
+	pubsub := channel.pubsubRepo.Subscribe(ctx, channel.ID)
 	defer pubsub.Close()
 
 	ch := pubsub.Channel()
 
 	for msg := range ch {
-		room.broadcastToClientsInRoom([]byte(msg.Payload))
+		channel.broadcastToClientsInChannel([]byte(msg.Payload))
 	}
 }

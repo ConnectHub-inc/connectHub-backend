@@ -104,7 +104,7 @@ describe("WebSocket E2E Tests with Go Server", () => {
   test("TEST: Create Public Channel", (done) => {
     const testChannel = `test_${Date.now()}_Channel`;
     const createChannelMessage = {
-      action_tag: "CREATE_PUBLIC_ROOM",
+      action_tag: "CREATE_PUBLIC_CHANNEL",
       target_id: "",
       sender_id: clientID,
       content: {
@@ -118,7 +118,7 @@ describe("WebSocket E2E Tests with Go Server", () => {
 
     ws.once("message", (data) => {
       const receivedMessage = JSON.parse(data.toString());
-      if (receivedMessage.action_tag === "CREATE_PUBLIC_ROOM") {
+      if (receivedMessage.action_tag === "CREATE_PUBLIC_CHANNEL") {
         expect(receivedMessage.content.text).toBe(testChannel);
         channelID = receivedMessage.target_id;
         console.log("SUCCESS: CREATE_PUBLIC_CHANNEL");

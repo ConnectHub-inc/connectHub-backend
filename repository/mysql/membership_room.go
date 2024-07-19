@@ -11,26 +11,26 @@ import (
 	"github.com/tusmasoma/connectHub-backend/repository"
 )
 
-type membershipRoomRepository struct {
-	*base[entity.MembershipRoom]
+type membershipChannelRepository struct {
+	*base[entity.MembershipChannel]
 }
 
-func NewMembershipRoomRepository(db *sql.DB, dialect *goqu.DialectWrapper) repository.MembershipRoomRepository {
-	return &membershipRoomRepository{
-		base: newBase[entity.MembershipRoom](db, dialect, "Membership_Rooms"),
+func NewMembershipChannelRepository(db *sql.DB, dialect *goqu.DialectWrapper) repository.MembershipChannelRepository {
+	return &membershipChannelRepository{
+		base: newBase[entity.MembershipChannel](db, dialect, "Membership_Channels"),
 	}
 }
 
-func (mrr *membershipRoomRepository) Get(ctx context.Context, membershipID, roomID string) (*entity.MembershipRoom, error) {
+func (mrr *membershipChannelRepository) Get(ctx context.Context, membershipID, channelID string) (*entity.MembershipChannel, error) {
 	executor := mrr.db
 	if tx := TxFromCtx(ctx); tx != nil {
 		executor = tx
 	}
 
-	var membershipRoom entity.MembershipRoom
+	var membershipChannel entity.MembershipChannel
 	query, _, err := mrr.dialect.Select("*").From(mrr.tableName).Where(
 		goqu.C("membership_id").Eq(membershipID),
-		goqu.C("room_id").Eq(roomID),
+		goqu.C("channel_id").Eq(channelID),
 	).ToSQL()
 	if err != nil {
 		log.Error("Failed to generate SQL query", log.Ferror(err))
@@ -38,13 +38,13 @@ func (mrr *membershipRoomRepository) Get(ctx context.Context, membershipID, room
 	}
 
 	row := executor.QueryRowContext(ctx, query)
-	if err = mrr.structScanRow(&membershipRoom, row); err != nil {
+	if err = mrr.structScanRow(&membershipChannel, row); err != nil {
 		return nil, err
 	}
-	return &membershipRoom, nil
+	return &membershipChannel, nil
 }
 
-func (mrr *membershipRoomRepository) Delete(ctx context.Context, membershipID, roomID string) error {
+func (mrr *membershipChannelRepository) Delete(ctx context.Context, membershipID, channelID string) error {
 	executor := mrr.db
 	if tx := TxFromCtx(ctx); tx != nil {
 		executor = tx
@@ -52,7 +52,7 @@ func (mrr *membershipRoomRepository) Delete(ctx context.Context, membershipID, r
 
 	query, _, err := mrr.dialect.Delete(mrr.tableName).Where(
 		goqu.C("membership_id").Eq(membershipID),
-		goqu.C("room_id").Eq(roomID),
+		goqu.C("channel_id").Eq(channelID),
 	).ToSQL()
 	if err != nil {
 		log.Error("Failed to generate SQL query", log.Ferror(err))

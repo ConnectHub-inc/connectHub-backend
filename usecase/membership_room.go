@@ -9,37 +9,37 @@ import (
 	"github.com/tusmasoma/connectHub-backend/repository"
 )
 
-type MembershipRoomUseCase interface {
-	CreateMembershipRoom(ctx context.Context, membershipID, roomID string) error
-	DeleteMembershipRoom(ctx context.Context, membershipID, roomID string) error
+type MembershipChannelUseCase interface {
+	CreateMembershipChannel(ctx context.Context, membershipID, channelID string) error
+	DeleteMembershipChannel(ctx context.Context, membershipID, channelID string) error
 }
 
-type membershipRoomUseCase struct {
-	mrr repository.MembershipRoomRepository
+type membershipChannelUseCase struct {
+	mrr repository.MembershipChannelRepository
 }
 
-func NewMembershipRoomUseCase(mrr repository.MembershipRoomRepository) MembershipRoomUseCase {
-	return &membershipRoomUseCase{
+func NewMembershipChannelUseCase(mrr repository.MembershipChannelRepository) MembershipChannelUseCase {
+	return &membershipChannelUseCase{
 		mrr: mrr,
 	}
 }
 
-func (mruc *membershipRoomUseCase) CreateMembershipRoom(ctx context.Context, membershipID, roomID string) error {
-	membershipRoom, err := entity.NewMembershipRoom(membershipID, roomID)
+func (mruc *membershipChannelUseCase) CreateMembershipChannel(ctx context.Context, membershipID, channelID string) error {
+	membershipChannel, err := entity.NewMembershipChannel(membershipID, channelID)
 	if err != nil {
-		log.Error("Failed to create membership room", log.Ferror(err))
+		log.Error("Failed to create membership channel", log.Ferror(err))
 		return err
 	}
-	if err = mruc.mrr.Create(ctx, *membershipRoom); err != nil {
-		log.Error("Failed to create membership room", log.Fstring("membershipID", membershipID), log.Fstring("roomID", roomID))
+	if err = mruc.mrr.Create(ctx, *membershipChannel); err != nil {
+		log.Error("Failed to create membership channel", log.Fstring("membershipID", membershipID), log.Fstring("channelID", channelID))
 		return err
 	}
 	return nil
 }
 
-func (mruc *membershipRoomUseCase) DeleteMembershipRoom(ctx context.Context, membershipID, roomID string) error {
-	if err := mruc.mrr.Delete(ctx, membershipID, roomID); err != nil {
-		log.Error("Failed to delete membership room", log.Fstring("membershipID", membershipID), log.Fstring("roomID", roomID))
+func (mruc *membershipChannelUseCase) DeleteMembershipChannel(ctx context.Context, membershipID, channelID string) error {
+	if err := mruc.mrr.Delete(ctx, membershipID, channelID); err != nil {
+		log.Error("Failed to delete membership channel", log.Fstring("membershipID", membershipID), log.Fstring("channelID", channelID))
 		return err
 	}
 	return nil

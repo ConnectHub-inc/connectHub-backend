@@ -6,22 +6,22 @@ import (
 	"github.com/tusmasoma/connectHub-backend/internal/log"
 )
 
-type MembershipRoom struct {
+type MembershipChannel struct {
 	MembershipID string `json:"membership_id" db:"membership_id"`
-	RoomID       string `json:"room_id" db:"room_id"`
+	ChannelID    string `json:"channel_id" db:"channel_id"`
 }
 
-func NewMembershipRoom(membershipID, roomID string) (*MembershipRoom, error) {
+func NewMembershipChannel(membershipID, channelID string) (*MembershipChannel, error) {
 	if membershipID == "" {
 		log.Warn("MembershipID is required", log.Fstring("membershipID", membershipID))
 		return nil, fmt.Errorf("membershipID is required")
 	}
-	if roomID == "" {
-		log.Warn("RoomID is required", log.Fstring("roomID", roomID))
-		return nil, fmt.Errorf("roomID is required")
+	if channelID == "" {
+		log.Warn("ChannelID is required", log.Fstring("channelID", channelID))
+		return nil, fmt.Errorf("channelID is required")
 	}
-	return &MembershipRoom{
+	return &MembershipChannel{
 		MembershipID: membershipID,
-		RoomID:       roomID,
+		ChannelID:    channelID,
 	}, nil
 }

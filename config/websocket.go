@@ -25,7 +25,7 @@ const (
 	// PubSubGeneralChannel is the general channel for pubsub.
 	PubSubGeneralChannel = "general"
 
-	// PubSubRoomPrefix is the prefix for the room channel.
-	WelcomeMessage = "%s joined the room"
-	GoodbyeMessage = "%s left the room"
+	// PubSubChannelPrefix is the prefix for the channel channel.
+	WelcomeMessage = "%s joined the channel"
+	GoodbyeMessage = "%s left the channel"
 )

@@ -5,14 +5,14 @@ import (
 	"testing"
 )
 
-func TestEntity_NewMembershipRoom(t *testing.T) {
+func TestEntity_NewMembershipChannel(t *testing.T) {
 	t.Parallel()
 
 	patterns := []struct {
 		name string
 		arg  struct {
 			membershipID string
-			roomID       string
+			channelID    string
 		}
 		wantErr error
 	}{
@@ -20,10 +20,10 @@ func TestEntity_NewMembershipRoom(t *testing.T) {
 			name: "Success",
 			arg: struct {
 				membershipID string
-				roomID       string
+				channelID    string
 			}{
 				membershipID: "1",
-				roomID:       "1",
+				channelID:    "1",
 			},
 			wantErr: nil,
 		},
@@ -31,23 +31,23 @@ func TestEntity_NewMembershipRoom(t *testing.T) {
 			name: "Fail: membershipID is required",
 			arg: struct {
 				membershipID string
-				roomID       string
+				channelID    string
 			}{
 				membershipID: "",
-				roomID:       "1",
+				channelID:    "1",
 			},
 			wantErr: fmt.Errorf("membershipID is required"),
 		},
 		{
-			name: "Fail: roomID is required",
+			name: "Fail: channelID is required",
 			arg: struct {
 				membershipID string
-				roomID       string
+				channelID    string
 			}{
 				membershipID: "1",
-				roomID:       "",
+				channelID:    "",
 			},
-			wantErr: fmt.Errorf("roomID is required"),
+			wantErr: fmt.Errorf("channelID is required"),
 		},
 	}
 
@@ -56,12 +56,12 @@ func TestEntity_NewMembershipRoom(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			_, err := NewMembershipRoom(tt.arg.membershipID, tt.arg.roomID)
+			_, err := NewMembershipChannel(tt.arg.membershipID, tt.arg.channelID)
 
 			if (err != nil) != (tt.wantErr != nil) {
-				t.Errorf("NewMembershipRoom() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("NewMembershipChannel() error = %v, wantErr %v", err, tt.wantErr)
 			} else if err != nil && tt.wantErr != nil && err.Error() != tt.wantErr.Error() {
-				t.Errorf("NewMembershipRoom() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("NewMembershipChannel() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

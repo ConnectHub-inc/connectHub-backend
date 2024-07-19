@@ -11,47 +11,47 @@ import (
 	"github.com/tusmasoma/connectHub-backend/repository"
 )
 
-type roomRepository struct {
-	*base[entity.Room]
+type channelRepository struct {
+	*base[entity.Channel]
 }
 
-func NewRoomRepository(db *sql.DB, dialect *goqu.DialectWrapper) repository.RoomRepository {
-	return &roomRepository{
-		base: newBase[entity.Room](db, dialect, "Rooms"),
+func NewChannelRepository(db *sql.DB, dialect *goqu.DialectWrapper) repository.ChannelRepository {
+	return &channelRepository{
+		base: newBase[entity.Channel](db, dialect, "Channels"),
 	}
 }
 
-func (rr *roomRepository) ListMembershipRooms(ctx context.Context, membershipID string) ([]entity.Room, error) {
+func (rr *channelRepository) ListMembershipChannels(ctx context.Context, membershipID string) ([]entity.Channel, error) {
 	query := `
-	SELECT Rooms.id, Rooms.workspace_id, Rooms.name, Rooms.description, Rooms.private
-	FROM Rooms
-	JOIN Membership_Rooms ON Rooms.id = Membership_Rooms.room_id
-	JOIN Memberships ON Membership_Rooms.membership_id = Memberships.id
+	SELECT Channels.id, Channels.workspace_id, Channels.name, Channels.description, Channels.private
+	FROM Channels
+	JOIN Membership_Channels ON Channels.id = Membership_Channels.channel_id
+	JOIN Memberships ON Membership_Channels.membership_id = Memberships.id
 	WHERE Memberships.id = ?
 	`
 
 	rows, err := rr.db.QueryContext(ctx, query, membershipID)
 	if err != nil {
-		log.Error("Failed to query rooms", log.Ferror(err))
+		log.Error("Failed to query channels", log.Ferror(err))
 		return nil, err
 	}
 	defer rows.Close()
 
-	var rooms []entity.Room
+	var channels []entity.Channel
 	for rows.Next() {
-		var room entity.Room
+		var channel entity.Channel
 		err = rows.Scan(
-			&room.ID,
-			&room.WorkspaceID,
-			&room.Name,
-			&room.Description,
-			&room.Private,
+			&channel.ID,
+			&channel.WorkspaceID,
+			&channel.Name,
+			&channel.Description,
+			&channel.Private,
 		)
 		if err != nil {
-			log.Error("Failed to scan room", log.Ferror(err))
+			log.Error("Failed to scan channel", log.Ferror(err))
 			return nil, err
 		}
-		rooms = append(rooms, room)
+		channels = append(channels, channel)
 	}
 
 	if err = rows.Err(); err != nil {
@@ -59,5 +59,5 @@ func (rr *roomRepository) ListMembershipRooms(ctx context.Context, membershipID 
 		return nil, err
 	}
 
-	return rooms, nil
+	return channels, nil
 }

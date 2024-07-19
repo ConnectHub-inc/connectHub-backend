@@ -11,41 +11,41 @@ import (
 	"github.com/tusmasoma/connectHub-backend/repository/mock"
 )
 
-func TestUserUseCase_CreateMembershipRoom(t *testing.T) {
+func TestUserUseCase_CreateMembershipChannel(t *testing.T) {
 	t.Parallel()
 	membershipID := uuid.New().String()
-	roomID := uuid.New().String()
+	channelID := uuid.New().String()
 
 	patterns := []struct {
 		name  string
 		setup func(
-			m *mock.MockMembershipRoomRepository,
+			m *mock.MockMembershipChannelRepository,
 		)
 		arg struct {
 			ctx          context.Context
 			membershipID string
-			roomID       string
+			channelID    string
 		}
 		wantErr error
 	}{
 		{
 			name: "success",
-			setup: func(urr *mock.MockMembershipRoomRepository) {
+			setup: func(urr *mock.MockMembershipChannelRepository) {
 				urr.EXPECT().Create(gomock.Any(),
-					entity.MembershipRoom{
+					entity.MembershipChannel{
 						MembershipID: membershipID,
-						RoomID:       roomID,
+						ChannelID:    channelID,
 					},
 				).Return(nil)
 			},
 			arg: struct {
 				ctx          context.Context
 				membershipID string
-				roomID       string
+				channelID    string
 			}{
 				ctx:          context.Background(),
 				membershipID: membershipID,
-				roomID:       roomID,
+				channelID:    channelID,
 			},
 			wantErr: nil,
 		},
@@ -57,55 +57,55 @@ func TestUserUseCase_CreateMembershipRoom(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			urr := mock.NewMockMembershipRoomRepository(ctrl)
+			urr := mock.NewMockMembershipChannelRepository(ctrl)
 
 			if tt.setup != nil {
 				tt.setup(urr)
 			}
 
-			usecase := NewMembershipRoomUseCase(urr)
+			usecase := NewMembershipChannelUseCase(urr)
 
-			err := usecase.CreateMembershipRoom(tt.arg.ctx, tt.arg.membershipID, tt.arg.roomID)
+			err := usecase.CreateMembershipChannel(tt.arg.ctx, tt.arg.membershipID, tt.arg.channelID)
 
 			if (err != nil) != (tt.wantErr != nil) {
-				t.Errorf("CreateMembershipRoom() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("CreateMembershipChannel() error = %v, wantErr %v", err, tt.wantErr)
 			} else if err != nil && tt.wantErr != nil && err.Error() != tt.wantErr.Error() {
-				t.Errorf("CreateMembershipRoom() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("CreateMembershipChannel() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
 }
 
-func TestUserUseCase_DeleteMembershipRoom(t *testing.T) {
+func TestUserUseCase_DeleteMembershipChannel(t *testing.T) {
 	t.Parallel()
 	membershipID := uuid.New().String()
-	roomID := uuid.New().String()
+	channelID := uuid.New().String()
 
 	patterns := []struct {
 		name  string
 		setup func(
-			m *mock.MockMembershipRoomRepository,
+			m *mock.MockMembershipChannelRepository,
 		)
 		arg struct {
 			ctx          context.Context
 			membershipID string
-			roomID       string
+			channelID    string
 		}
 		wantErr error
 	}{
 		{
 			name: "success",
-			setup: func(urr *mock.MockMembershipRoomRepository) {
-				urr.EXPECT().Delete(gomock.Any(), membershipID, roomID).Return(nil)
+			setup: func(urr *mock.MockMembershipChannelRepository) {
+				urr.EXPECT().Delete(gomock.Any(), membershipID, channelID).Return(nil)
 			},
 			arg: struct {
 				ctx          context.Context
 				membershipID string
-				roomID       string
+				channelID    string
 			}{
 				ctx:          context.Background(),
 				membershipID: membershipID,
-				roomID:       roomID,
+				channelID:    channelID,
 			},
 			wantErr: nil,
 		},
@@ -117,20 +117,20 @@ func TestUserUseCase_DeleteMembershipRoom(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			urr := mock.NewMockMembershipRoomRepository(ctrl)
+			urr := mock.NewMockMembershipChannelRepository(ctrl)
 
 			if tt.setup != nil {
 				tt.setup(urr)
 			}
 
-			usecase := NewMembershipRoomUseCase(urr)
+			usecase := NewMembershipChannelUseCase(urr)
 
-			err := usecase.DeleteMembershipRoom(tt.arg.ctx, tt.arg.membershipID, tt.arg.roomID)
+			err := usecase.DeleteMembershipChannel(tt.arg.ctx, tt.arg.membershipID, tt.arg.channelID)
 
 			if (err != nil) != (tt.wantErr != nil) {
-				t.Errorf("DeleteMembershipRoom() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("DeleteMembershipChannel() error = %v, wantErr %v", err, tt.wantErr)
 			} else if err != nil && tt.wantErr != nil && err.Error() != tt.wantErr.Error() {
-				t.Errorf("DeleteMembershipRoom() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("DeleteMembershipChannel() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

@@ -17,17 +17,17 @@ type MembershipHandler interface {
 	GetMembership(w http.ResponseWriter, r *http.Request)
 	CreateMembership(w http.ResponseWriter, r *http.Request)
 	ListMemberships(w http.ResponseWriter, r *http.Request)
-	ListRoomMemberships(w http.ResponseWriter, r *http.Request)
+	ListChannelMemberships(w http.ResponseWriter, r *http.Request)
 	UpdateMembership(w http.ResponseWriter, r *http.Request)
 }
 
 type membershipHandler struct {
 	muc usecase.MembershipUseCase
-	ruc usecase.RoomUseCase
+	ruc usecase.ChannelUseCase
 	auc usecase.AuthUseCase
 }
 
-func NewMembershipHandler(muc usecase.MembershipUseCase, ruc usecase.RoomUseCase, auc usecase.AuthUseCase) MembershipHandler {
+func NewMembershipHandler(muc usecase.MembershipUseCase, ruc usecase.ChannelUseCase, auc usecase.AuthUseCase) MembershipHandler {
 	return &membershipHandler{
 		muc: muc,
 		ruc: ruc,
@@ -36,10 +36,10 @@ func NewMembershipHandler(muc usecase.MembershipUseCase, ruc usecase.RoomUseCase
 }
 
 type GetMembershipResponse struct {
-	Name            string        `json:"name"`
-	Email           string        `json:"email"`
-	ProfileImageURL string        `json:"profile_image_url"`
-	Rooms           []entity.Room `json:"rooms"`
+	Name            string           `json:"name"`
+	Email           string           `json:"email"`
+	ProfileImageURL string           `json:"profile_image_url"`
+	Channels        []entity.Channel `json:"channels"`
 }
 
 func (mh *membershipHandler) GetMembership(w http.ResponseWriter, r *http.Request) {
@@ -59,10 +59,10 @@ func (mh *membershipHandler) GetMembership(w http.ResponseWriter, r *http.Reques
 		http.Error(w, "Failed to get membership", http.StatusInternalServerError)
 		return
 	}
-	rooms, err := mh.ruc.ListMembershipRooms(ctx, membershipID)
+	channels, err := mh.ruc.ListMembershipChannels(ctx, membershipID)
 	if err != nil {
-		log.Error("Failed to list membership rooms", log.Fstring("membershipID", membershipID))
-		http.Error(w, "Failed to list membership rooms", http.StatusInternalServerError)
+		log.Error("Failed to list membership channels", log.Fstring("membershipID", membershipID))
+		http.Error(w, "Failed to list membership channels", http.StatusInternalServerError)
 		return
 	}
 
@@ -70,7 +70,7 @@ func (mh *membershipHandler) GetMembership(w http.ResponseWriter, r *http.Reques
 		Name:            membership.Name,
 		Email:           user.Email,
 		ProfileImageURL: membership.ProfileImageURL,
-		Rooms:           rooms,
+		Channels:        channels,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -108,29 +108,29 @@ func (mh *membershipHandler) ListMemberships(w http.ResponseWriter, r *http.Requ
 	log.Info("Successfully retrieved memberships in workspace", log.Fstring("workspaceID", workspaceID))
 }
 
-type ListRoomMembershipsResponse struct {
+type ListChannelMembershipsResponse struct {
 	Memberships []entity.Membership `json:"memberships"`
 }
 
-func (mh *membershipHandler) ListRoomMemberships(w http.ResponseWriter, r *http.Request) {
+func (mh *membershipHandler) ListChannelMemberships(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	channelID := chi.URLParam(r, "channel_id")
-	memberships, err := mh.muc.ListRoomMemberships(ctx, channelID)
+	memberships, err := mh.muc.ListChannelMemberships(ctx, channelID)
 	if err != nil {
-		log.Error("Failed to list room memberships", log.Fstring("channelID", channelID), log.Ferror(err))
-		http.Error(w, "Failed to list room memberships", http.StatusInternalServerError)
+		log.Error("Failed to list channel memberships", log.Fstring("channelID", channelID), log.Ferror(err))
+		http.Error(w, "Failed to list channel memberships", http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	if err = json.NewEncoder(w).Encode(ListRoomMembershipsResponse{Memberships: memberships}); err != nil {
+	if err = json.NewEncoder(w).Encode(ListChannelMembershipsResponse{Memberships: memberships}); err != nil {
 		log.Error("Failed to encode memberships to JSON", log.Ferror(err))
 		http.Error(w, "Failed to encode memberships to JSON", http.StatusInternalServerError)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	log.Info("Successfully retrieved memberships in room", log.Fstring("channelID", channelID))
+	log.Info("Successfully retrieved memberships in channel", log.Fstring("channelID", channelID))
 }
 
 type CreateMembershipRequest struct {

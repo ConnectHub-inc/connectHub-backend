@@ -11,23 +11,23 @@ import (
 )
 
 const (
-	ListMessagesAction     = "LIST_MESSAGES"
-	CreateMessageAction    = "CREATE_MESSAGE"
-	DeleteMessageAction    = "DELETE_MESSAGE"
-	UpdateMessageAction    = "UPDATE_MESSAGE"
-	CreatePublicRoomAction = "CREATE_PUBLIC_ROOM"
-	JoinPublicRoomAction   = "JOIN_PUBLIC_ROOM"
-	LeavePublicRoomAction  = "LEAVE_PUBLIC_ROOM"
+	ListMessagesAction        = "LIST_MESSAGES"
+	CreateMessageAction       = "CREATE_MESSAGE"
+	DeleteMessageAction       = "DELETE_MESSAGE"
+	UpdateMessageAction       = "UPDATE_MESSAGE"
+	CreatePublicChannelAction = "CREATE_PUBLIC_CHANNEL"
+	JoinPublicChannelAction   = "JOIN_PUBLIC_CHANNEL"
+	LeavePublicChannelAction  = "LEAVE_PUBLIC_CHANNEL"
 )
 
 var validActions = map[string]bool{
-	ListMessagesAction:     true,
-	CreateMessageAction:    true,
-	DeleteMessageAction:    true,
-	UpdateMessageAction:    true,
-	CreatePublicRoomAction: true,
-	JoinPublicRoomAction:   true,
-	LeavePublicRoomAction:  true,
+	ListMessagesAction:        true,
+	CreateMessageAction:       true,
+	DeleteMessageAction:       true,
+	UpdateMessageAction:       true,
+	CreatePublicChannelAction: true,
+	JoinPublicChannelAction:   true,
+	LeavePublicChannelAction:  true,
 }
 
 type Message struct {
@@ -41,7 +41,7 @@ type Message struct {
 type WSMessage struct {
 	Action   string  `json:"action_tag"`
 	Content  Message `json:"content"`
-	TargetID string  `json:"target_id"` // TargetID is the ID of the room or user the message is intended for
+	TargetID string  `json:"target_id"` // TargetID is the ID of the channel or user the message is intended for
 	SenderID string  `json:"sender_id"` // SenderID is the ID of the user who sent the message
 }
 
@@ -56,7 +56,7 @@ func (message *WSMessage) Encode() []byte {
 type WSMessages struct {
 	Action   string    `json:"action_tag"`
 	Contents []Message `json:"contents"`
-	TargetID string    `json:"target_id"` // TargetID is the ID of the room or user the message is intended for
+	TargetID string    `json:"target_id"` // TargetID is the ID of the channel or user the message is intended for
 	SenderID string    `json:"sender_id"` // SenderID is the ID of the user who sent the message
 }
 

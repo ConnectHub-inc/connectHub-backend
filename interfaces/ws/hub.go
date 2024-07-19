@@ -40,26 +40,26 @@ type Hub struct {
 	ID               string
 	Name             string
 	clients          map[*Client]bool
-	rooms            map[*Room]bool
+	channels         map[*Channel]bool
 	Register         chan *Client
 	unregister       chan *Client
 	broadcast        chan []byte
-	roomUseCase      usecase.RoomUseCase
+	channelUseCase   usecase.ChannelUseCase
 	pubsubRepo       repository.PubSubRepository
 	messageCacheRepo repository.MessageCacheRepository
 }
 
 // NewWebsocketServer creates a new Hub type
-func NewHub(name string, roomUseCase usecase.RoomUseCase, pubsubRepo repository.PubSubRepository, messageCacheRepo repository.MessageCacheRepository) *Hub {
+func NewHub(name string, channelUseCase usecase.ChannelUseCase, pubsubRepo repository.PubSubRepository, messageCacheRepo repository.MessageCacheRepository) *Hub {
 	return &Hub{
 		ID:               uuid.New().String(),
 		Name:             name,
 		clients:          make(map[*Client]bool),
-		rooms:            make(map[*Room]bool),
+		channels:         make(map[*Channel]bool),
 		Register:         make(chan *Client),
 		unregister:       make(chan *Client),
 		broadcast:        make(chan []byte),
-		roomUseCase:      roomUseCase,
+		channelUseCase:   channelUseCase,
 		pubsubRepo:       pubsubRepo,
 		messageCacheRepo: messageCacheRepo,
 	}
@@ -108,39 +108,39 @@ func (h *Hub) listenPubSubChannel(ctx context.Context) {
 	}
 }
 
-func (h *Hub) FindRoomByID(id string) *Room {
-	for room := range h.rooms {
-		if room.ID == id {
-			return room
+func (h *Hub) FindChannelByID(id string) *Channel {
+	for channel := range h.channels {
+		if channel.ID == id {
+			return channel
 		}
 	}
 	return nil
 }
 
-func (h *Hub) FindRoomByName(name string) *Room {
-	for room := range h.rooms {
-		if room.Name == name {
-			return room
+func (h *Hub) FindChannelByName(name string) *Channel {
+	for channel := range h.channels {
+		if channel.Name == name {
+			return channel
 		}
 	}
 	return nil
 }
 
-func (h *Hub) CreateRoom(ctx context.Context, membershipID, roomName string, roomPrivate bool) *Room {
-	room := NewRoom(roomName, roomPrivate, h.pubsubRepo, h.messageCacheRepo)
+func (h *Hub) CreateChannel(ctx context.Context, membershipID, channelName string, channelPrivate bool) *Channel {
+	channel := NewChannel(channelName, channelPrivate, h.pubsubRepo, h.messageCacheRepo)
 
-	if err := h.roomUseCase.CreateRoom(ctx, usecase.CreateRoomParams{
-		ID:           room.ID,
+	if err := h.channelUseCase.CreateChannel(ctx, usecase.CreateChannelParams{
+		ID:           channel.ID,
 		MembershipID: membershipID,
 		WorkspaceID:  h.ID,
-		Name:         room.Name,
-		Private:      room.Private,
+		Name:         channel.Name,
+		Private:      channel.Private,
 	}); err != nil {
-		log.Error("Failed to create room", log.Fstring("name", roomName))
+		log.Error("Failed to create channel", log.Fstring("name", channelName))
 		return nil
 	}
 
-	go room.Run(ctx)
-	h.rooms[room] = true
-	return room
+	go channel.Run(ctx)
+	h.channels[channel] = true
+	return channel
 }

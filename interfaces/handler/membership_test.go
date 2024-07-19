@@ -27,7 +27,7 @@ func TestMembershipHandler_GetMembership(t *testing.T) {
 		name  string
 		setup func(
 			m *mock.MockMembershipUseCase,
-			m1 *mock.MockRoomUseCase,
+			m1 *mock.MockChannelUseCase,
 			m2 *mock.MockAuthUseCase,
 		)
 		in         func() *http.Request
@@ -35,7 +35,7 @@ func TestMembershipHandler_GetMembership(t *testing.T) {
 	}{
 		{
 			name: "success",
-			setup: func(m *mock.MockMembershipUseCase, m1 *mock.MockRoomUseCase, m2 *mock.MockAuthUseCase) {
+			setup: func(m *mock.MockMembershipUseCase, m1 *mock.MockChannelUseCase, m2 *mock.MockAuthUseCase) {
 				m2.EXPECT().GetUserFromContext(gomock.Any()).Return(
 					&entity.User{
 						ID:       userID,
@@ -52,10 +52,10 @@ func TestMembershipHandler_GetMembership(t *testing.T) {
 						ProfileImageURL: "https://test.jpg",
 					}, nil,
 				)
-				m1.EXPECT().ListMembershipRooms(gomock.Any(), membershipID).Return(
-					[]entity.Room{
+				m1.EXPECT().ListMembershipChannels(gomock.Any(), membershipID).Return(
+					[]entity.Channel{
 						{
-							ID:          "roomID",
+							ID:          "channelID",
 							Name:        "test",
 							Description: "test",
 							Private:     false,
@@ -76,7 +76,7 @@ func TestMembershipHandler_GetMembership(t *testing.T) {
 			t.Parallel()
 			ctrl := gomock.NewController(t)
 			muc := mock.NewMockMembershipUseCase(ctrl)
-			ruc := mock.NewMockRoomUseCase(ctrl)
+			ruc := mock.NewMockChannelUseCase(ctrl)
 			auc := mock.NewMockAuthUseCase(ctrl)
 
 			if tt.setup != nil {
@@ -142,7 +142,7 @@ func TestMembershipHandler_ListMemberships(t *testing.T) {
 			t.Parallel()
 			ctrl := gomock.NewController(t)
 			muc := mock.NewMockMembershipUseCase(ctrl)
-			ruc := mock.NewMockRoomUseCase(ctrl)
+			ruc := mock.NewMockChannelUseCase(ctrl)
 			auc := mock.NewMockAuthUseCase(ctrl)
 
 			if tt.setup != nil {
@@ -163,7 +163,7 @@ func TestMembershipHandler_ListMemberships(t *testing.T) {
 	}
 }
 
-func TestMembershipHandler_ListRoomMemberships(t *testing.T) {
+func TestMembershipHandler_ListChannelMemberships(t *testing.T) {
 	t.Parallel()
 
 	workspaceID := uuid.New().String()
@@ -180,7 +180,7 @@ func TestMembershipHandler_ListRoomMemberships(t *testing.T) {
 		{
 			name: "success",
 			setup: func(m *mock.MockMembershipUseCase, m1 *mock.MockAuthUseCase) {
-				m.EXPECT().ListRoomMemberships(
+				m.EXPECT().ListChannelMemberships(
 					gomock.Any(),
 					channelID,
 				).Return(
@@ -198,7 +198,7 @@ func TestMembershipHandler_ListRoomMemberships(t *testing.T) {
 				)
 			},
 			in: func() *http.Request {
-				url := fmt.Sprintf("/api/membership/list-room/%s", channelID)
+				url := fmt.Sprintf("/api/membership/list-channel/%s", channelID)
 				req, _ := http.NewRequest(http.MethodGet, url, nil)
 				return req
 			},
@@ -212,7 +212,7 @@ func TestMembershipHandler_ListRoomMemberships(t *testing.T) {
 			t.Parallel()
 			ctrl := gomock.NewController(t)
 			muc := mock.NewMockMembershipUseCase(ctrl)
-			ruc := mock.NewMockRoomUseCase(ctrl)
+			ruc := mock.NewMockChannelUseCase(ctrl)
 			auc := mock.NewMockAuthUseCase(ctrl)
 
 			if tt.setup != nil {
@@ -223,7 +223,7 @@ func TestMembershipHandler_ListRoomMemberships(t *testing.T) {
 			recorder := httptest.NewRecorder()
 
 			r := chi.NewRouter()
-			r.Get("/api/membership/list-room/{channel_id}", handler.ListRoomMemberships)
+			r.Get("/api/membership/list-channel/{channel_id}", handler.ListChannelMemberships)
 			r.ServeHTTP(recorder, tt.in())
 
 			if status := recorder.Code; status != tt.wantStatus {
@@ -312,7 +312,7 @@ func TestMembershipHandler_CreateMembership(t *testing.T) {
 			t.Parallel()
 			ctrl := gomock.NewController(t)
 			muc := mock.NewMockMembershipUseCase(ctrl)
-			ruc := mock.NewMockRoomUseCase(ctrl)
+			ruc := mock.NewMockChannelUseCase(ctrl)
 			auc := mock.NewMockAuthUseCase(ctrl)
 
 			if tt.setup != nil {
@@ -423,7 +423,7 @@ func TestMembershipHandler_UpdateMembership(t *testing.T) {
 			t.Parallel()
 			ctrl := gomock.NewController(t)
 			muc := mock.NewMockMembershipUseCase(ctrl)
-			ruc := mock.NewMockRoomUseCase(ctrl)
+			ruc := mock.NewMockChannelUseCase(ctrl)
 			auc := mock.NewMockAuthUseCase(ctrl)
 
 			if tt.setup != nil {

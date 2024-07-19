@@ -40,8 +40,8 @@ func BuildContainer(ctx context.Context) (*dig.Container, error) { //nolint:funl
 		mysql.NewMembershipRepository,
 		mysql.NewWorkspaceRepository,
 		mysql.NewMessageRepository,
-		mysql.NewRoomRepository,
-		mysql.NewMembershipRoomRepository,
+		mysql.NewChannelRepository,
+		mysql.NewMembershipChannelRepository,
 		redis.NewRedisClient,
 		redis.NewUserRepository,
 		redis.NewMessageRepository,
@@ -50,8 +50,8 @@ func BuildContainer(ctx context.Context) (*dig.Container, error) { //nolint:funl
 		usecase.NewMembershipUseCase,
 		usecase.NewWorkspaceUseCase,
 		usecase.NewMessageUseCase,
-		usecase.NewRoomUseCase,
-		usecase.NewMembershipRoomUseCase,
+		usecase.NewChannelUseCase,
+		usecase.NewMembershipChannelUseCase,
 		usecase.NewAuthUseCase,
 		ws.NewHubManager,
 		handler.NewWebsocketHandler,
@@ -93,7 +93,7 @@ func BuildContainer(ctx context.Context) (*dig.Container, error) { //nolint:funl
 				r.Route("/membership", func(r chi.Router) {
 					r.Use(authMiddleware.Authenticate)
 					r.Get("/list/{workspace_id}", membershipHandler.ListMemberships)
-					r.Get("/list-room/{channel_id}", membershipHandler.ListRoomMemberships)
+					r.Get("/list-channel/{channel_id}", membershipHandler.ListChannelMemberships)
 					r.Get("/get/{workspace_id}", membershipHandler.GetMembership)
 					r.Post("/create/{workspace_id}", membershipHandler.CreateMembership)
 					r.Put("/update/{workspace_id}", membershipHandler.UpdateMembership)

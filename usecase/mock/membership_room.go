@@ -11,53 +11,53 @@ import (
 	gomock "github.com/golang/mock/gomock"
 )
 
-// MockMembershipRoomUseCase is a mock of MembershipRoomUseCase interface.
-type MockMembershipRoomUseCase struct {
+// MockMembershipChannelUseCase is a mock of MembershipChannelUseCase interface.
+type MockMembershipChannelUseCase struct {
 	ctrl     *gomock.Controller
-	recorder *MockMembershipRoomUseCaseMockRecorder
+	recorder *MockMembershipChannelUseCaseMockRecorder
 }
 
-// MockMembershipRoomUseCaseMockRecorder is the mock recorder for MockMembershipRoomUseCase.
-type MockMembershipRoomUseCaseMockRecorder struct {
-	mock *MockMembershipRoomUseCase
+// MockMembershipChannelUseCaseMockRecorder is the mock recorder for MockMembershipChannelUseCase.
+type MockMembershipChannelUseCaseMockRecorder struct {
+	mock *MockMembershipChannelUseCase
 }
 
-// NewMockMembershipRoomUseCase creates a new mock instance.
-func NewMockMembershipRoomUseCase(ctrl *gomock.Controller) *MockMembershipRoomUseCase {
-	mock := &MockMembershipRoomUseCase{ctrl: ctrl}
-	mock.recorder = &MockMembershipRoomUseCaseMockRecorder{mock}
+// NewMockMembershipChannelUseCase creates a new mock instance.
+func NewMockMembershipChannelUseCase(ctrl *gomock.Controller) *MockMembershipChannelUseCase {
+	mock := &MockMembershipChannelUseCase{ctrl: ctrl}
+	mock.recorder = &MockMembershipChannelUseCaseMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockMembershipRoomUseCase) EXPECT() *MockMembershipRoomUseCaseMockRecorder {
+func (m *MockMembershipChannelUseCase) EXPECT() *MockMembershipChannelUseCaseMockRecorder {
 	return m.recorder
 }
 
-// CreateMembershipRoom mocks base method.
-func (m *MockMembershipRoomUseCase) CreateMembershipRoom(ctx context.Context, membershipID, roomID string) error {
+// CreateMembershipChannel mocks base method.
+func (m *MockMembershipChannelUseCase) CreateMembershipChannel(ctx context.Context, membershipID, channelID string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateMembershipRoom", ctx, membershipID, roomID)
+	ret := m.ctrl.Call(m, "CreateMembershipChannel", ctx, membershipID, channelID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// CreateMembershipRoom indicates an expected call of CreateMembershipRoom.
-func (mr *MockMembershipRoomUseCaseMockRecorder) CreateMembershipRoom(ctx, membershipID, roomID interface{}) *gomock.Call {
+// CreateMembershipChannel indicates an expected call of CreateMembershipChannel.
+func (mr *MockMembershipChannelUseCaseMockRecorder) CreateMembershipChannel(ctx, membershipID, channelID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMembershipRoom", reflect.TypeOf((*MockMembershipRoomUseCase)(nil).CreateMembershipRoom), ctx, membershipID, roomID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateMembershipChannel", reflect.TypeOf((*MockMembershipChannelUseCase)(nil).CreateMembershipChannel), ctx, membershipID, channelID)
 }
 
-// DeleteMembershipRoom mocks base method.
-func (m *MockMembershipRoomUseCase) DeleteMembershipRoom(ctx context.Context, membershipID, roomID string) error {
+// DeleteMembershipChannel mocks base method.
+func (m *MockMembershipChannelUseCase) DeleteMembershipChannel(ctx context.Context, membershipID, channelID string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteMembershipRoom", ctx, membershipID, roomID)
+	ret := m.ctrl.Call(m, "DeleteMembershipChannel", ctx, membershipID, channelID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// DeleteMembershipRoom indicates an expected call of DeleteMembershipRoom.
-func (mr *MockMembershipRoomUseCaseMockRecorder) DeleteMembershipRoom(ctx, membershipID, roomID interface{}) *gomock.Call {
+// DeleteMembershipChannel indicates an expected call of DeleteMembershipChannel.
+func (mr *MockMembershipChannelUseCaseMockRecorder) DeleteMembershipChannel(ctx, membershipID, channelID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteMembershipRoom", reflect.TypeOf((*MockMembershipRoomUseCase)(nil).DeleteMembershipRoom), ctx, membershipID, roomID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteMembershipChannel", reflect.TypeOf((*MockMembershipChannelUseCase)(nil).DeleteMembershipChannel), ctx, membershipID, channelID)
 }

@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestEntity_NewRoom(t *testing.T) {
+func TestEntity_NewChannel(t *testing.T) {
 	t.Parallel()
 
 	patterns := []struct {
@@ -94,12 +94,12 @@ func TestEntity_NewRoom(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			_, err := NewRoom(tt.arg.id, tt.arg.workspaceID, tt.arg.name, tt.arg.description, tt.arg.private)
+			_, err := NewChannel(tt.arg.id, tt.arg.workspaceID, tt.arg.name, tt.arg.description, tt.arg.private)
 
 			if (err != nil) != (tt.wantErr != nil) {
-				t.Errorf("NewRoom() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("NewChannel() error = %v, wantErr %v", err, tt.wantErr)
 			} else if err != nil && tt.wantErr != nil && err.Error() != tt.wantErr.Error() {
-				t.Errorf("NewRoom() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("NewChannel() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

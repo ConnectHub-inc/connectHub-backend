@@ -12,7 +12,7 @@ import (
 
 type MembershipUseCase interface {
 	ListMemberships(ctx context.Context, workspaceID string) ([]entity.Membership, error)
-	ListRoomMemberships(ctx context.Context, channelID string) ([]entity.Membership, error)
+	ListChannelMemberships(ctx context.Context, channelID string) ([]entity.Membership, error)
 	GetMembership(ctx context.Context, membershipID string) (*entity.Membership, error)
 	CreateMembership(ctx context.Context, params *CreateMembershipParams) error
 	UpdateMembership(ctx context.Context, params *UpdateMembershipParams, membership entity.Membership) error
@@ -37,10 +37,10 @@ func (muc *membershipUseCase) ListMemberships(ctx context.Context, workspaceID s
 	return memberships, nil
 }
 
-func (muc *membershipUseCase) ListRoomMemberships(ctx context.Context, channelID string) ([]entity.Membership, error) {
-	memberships, err := muc.mr.ListRoomMemberships(ctx, channelID)
+func (muc *membershipUseCase) ListChannelMemberships(ctx context.Context, channelID string) ([]entity.Membership, error) {
+	memberships, err := muc.mr.ListChannelMemberships(ctx, channelID)
 	if err != nil {
-		log.Error("Failed to list room memberships", log.Fstring("channelID", channelID))
+		log.Error("Failed to list channel memberships", log.Fstring("channelID", channelID))
 		return nil, err
 	}
 	return memberships, nil

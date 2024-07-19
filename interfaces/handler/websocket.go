@@ -23,7 +23,7 @@ type WebsocketHandler struct {
 	auc usecase.AuthUseCase
 	psr repository.PubSubRepository
 	muc usecase.MessageUseCase
-	uru usecase.MembershipRoomUseCase
+	uru usecase.MembershipChannelUseCase
 }
 
 func NewWebsocketHandler(
@@ -31,7 +31,7 @@ func NewWebsocketHandler(
 	auc usecase.AuthUseCase,
 	psr repository.PubSubRepository,
 	muc usecase.MessageUseCase,
-	uru usecase.MembershipRoomUseCase,
+	uru usecase.MembershipChannelUseCase,
 ) *WebsocketHandler {
 	return &WebsocketHandler{
 		hm:  hm,

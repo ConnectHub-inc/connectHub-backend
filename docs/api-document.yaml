@@ -184,7 +184,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListMembershipsResponse'
-  /api/membership/list-room/{channel_id}:
+  /api/membership/list-channel/{channel_id}:
     get:
       tags:
         - membership
@@ -198,7 +198,7 @@ paths:
         - name: channel_id
           in: path
           required: true
-          description: ID of the room
+          description: ID of the channel
           schema:
             type: string
       responses:
@@ -207,7 +207,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ListRoomMembershipsResponse'
+                $ref: '#/components/schemas/ListChannelMembershipsResponse'
 components:
   securitySchemes:
     BearerAuth:
@@ -244,16 +244,16 @@ components:
         profile_image_url:
           type: string
           description: メンバーシップのプロフィール画像
-        rooms:
+        channels:
           type: array
           description: 参加しているルームの一覧
           items:
             type: object
             properties:
-              roomID:
+              channelID:
                 type: string
                 description: ルームID
-              roomName:
+              channelName:
                 type: string
                 description: ルームの名前
               private:
@@ -309,7 +309,7 @@ components:
               is_deleted:
                 type: boolean
                 example: false
-    ListRoomMembershipsResponse:
+    ListChannelMembershipsResponse:
       type: object
       properties:
         memberships:

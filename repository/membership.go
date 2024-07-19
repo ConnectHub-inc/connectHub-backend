@@ -9,7 +9,7 @@ import (
 
 type MembershipRepository interface {
 	List(ctx context.Context, qcs []QueryCondition) ([]entity.Membership, error)
-	ListRoomMemberships(ctx context.Context, channelID string) ([]entity.Membership, error)
+	ListChannelMemberships(ctx context.Context, channelID string) ([]entity.Membership, error)
 	Get(ctx context.Context, id string) (*entity.Membership, error)
 	Create(ctx context.Context, membership entity.Membership) error
 	Update(ctx context.Context, membership entity.Membership) error

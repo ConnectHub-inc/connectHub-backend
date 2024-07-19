@@ -9,26 +9,26 @@ import (
 	"github.com/tusmasoma/connectHub-backend/repository"
 )
 
-type RoomUseCase interface {
-	CreateRoom(ctx context.Context, params CreateRoomParams) error
-	ListMembershipRooms(ctx context.Context, membershipID string) ([]entity.Room, error)
+type ChannelUseCase interface {
+	CreateChannel(ctx context.Context, params CreateChannelParams) error
+	ListMembershipChannels(ctx context.Context, membershipID string) ([]entity.Channel, error)
 }
 
-type roomUseCase struct {
-	rr  repository.RoomRepository
-	mrr repository.MembershipRoomRepository
+type channelUseCase struct {
+	rr  repository.ChannelRepository
+	mrr repository.MembershipChannelRepository
 	tr  repository.TransactionRepository
 }
 
-func NewRoomUseCase(rr repository.RoomRepository, mrr repository.MembershipRoomRepository, tr repository.TransactionRepository) RoomUseCase {
-	return &roomUseCase{
+func NewChannelUseCase(rr repository.ChannelRepository, mrr repository.MembershipChannelRepository, tr repository.TransactionRepository) ChannelUseCase {
+	return &channelUseCase{
 		rr:  rr,
 		mrr: mrr,
 		tr:  tr,
 	}
 }
 
-type CreateRoomParams struct {
+type CreateChannelParams struct {
 	ID           string
 	MembershipID string
 	WorkspaceID  string
@@ -37,29 +37,29 @@ type CreateRoomParams struct {
 	Private      bool
 }
 
-func (ruc *roomUseCase) CreateRoom(ctx context.Context, params CreateRoomParams) error {
+func (ruc *channelUseCase) CreateChannel(ctx context.Context, params CreateChannelParams) error {
 	err := ruc.tr.Transaction(ctx, func(ctx context.Context) error {
-		room, err := entity.NewRoom(params.ID, params.WorkspaceID, params.Name, params.Description, params.Private)
+		channel, err := entity.NewChannel(params.ID, params.WorkspaceID, params.Name, params.Description, params.Private)
 		if err != nil {
-			log.Error("Failed to create room", log.Ferror(err))
+			log.Error("Failed to create channel", log.Ferror(err))
 			return err
 		}
-		if err = ruc.rr.Create(ctx, *room); err != nil {
-			log.Error("Failed to create room", log.Fstring("roomID", room.ID))
+		if err = ruc.rr.Create(ctx, *channel); err != nil {
+			log.Error("Failed to create channel", log.Fstring("channelID", channel.ID))
 			return err
 		}
 
-		var membershipRoom *entity.MembershipRoom
-		membershipRoom, err = entity.NewMembershipRoom(params.MembershipID, room.ID)
+		var membershipChannel *entity.MembershipChannel
+		membershipChannel, err = entity.NewMembershipChannel(params.MembershipID, channel.ID)
 		if err != nil {
-			log.Error("Failed to create membership room", log.Ferror(err))
+			log.Error("Failed to create membership channel", log.Ferror(err))
 			return err
 		}
-		if err = ruc.mrr.Create(ctx, *membershipRoom); err != nil {
+		if err = ruc.mrr.Create(ctx, *membershipChannel); err != nil {
 			log.Error(
-				"Failed to create membership room",
+				"Failed to create membership channel",
 				log.Fstring("membershipID", params.MembershipID),
-				log.Fstring("roomID", room.ID),
+				log.Fstring("channelID", channel.ID),
 			)
 			return err
 		}
@@ -67,17 +67,17 @@ func (ruc *roomUseCase) CreateRoom(ctx context.Context, params CreateRoomParams)
 		return nil
 	})
 	if err != nil {
-		log.Error("Failed to create room", log.Fstring("roomName", params.Name))
+		log.Error("Failed to create channel", log.Fstring("channelName", params.Name))
 		return err
 	}
 	return nil
 }
 
-func (ruc *roomUseCase) ListMembershipRooms(ctx context.Context, membershipID string) ([]entity.Room, error) {
-	rooms, err := ruc.rr.ListMembershipRooms(ctx, membershipID)
+func (ruc *channelUseCase) ListMembershipChannels(ctx context.Context, membershipID string) ([]entity.Channel, error) {
+	channels, err := ruc.rr.ListMembershipChannels(ctx, membershipID)
 	if err != nil {
-		log.Error("Failed to list user workspace rooms", log.Fstring("membershipID", membershipID))
+		log.Error("Failed to list user workspace channels", log.Fstring("membershipID", membershipID))
 		return nil, err
 	}
-	return rooms, nil
+	return channels, nil
 }

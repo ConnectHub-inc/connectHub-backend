@@ -35,7 +35,7 @@ func Test_MembershipRepository(t *testing.T) {
 		IsDeleted:       false,
 	}
 
-	room := entity.Room{
+	channel := entity.Channel{
 		ID:          channelID,
 		WorkspaceID: workspaceID,
 		Name:        "test",
@@ -43,15 +43,15 @@ func Test_MembershipRepository(t *testing.T) {
 		Private:     false,
 	}
 
-	membershipRoom := entity.MembershipRoom{
+	membershipChannel := entity.MembershipChannel{
 		MembershipID: membershipID,
-		RoomID:       channelID,
+		ChannelID:    channelID,
 	}
 
 	userRepo := NewUserRepository(db, &dialect)
 	membershipRepo := NewMembershipRepository(db, &dialect)
-	roomRepo := NewRoomRepository(db, &dialect)
-	membershipRoomRepo := NewMembershipRoomRepository(db, &dialect)
+	channelRepo := NewChannelRepository(db, &dialect)
+	membershipChannelRepo := NewMembershipChannelRepository(db, &dialect)
 
 	// test get
 	err := userRepo.Create(ctx, user)
@@ -77,14 +77,14 @@ func Test_MembershipRepository(t *testing.T) {
 		t.Errorf("Expected membership name 'updated', got %s", getMembership.Name)
 	}
 
-	// test list room memberships
-	err = roomRepo.Create(ctx, room)
+	// test list channel memberships
+	err = channelRepo.Create(ctx, channel)
 	ValidateErr(t, err, nil)
 
-	err = membershipRoomRepo.Create(ctx, membershipRoom)
+	err = membershipChannelRepo.Create(ctx, membershipChannel)
 	ValidateErr(t, err, nil)
 
-	getMemberships, err := membershipRepo.ListRoomMemberships(ctx, channelID)
+	getMemberships, err := membershipRepo.ListChannelMemberships(ctx, channelID)
 	ValidateErr(t, err, nil)
 	if len(getMemberships) != 1 {
 		t.Errorf("Expected 1 membership, got %d", len(getMemberships))
@@ -101,9 +101,9 @@ func Test_MembershipRepository(t *testing.T) {
 	}
 
 	// clean up
-	err = membershipRoomRepo.Delete(ctx, membershipID, channelID)
+	err = membershipChannelRepo.Delete(ctx, membershipID, channelID)
 	ValidateErr(t, err, nil)
-	err = roomRepo.Delete(ctx, channelID)
+	err = channelRepo.Delete(ctx, channelID)
 	ValidateErr(t, err, nil)
 	err = membershipRepo.Delete(ctx, membershipID)
 	ValidateErr(t, err, nil)

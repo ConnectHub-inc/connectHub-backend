@@ -63,7 +63,7 @@ func TestUserHandler_SignUp(t *testing.T) {
 			t.Parallel()
 			ctrl := gomock.NewController(t)
 			uuc := mock.NewMockUserUseCase(ctrl)
-			ruc := mock.NewMockRoomUseCase(ctrl)
+			ruc := mock.NewMockChannelUseCase(ctrl)
 			auc := mock.NewMockAuthUseCase(ctrl)
 
 			if tt.setup != nil {
@@ -136,7 +136,7 @@ func TestUserHandler_Login(t *testing.T) {
 			t.Parallel()
 			ctrl := gomock.NewController(t)
 			uuc := mock.NewMockUserUseCase(ctrl)
-			ruc := mock.NewMockRoomUseCase(ctrl)
+			ruc := mock.NewMockChannelUseCase(ctrl)
 			auc := mock.NewMockAuthUseCase(ctrl)
 
 			if tt.setup != nil {

@@ -7,13 +7,13 @@ import (
 	"github.com/tusmasoma/connectHub-backend/entity"
 )
 
-type RoomRepository interface {
-	List(ctx context.Context, qcs []QueryCondition) ([]entity.Room, error)
-	ListMembershipRooms(ctx context.Context, membershipID string) ([]entity.Room, error)
-	Get(ctx context.Context, id string) (*entity.Room, error)
-	Create(ctx context.Context, room entity.Room) error
-	BatchCreate(ctx context.Context, rooms []entity.Room) error
-	Update(ctx context.Context, id string, room entity.Room) error
+type ChannelRepository interface {
+	List(ctx context.Context, qcs []QueryCondition) ([]entity.Channel, error)
+	ListMembershipChannels(ctx context.Context, membershipID string) ([]entity.Channel, error)
+	Get(ctx context.Context, id string) (*entity.Channel, error)
+	Create(ctx context.Context, channel entity.Channel) error
+	BatchCreate(ctx context.Context, channels []entity.Channel) error
+	Update(ctx context.Context, id string, channel entity.Channel) error
 	Delete(ctx context.Context, id string) error
-	CreateOrUpdate(ctx context.Context, id string, qcs []QueryCondition, room entity.Room) error
+	CreateOrUpdate(ctx context.Context, id string, qcs []QueryCondition, channel entity.Channel) error
 }

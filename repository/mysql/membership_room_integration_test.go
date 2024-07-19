@@ -11,7 +11,7 @@ import (
 	"github.com/tusmasoma/connectHub-backend/entity"
 )
 
-func Test_MembershipRoomRepository(t *testing.T) {
+func Test_MembershipChannelRepository(t *testing.T) {
 	dialect := goqu.Dialect("mysql")
 	ctx := context.Background()
 	workspaceID := "5fe0e237-6b49-11ee-b686-0242c0a87001" // dml.test.sql
@@ -35,7 +35,7 @@ func Test_MembershipRoomRepository(t *testing.T) {
 		IsDeleted:       false,
 	}
 
-	room := entity.Room{
+	channel := entity.Channel{
 		ID:          channelID,
 		WorkspaceID: workspaceID,
 		Name:        "test",
@@ -43,15 +43,15 @@ func Test_MembershipRoomRepository(t *testing.T) {
 		Private:     false,
 	}
 
-	membershipRoom := entity.MembershipRoom{
+	membershipChannel := entity.MembershipChannel{
 		MembershipID: membershipID,
-		RoomID:       channelID,
+		ChannelID:    channelID,
 	}
 
 	userRepo := NewUserRepository(db, &dialect)
 	membershipRepo := NewMembershipRepository(db, &dialect)
-	roomRepo := NewRoomRepository(db, &dialect)
-	membershipRoomRepo := NewMembershipRoomRepository(db, &dialect)
+	channelRepo := NewChannelRepository(db, &dialect)
+	membershipChannelRepo := NewMembershipChannelRepository(db, &dialect)
 
 	err := userRepo.Create(ctx, user)
 	ValidateErr(t, err, nil)
@@ -59,31 +59,31 @@ func Test_MembershipRoomRepository(t *testing.T) {
 	err = membershipRepo.Create(ctx, membership)
 	ValidateErr(t, err, nil)
 
-	err = roomRepo.Create(ctx, room)
+	err = channelRepo.Create(ctx, channel)
 	ValidateErr(t, err, nil)
 
-	err = membershipRoomRepo.Create(ctx, membershipRoom)
+	err = membershipChannelRepo.Create(ctx, membershipChannel)
 	ValidateErr(t, err, nil)
 
-	getMembershipRoom, err := membershipRoomRepo.Get(ctx, membershipID, channelID)
+	getMembershipChannel, err := membershipChannelRepo.Get(ctx, membershipID, channelID)
 	ValidateErr(t, err, nil)
-	if !reflect.DeepEqual(*getMembershipRoom, membershipRoom) {
-		t.Errorf("Get() = %v, want %v", getMembershipRoom, membershipRoom)
+	if !reflect.DeepEqual(*getMembershipChannel, membershipChannel) {
+		t.Errorf("Get() = %v, want %v", getMembershipChannel, membershipChannel)
 	}
 
-	err = membershipRoomRepo.Delete(ctx, membershipID, channelID)
+	err = membershipChannelRepo.Delete(ctx, membershipID, channelID)
 	ValidateErr(t, err, nil)
 
-	getMembershipRoom, err = membershipRoomRepo.Get(ctx, membershipID, channelID)
+	getMembershipChannel, err = membershipChannelRepo.Get(ctx, membershipID, channelID)
 	if err == nil {
 		t.Errorf("Expected error for deleted item, got nil")
 	}
-	if getMembershipRoom != nil {
-		t.Errorf("Expected nil for deleted item, got %v", getMembershipRoom)
+	if getMembershipChannel != nil {
+		t.Errorf("Expected nil for deleted item, got %v", getMembershipChannel)
 	}
 
 	// clean up
-	err = roomRepo.Delete(ctx, channelID)
+	err = channelRepo.Delete(ctx, channelID)
 	ValidateErr(t, err, nil)
 	err = membershipRepo.Delete(ctx, membershipID)
 	ValidateErr(t, err, nil)

@@ -6,7 +6,7 @@ import (
 	"github.com/tusmasoma/connectHub-backend/internal/log"
 )
 
-type Room struct {
+type Channel struct {
 	ID          string `json:"id" db:"id"`
 	WorkspaceID string `json:"workspace_id" db:"workspace_id"`
 	Name        string `json:"name" db:"name"`
@@ -14,7 +14,7 @@ type Room struct {
 	Private     bool   `json:"private" db:"private"`
 }
 
-func NewRoom(id, workspaceID, name, description string, private bool) (*Room, error) {
+func NewChannel(id, workspaceID, name, description string, private bool) (*Channel, error) {
 	if id == "" {
 		log.Warn("ID is required", log.Fstring("id", id))
 		return nil, fmt.Errorf("id is required")
@@ -27,7 +27,7 @@ func NewRoom(id, workspaceID, name, description string, private bool) (*Room, er
 		log.Warn("Name is required", log.Fstring("name", name))
 		return nil, fmt.Errorf("name is required")
 	}
-	return &Room{
+	return &Channel{
 		ID:          id,
 		WorkspaceID: workspaceID,
 		Name:        name,

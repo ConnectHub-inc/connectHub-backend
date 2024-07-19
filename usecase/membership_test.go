@@ -109,7 +109,7 @@ func TestMembershipUseCase_ListMemberships(t *testing.T) {
 	}
 }
 
-func TestMembershipUseCase_ListRoomMemberships(t *testing.T) {
+func TestMembershipUseCase_ListChannelMemberships(t *testing.T) {
 	t.Parallel()
 
 	channelID := "f6db2530-cd9b-4ac1-8dc1-38c795e6eec2"
@@ -137,7 +137,7 @@ func TestMembershipUseCase_ListRoomMemberships(t *testing.T) {
 		{
 			name: "success",
 			setup: func(m *mock.MockMembershipRepository) {
-				m.EXPECT().ListRoomMemberships(
+				m.EXPECT().ListChannelMemberships(
 					gomock.Any(),
 					channelID,
 				).Return(memberships, nil)
@@ -153,12 +153,12 @@ func TestMembershipUseCase_ListRoomMemberships(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "Fail: failed to list room Memberships",
+			name: "Fail: failed to list channel Memberships",
 			setup: func(m *mock.MockMembershipRepository) {
-				m.EXPECT().ListRoomMemberships(
+				m.EXPECT().ListChannelMemberships(
 					gomock.Any(),
 					channelID,
-				).Return(nil, fmt.Errorf("failed to list room Memberships"))
+				).Return(nil, fmt.Errorf("failed to list channel Memberships"))
 			},
 			arg: struct {
 				ctx       context.Context
@@ -168,7 +168,7 @@ func TestMembershipUseCase_ListRoomMemberships(t *testing.T) {
 				channelID: channelID,
 			},
 			want:    nil,
-			wantErr: fmt.Errorf("failed to list room Memberships"),
+			wantErr: fmt.Errorf("failed to list channel Memberships"),
 		},
 	}
 
@@ -185,16 +185,16 @@ func TestMembershipUseCase_ListRoomMemberships(t *testing.T) {
 			}
 
 			usecase := NewMembershipUseCase(mr)
-			getMemberships, err := usecase.ListRoomMemberships(tt.arg.ctx, tt.arg.channelID)
+			getMemberships, err := usecase.ListChannelMemberships(tt.arg.ctx, tt.arg.channelID)
 
 			if (err != nil) != (tt.wantErr != nil) {
-				t.Errorf("ListRoomMemberships() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("ListChannelMemberships() error = %v, wantErr %v", err, tt.wantErr)
 			} else if err != nil && tt.wantErr != nil && err.Error() != tt.wantErr.Error() {
-				t.Errorf("ListRoomMemberships() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("ListChannelMemberships() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
 			if !reflect.DeepEqual(getMemberships, tt.want) {
-				t.Errorf("ListRoomMemberships() = %v, want %v", getMemberships, tt.want)
+				t.Errorf("ListChannelMemberships() = %v, want %v", getMemberships, tt.want)
 			}
 		})
 	}

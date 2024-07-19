@@ -14,73 +14,73 @@ import (
 	repository "github.com/tusmasoma/connectHub-backend/repository"
 )
 
-// MockRoomRepository is a mock of RoomRepository interface.
-type MockRoomRepository struct {
+// MockChannelRepository is a mock of ChannelRepository interface.
+type MockChannelRepository struct {
 	ctrl     *gomock.Controller
-	recorder *MockRoomRepositoryMockRecorder
+	recorder *MockChannelRepositoryMockRecorder
 }
 
-// MockRoomRepositoryMockRecorder is the mock recorder for MockRoomRepository.
-type MockRoomRepositoryMockRecorder struct {
-	mock *MockRoomRepository
+// MockChannelRepositoryMockRecorder is the mock recorder for MockChannelRepository.
+type MockChannelRepositoryMockRecorder struct {
+	mock *MockChannelRepository
 }
 
-// NewMockRoomRepository creates a new mock instance.
-func NewMockRoomRepository(ctrl *gomock.Controller) *MockRoomRepository {
-	mock := &MockRoomRepository{ctrl: ctrl}
-	mock.recorder = &MockRoomRepositoryMockRecorder{mock}
+// NewMockChannelRepository creates a new mock instance.
+func NewMockChannelRepository(ctrl *gomock.Controller) *MockChannelRepository {
+	mock := &MockChannelRepository{ctrl: ctrl}
+	mock.recorder = &MockChannelRepositoryMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockRoomRepository) EXPECT() *MockRoomRepositoryMockRecorder {
+func (m *MockChannelRepository) EXPECT() *MockChannelRepositoryMockRecorder {
 	return m.recorder
 }
 
 // BatchCreate mocks base method.
-func (m *MockRoomRepository) BatchCreate(ctx context.Context, rooms []entity.Room) error {
+func (m *MockChannelRepository) BatchCreate(ctx context.Context, channels []entity.Channel) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "BatchCreate", ctx, rooms)
+	ret := m.ctrl.Call(m, "BatchCreate", ctx, channels)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // BatchCreate indicates an expected call of BatchCreate.
-func (mr *MockRoomRepositoryMockRecorder) BatchCreate(ctx, rooms interface{}) *gomock.Call {
+func (mr *MockChannelRepositoryMockRecorder) BatchCreate(ctx, channels interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BatchCreate", reflect.TypeOf((*MockRoomRepository)(nil).BatchCreate), ctx, rooms)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BatchCreate", reflect.TypeOf((*MockChannelRepository)(nil).BatchCreate), ctx, channels)
 }
 
 // Create mocks base method.
-func (m *MockRoomRepository) Create(ctx context.Context, room entity.Room) error {
+func (m *MockChannelRepository) Create(ctx context.Context, channel entity.Channel) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, room)
+	ret := m.ctrl.Call(m, "Create", ctx, channel)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockRoomRepositoryMockRecorder) Create(ctx, room interface{}) *gomock.Call {
+func (mr *MockChannelRepositoryMockRecorder) Create(ctx, channel interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockRoomRepository)(nil).Create), ctx, room)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockChannelRepository)(nil).Create), ctx, channel)
 }
 
 // CreateOrUpdate mocks base method.
-func (m *MockRoomRepository) CreateOrUpdate(ctx context.Context, id string, qcs []repository.QueryCondition, room entity.Room) error {
+func (m *MockChannelRepository) CreateOrUpdate(ctx context.Context, id string, qcs []repository.QueryCondition, channel entity.Channel) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateOrUpdate", ctx, id, qcs, room)
+	ret := m.ctrl.Call(m, "CreateOrUpdate", ctx, id, qcs, channel)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CreateOrUpdate indicates an expected call of CreateOrUpdate.
-func (mr *MockRoomRepositoryMockRecorder) CreateOrUpdate(ctx, id, qcs, room interface{}) *gomock.Call {
+func (mr *MockChannelRepositoryMockRecorder) CreateOrUpdate(ctx, id, qcs, channel interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOrUpdate", reflect.TypeOf((*MockRoomRepository)(nil).CreateOrUpdate), ctx, id, qcs, room)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOrUpdate", reflect.TypeOf((*MockChannelRepository)(nil).CreateOrUpdate), ctx, id, qcs, channel)
 }
 
 // Delete mocks base method.
-func (m *MockRoomRepository) Delete(ctx context.Context, id string) error {
+func (m *MockChannelRepository) Delete(ctx context.Context, id string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Delete", ctx, id)
 	ret0, _ := ret[0].(error)
@@ -88,66 +88,66 @@ func (m *MockRoomRepository) Delete(ctx context.Context, id string) error {
 }
 
 // Delete indicates an expected call of Delete.
-func (mr *MockRoomRepositoryMockRecorder) Delete(ctx, id interface{}) *gomock.Call {
+func (mr *MockChannelRepositoryMockRecorder) Delete(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockRoomRepository)(nil).Delete), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockChannelRepository)(nil).Delete), ctx, id)
 }
 
 // Get mocks base method.
-func (m *MockRoomRepository) Get(ctx context.Context, id string) (*entity.Room, error) {
+func (m *MockChannelRepository) Get(ctx context.Context, id string) (*entity.Channel, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", ctx, id)
-	ret0, _ := ret[0].(*entity.Room)
+	ret0, _ := ret[0].(*entity.Channel)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Get indicates an expected call of Get.
-func (mr *MockRoomRepositoryMockRecorder) Get(ctx, id interface{}) *gomock.Call {
+func (mr *MockChannelRepositoryMockRecorder) Get(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockRoomRepository)(nil).Get), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockChannelRepository)(nil).Get), ctx, id)
 }
 
 // List mocks base method.
-func (m *MockRoomRepository) List(ctx context.Context, qcs []repository.QueryCondition) ([]entity.Room, error) {
+func (m *MockChannelRepository) List(ctx context.Context, qcs []repository.QueryCondition) ([]entity.Channel, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "List", ctx, qcs)
-	ret0, _ := ret[0].([]entity.Room)
+	ret0, _ := ret[0].([]entity.Channel)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // List indicates an expected call of List.
-func (mr *MockRoomRepositoryMockRecorder) List(ctx, qcs interface{}) *gomock.Call {
+func (mr *MockChannelRepositoryMockRecorder) List(ctx, qcs interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockRoomRepository)(nil).List), ctx, qcs)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockChannelRepository)(nil).List), ctx, qcs)
 }
 
-// ListMembershipRooms mocks base method.
-func (m *MockRoomRepository) ListMembershipRooms(ctx context.Context, membershipID string) ([]entity.Room, error) {
+// ListMembershipChannels mocks base method.
+func (m *MockChannelRepository) ListMembershipChannels(ctx context.Context, membershipID string) ([]entity.Channel, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListMembershipRooms", ctx, membershipID)
-	ret0, _ := ret[0].([]entity.Room)
+	ret := m.ctrl.Call(m, "ListMembershipChannels", ctx, membershipID)
+	ret0, _ := ret[0].([]entity.Channel)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ListMembershipRooms indicates an expected call of ListMembershipRooms.
-func (mr *MockRoomRepositoryMockRecorder) ListMembershipRooms(ctx, membershipID interface{}) *gomock.Call {
+// ListMembershipChannels indicates an expected call of ListMembershipChannels.
+func (mr *MockChannelRepositoryMockRecorder) ListMembershipChannels(ctx, membershipID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListMembershipRooms", reflect.TypeOf((*MockRoomRepository)(nil).ListMembershipRooms), ctx, membershipID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListMembershipChannels", reflect.TypeOf((*MockChannelRepository)(nil).ListMembershipChannels), ctx, membershipID)
 }
 
 // Update mocks base method.
-func (m *MockRoomRepository) Update(ctx context.Context, id string, room entity.Room) error {
+func (m *MockChannelRepository) Update(ctx context.Context, id string, channel entity.Channel) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", ctx, id, room)
+	ret := m.ctrl.Call(m, "Update", ctx, id, channel)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Update indicates an expected call of Update.
-func (mr *MockRoomRepositoryMockRecorder) Update(ctx, id, room interface{}) *gomock.Call {
+func (mr *MockChannelRepositoryMockRecorder) Update(ctx, id, channel interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockRoomRepository)(nil).Update), ctx, id, room)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockChannelRepository)(nil).Update), ctx, id, channel)
 }

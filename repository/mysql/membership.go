@@ -99,12 +99,12 @@ func (mr *membershipRepository) SoftDelete(ctx context.Context, id string) error
 	return nil
 }
 
-func (mr *membershipRepository) ListRoomMemberships(ctx context.Context, channelID string) ([]entity.Membership, error) {
+func (mr *membershipRepository) ListChannelMemberships(ctx context.Context, channelID string) ([]entity.Membership, error) {
 	query := `
 	SELECT Memberships.id, Memberships.user_id, Memberships.workspace_id, Memberships.name, Memberships.profile_image_url, Memberships.is_admin, Memberships.is_deleted
 	FROM Memberships
-	JOIN Membership_Rooms ON Memberships.id = Membership_Rooms.membership_id
-	WHERE Membership_Rooms.room_id = ?;
+	JOIN Membership_Channels ON Memberships.id = Membership_Channels.membership_id
+	WHERE Membership_Channels.channel_id = ?;
 	`
 
 	rows, err := mr.db.QueryContext(ctx, query, channelID)

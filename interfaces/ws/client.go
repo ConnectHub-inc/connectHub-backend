@@ -18,15 +18,15 @@ import (
 var newline = []byte{'\n'}
 
 type Client struct {
-	ID     string
-	UserID string // TODO: membershipIDに変更すべきか？
-	conn   *websocket.Conn
-	hub    *Hub
-	rooms  map[*Room]bool
-	send   chan []byte
-	psr    repository.PubSubRepository
-	muc    usecase.MessageUseCase
-	mruc   usecase.MembershipRoomUseCase
+	ID       string
+	UserID   string // TODO: membershipIDに変更すべきか？
+	conn     *websocket.Conn
+	hub      *Hub
+	channels map[*Channel]bool
+	send     chan []byte
+	psr      repository.PubSubRepository
+	muc      usecase.MessageUseCase
+	mruc     usecase.MembershipChannelUseCase
 }
 
 func NewClient(
@@ -35,18 +35,18 @@ func NewClient(
 	hub *Hub,
 	psr repository.PubSubRepository,
 	muc usecase.MessageUseCase,
-	mruc usecase.MembershipRoomUseCase,
+	mruc usecase.MembershipChannelUseCase,
 ) *Client {
 	return &Client{
-		ID:     uuid.New().String(),
-		UserID: userID,
-		conn:   conn,
-		hub:    hub,
-		rooms:  make(map[*Room]bool),
-		send:   make(chan []byte, config.ChannelBufferSize),
-		psr:    psr,
-		muc:    muc,
-		mruc:   mruc,
+		ID:       uuid.New().String(),
+		UserID:   userID,
+		conn:     conn,
+		hub:      hub,
+		channels: make(map[*Channel]bool),
+		send:     make(chan []byte, config.ChannelBufferSize),
+		psr:      psr,
+		muc:      muc,
+		mruc:     mruc,
 	}
 }
 
@@ -176,22 +176,22 @@ func (client *Client) handleNewMessage(jsonMessage []byte) {
 		client.handleDeleteMessage(ctx, message)
 	case entity.UpdateMessageAction:
 		client.handleUpdateMessage(ctx, message)
-	case entity.CreatePublicRoomAction:
-		client.handleCreatePublicRoom(ctx, message)
-	case entity.JoinPublicRoomAction:
-		client.handleJoinPublicRoom(ctx, message)
-	case entity.LeavePublicRoomAction:
-		client.handleLeavePublicRoom(ctx, message)
+	case entity.CreatePublicChannelAction:
+		client.handleCreatePublicChannel(ctx, message)
+	case entity.JoinPublicChannelAction:
+		client.handleJoinPublicChannel(ctx, message)
+	case entity.LeavePublicChannelAction:
+		client.handleLeavePublicChannel(ctx, message)
 	default:
 		log.Warn("Unknown message action", log.Fstring("action", message.Action))
 	}
 }
 
 func (client *Client) handleListMessages(ctx context.Context, message entity.WSMessage) {
-	roomID := message.TargetID
+	channelID := message.TargetID
 	start := time.Unix(0, 0)                       // Unixエポックの開始
 	end := time.Unix(1<<63-62135596801, 999999999) //nolint:gomnd // Unixエポックの終了
-	msgs, err := client.muc.ListMessages(ctx, roomID, start, end)
+	msgs, err := client.muc.ListMessages(ctx, channelID, start, end)
 	if err != nil {
 		log.Error("Failed to list messages", log.Ferror(err))
 		return
@@ -199,44 +199,44 @@ func (client *Client) handleListMessages(ctx context.Context, message entity.WSM
 
 	response := entity.WSMessages{
 		Action:   entity.ListMessagesAction,
-		TargetID: roomID,
+		TargetID: channelID,
 		Contents: msgs,
 	}
 	client.send <- response.Encode()
 }
 
 func (client *Client) handleCreateMessage(ctx context.Context, message entity.WSMessage) {
-	roomID := message.TargetID
+	channelID := message.TargetID
 	message.Content.ID = uuid.New().String()
 	message.Content.MembershipID = client.UserID + "_" + client.hub.ID
 
-	if err := client.muc.CreateMessage(ctx, roomID, message.Content); err != nil {
+	if err := client.muc.CreateMessage(ctx, channelID, message.Content); err != nil {
 		log.Error("Failed to create message", log.Ferror(err))
 		return
 	}
 
-	if room := client.hub.FindRoomByID(roomID); room != nil {
-		log.Info("Broadcasting message", log.Fstring("roomID", roomID), log.Fstring("messageID", message.Content.ID))
-		room.broadcast <- &message
+	if channel := client.hub.FindChannelByID(channelID); channel != nil {
+		log.Info("Broadcasting message", log.Fstring("channelID", channelID), log.Fstring("messageID", message.Content.ID))
+		channel.broadcast <- &message
 	} else {
-		log.Warn("Room not found", log.Fstring("roomID", roomID))
+		log.Warn("Channel not found", log.Fstring("channelID", channelID))
 	}
 }
 
 func (client *Client) handleDeleteMessage(ctx context.Context, message entity.WSMessage) {
-	roomID := message.TargetID
+	channelID := message.TargetID
 	membershipID := client.UserID + "_" + client.hub.ID
 
-	if err := client.muc.DeleteMessage(ctx, message.Content, membershipID, roomID); err != nil {
+	if err := client.muc.DeleteMessage(ctx, message.Content, membershipID, channelID); err != nil {
 		log.Error("Failed to delete message", log.Ferror(err))
 		return
 	}
 
-	if room := client.hub.FindRoomByID(roomID); room != nil {
-		log.Info("Broadcasting message", log.Fstring("roomID", roomID), log.Fstring("messageID", message.Content.ID))
-		room.broadcast <- &message
+	if channel := client.hub.FindChannelByID(channelID); channel != nil {
+		log.Info("Broadcasting message", log.Fstring("channelID", channelID), log.Fstring("messageID", message.Content.ID))
+		channel.broadcast <- &message
 	} else {
-		log.Warn("Room not found", log.Fstring("roomID", roomID))
+		log.Warn("Channel not found", log.Fstring("channelID", channelID))
 	}
 }
 
@@ -247,131 +247,131 @@ func (client *Client) handleUpdateMessage(ctx context.Context, message entity.WS
 		return
 	}
 
-	roomID := message.TargetID
-	if room := client.hub.FindRoomByID(roomID); room != nil {
-		log.Info("Broadcasting message", log.Fstring("roomID", roomID), log.Fstring("messageID", message.Content.ID))
-		room.broadcast <- &message
+	channelID := message.TargetID
+	if channel := client.hub.FindChannelByID(channelID); channel != nil {
+		log.Info("Broadcasting message", log.Fstring("channelID", channelID), log.Fstring("messageID", message.Content.ID))
+		channel.broadcast <- &message
 	} else {
-		log.Warn("Room not found", log.Fstring("roomID", roomID))
+		log.Warn("Channel not found", log.Fstring("channelID", channelID))
 	}
 }
 
-func (client *Client) handleCreatePublicRoom(ctx context.Context, message entity.WSMessage) {
-	roomName := message.Content.Text
+func (client *Client) handleCreatePublicChannel(ctx context.Context, message entity.WSMessage) {
+	channelName := message.Content.Text
 	membershipID := client.UserID + "_" + client.hub.ID
-	room := client.hub.FindRoomByName(roomName)
-	if room != nil {
-		log.Warn("Room already exists", log.Fstring("roomName", roomName))
+	channel := client.hub.FindChannelByName(channelName)
+	if channel != nil {
+		log.Warn("Channel already exists", log.Fstring("channelName", channelName))
 		return
 	}
 
-	room = client.hub.CreateRoom(ctx, membershipID, roomName, false)
-	if room == nil {
-		log.Error("Failed to create room", log.Fstring("roomName", roomName))
+	channel = client.hub.CreateChannel(ctx, membershipID, channelName, false)
+	if channel == nil {
+		log.Error("Failed to create channel", log.Fstring("channelName", channelName))
 		return
 	}
 
 	for c := range client.hub.clients {
 		if c.UserID == client.UserID {
-			if !c.isInRoom(room) {
-				c.rooms[room] = true
-				room.register <- c
-				log.Info("Client registered to room", log.Fstring("clientID", c.ID), log.Fstring("roomID", room.ID))
+			if !c.isInChannel(channel) {
+				c.channels[channel] = true
+				channel.register <- c
+				log.Info("Client registered to channel", log.Fstring("clientID", c.ID), log.Fstring("channelID", channel.ID))
 			}
 		}
 	}
 
 	time.Sleep(5 * time.Second) //nolint:gomnd // TODO: time.Sleepを使うのは避ける
 
-	content, err := entity.NewMessage(membershipID, room.Name)
+	content, err := entity.NewMessage(membershipID, channel.Name)
 	if err != nil {
 		log.Error("Failed to create message", log.Ferror(err))
 		return
 	}
-	msg, err := entity.NewWSMessage(entity.CreatePublicRoomAction, *content, room.ID, client.ID)
+	msg, err := entity.NewWSMessage(entity.CreatePublicChannelAction, *content, channel.ID, client.ID)
 	if err != nil {
 		log.Error("Failed to create message", log.Ferror(err))
 		return
 	}
-	room.broadcast <- msg
+	channel.broadcast <- msg
 }
 
-func (client *Client) handleJoinPublicRoom(ctx context.Context, message entity.WSMessage) {
-	roomID := message.TargetID
+func (client *Client) handleJoinPublicChannel(ctx context.Context, message entity.WSMessage) {
+	channelID := message.TargetID
 	membershipID := client.UserID + "_" + client.hub.ID
-	room := client.hub.FindRoomByID(roomID)
-	if room == nil {
-		log.Warn("Room not found", log.Fstring("roomID", roomID))
+	channel := client.hub.FindChannelByID(channelID)
+	if channel == nil {
+		log.Warn("Channel not found", log.Fstring("channelID", channelID))
 		return
 	}
 
-	if err := client.mruc.CreateMembershipRoom(ctx, membershipID, roomID); err != nil {
-		log.Error("Failed to create membership room", log.Fstring("membershipID", membershipID), log.Fstring("roomID", roomID))
+	if err := client.mruc.CreateMembershipChannel(ctx, membershipID, channelID); err != nil {
+		log.Error("Failed to create membership channel", log.Fstring("membershipID", membershipID), log.Fstring("channelID", channelID))
 		return
 	}
 
 	for c := range client.hub.clients {
 		if c.UserID == client.UserID {
-			if !c.isInRoom(room) {
-				c.rooms[room] = true
-				room.register <- c
-				log.Info("Client registered to room", log.Fstring("clientID", c.ID), log.Fstring("roomID", room.ID))
+			if !c.isInChannel(channel) {
+				c.channels[channel] = true
+				channel.register <- c
+				log.Info("Client registered to channel", log.Fstring("clientID", c.ID), log.Fstring("channelID", channel.ID))
 			}
 		}
 	}
 
-	content, err := entity.NewMessage(membershipID, room.Name)
+	content, err := entity.NewMessage(membershipID, channel.Name)
 	if err != nil {
 		log.Error("Failed to create message", log.Ferror(err))
 		return
 	}
-	msg, err := entity.NewWSMessage(entity.JoinPublicRoomAction, *content, room.ID, client.ID)
+	msg, err := entity.NewWSMessage(entity.JoinPublicChannelAction, *content, channel.ID, client.ID)
 	if err != nil {
 		log.Error("Failed to create message", log.Ferror(err))
 		return
 	}
-	room.broadcast <- msg
+	channel.broadcast <- msg
 }
 
-func (client *Client) handleLeavePublicRoom(ctx context.Context, message entity.WSMessage) {
-	roomID := message.TargetID
+func (client *Client) handleLeavePublicChannel(ctx context.Context, message entity.WSMessage) {
+	channelID := message.TargetID
 	membershipID := client.UserID + "_" + client.hub.ID
-	room := client.hub.FindRoomByID(roomID)
-	if room == nil {
-		log.Warn("Room not found", log.Fstring("roomID", roomID))
+	channel := client.hub.FindChannelByID(channelID)
+	if channel == nil {
+		log.Warn("Channel not found", log.Fstring("channelID", channelID))
 		return
 	}
 
-	if err := client.mruc.DeleteMembershipRoom(ctx, membershipID, roomID); err != nil {
-		log.Error("Failed to delete membership room", log.Fstring("membershipID", membershipID), log.Fstring("roomID", roomID))
+	if err := client.mruc.DeleteMembershipChannel(ctx, membershipID, channelID); err != nil {
+		log.Error("Failed to delete membership channel", log.Fstring("membershipID", membershipID), log.Fstring("channelID", channelID))
 		return
 	}
 
 	for c := range client.hub.clients {
 		if c.UserID == client.UserID {
-			if !c.isInRoom(room) {
-				delete(c.rooms, room)
-				room.unregister <- c
-				log.Info("Client unregistered from room", log.Fstring("clientID", client.ID), log.Fstring("roomID", room.ID))
+			if !c.isInChannel(channel) {
+				delete(c.channels, channel)
+				channel.unregister <- c
+				log.Info("Client unregistered from channel", log.Fstring("clientID", client.ID), log.Fstring("channelID", channel.ID))
 			}
 		}
 	}
 
-	content, err := entity.NewMessage(membershipID, room.Name)
+	content, err := entity.NewMessage(membershipID, channel.Name)
 	if err != nil {
 		log.Error("Failed to create message", log.Ferror(err))
 		return
 	}
-	msg, err := entity.NewWSMessage(entity.LeavePublicRoomAction, *content, room.ID, client.ID)
+	msg, err := entity.NewWSMessage(entity.LeavePublicChannelAction, *content, channel.ID, client.ID)
 	if err != nil {
 		log.Error("Failed to create message", log.Ferror(err))
 		return
 	}
-	room.broadcast <- msg
+	channel.broadcast <- msg
 }
 
-func (client *Client) isInRoom(room *Room) bool {
-	if _, ok := client.rooms[room]; ok {
+func (client *Client) isInChannel(channel *Channel) bool {
+	if _, ok := client.channels[channel]; ok {
 		return true
 	}
 	return false

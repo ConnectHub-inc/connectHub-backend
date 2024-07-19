@@ -66,6 +66,21 @@ func (mr *MockMembershipUseCaseMockRecorder) GetMembership(ctx, membershipID int
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMembership", reflect.TypeOf((*MockMembershipUseCase)(nil).GetMembership), ctx, membershipID)
 }
 
+// ListChannelMemberships mocks base method.
+func (m *MockMembershipUseCase) ListChannelMemberships(ctx context.Context, channelID string) ([]entity.Membership, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListChannelMemberships", ctx, channelID)
+	ret0, _ := ret[0].([]entity.Membership)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListChannelMemberships indicates an expected call of ListChannelMemberships.
+func (mr *MockMembershipUseCaseMockRecorder) ListChannelMemberships(ctx, channelID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListChannelMemberships", reflect.TypeOf((*MockMembershipUseCase)(nil).ListChannelMemberships), ctx, channelID)
+}
+
 // ListMemberships mocks base method.
 func (m *MockMembershipUseCase) ListMemberships(ctx context.Context, workspaceID string) ([]entity.Membership, error) {
 	m.ctrl.T.Helper()
@@ -79,21 +94,6 @@ func (m *MockMembershipUseCase) ListMemberships(ctx context.Context, workspaceID
 func (mr *MockMembershipUseCaseMockRecorder) ListMemberships(ctx, workspaceID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListMemberships", reflect.TypeOf((*MockMembershipUseCase)(nil).ListMemberships), ctx, workspaceID)
-}
-
-// ListRoomMemberships mocks base method.
-func (m *MockMembershipUseCase) ListRoomMemberships(ctx context.Context, channelID string) ([]entity.Membership, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListRoomMemberships", ctx, channelID)
-	ret0, _ := ret[0].([]entity.Membership)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ListRoomMemberships indicates an expected call of ListRoomMemberships.
-func (mr *MockMembershipUseCaseMockRecorder) ListRoomMemberships(ctx, channelID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListRoomMemberships", reflect.TypeOf((*MockMembershipUseCase)(nil).ListRoomMemberships), ctx, channelID)
 }
 
 // UpdateMembership mocks base method.

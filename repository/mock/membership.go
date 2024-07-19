@@ -95,19 +95,19 @@ func (mr *MockMembershipRepositoryMockRecorder) List(ctx, qcs interface{}) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockMembershipRepository)(nil).List), ctx, qcs)
 }
 
-// ListRoomMemberships mocks base method.
-func (m *MockMembershipRepository) ListRoomMemberships(ctx context.Context, channelID string) ([]entity.Membership, error) {
+// ListChannelMemberships mocks base method.
+func (m *MockMembershipRepository) ListChannelMemberships(ctx context.Context, channelID string) ([]entity.Membership, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListRoomMemberships", ctx, channelID)
+	ret := m.ctrl.Call(m, "ListChannelMemberships", ctx, channelID)
 	ret0, _ := ret[0].([]entity.Membership)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ListRoomMemberships indicates an expected call of ListRoomMemberships.
-func (mr *MockMembershipRepositoryMockRecorder) ListRoomMemberships(ctx, channelID interface{}) *gomock.Call {
+// ListChannelMemberships indicates an expected call of ListChannelMemberships.
+func (mr *MockMembershipRepositoryMockRecorder) ListChannelMemberships(ctx, channelID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListRoomMemberships", reflect.TypeOf((*MockMembershipRepository)(nil).ListRoomMemberships), ctx, channelID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListChannelMemberships", reflect.TypeOf((*MockMembershipRepository)(nil).ListChannelMemberships), ctx, channelID)
 }
 
 // SoftDelete mocks base method.

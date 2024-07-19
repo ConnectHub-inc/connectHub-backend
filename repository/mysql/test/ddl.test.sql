@@ -18,11 +18,11 @@ CREATE TABLE TestItems (
 
 -- ドメインのテスト用のテーブル
 DROP TABLE IF EXISTS Messages CASCADE;
-DROP TABLE IF EXISTS Membership_Rooms CASCADE;
+DROP TABLE IF EXISTS Membership_Channels CASCADE;
 DROP TABLE IF EXISTS Memberships CASCADE;
 DROP TABLE IF EXISTS Users CASCADE;
 DROP TABLE IF EXISTS ActionTags CASCADE;
-DROP TABLE IF EXISTS Rooms CASCADE;
+DROP TABLE IF EXISTS Channels CASCADE;
 DROP TABLE IF EXISTS Workspaces CASCADE;
 
 CREATE TABLE Workspaces (
@@ -31,7 +31,7 @@ CREATE TABLE Workspaces (
     description TEXT
 );
 
-CREATE TABLE Rooms (
+CREATE TABLE Channels (
     id CHAR(36) PRIMARY KEY, -- UUIDは36文字の文字列として格納されます
     workspace_id CHAR(36) NOT NULL,
     name VARCHAR(50) NOT NULL,
@@ -66,23 +66,23 @@ CREATE TABLE Memberships (
     UNIQUE (user_id, workspace_id)
 );
 
-CREATE TABLE Membership_Rooms (
+CREATE TABLE Membership_Channels (
     membership_id CHAR(73) NOT NULL,
-    room_id CHAR(36) NOT NULL,
-    PRIMARY KEY (membership_id, room_id),
+    channel_id CHAR(36) NOT NULL,
+    PRIMARY KEY (membership_id, channel_id),
     FOREIGN KEY (membership_id) REFERENCES Memberships(id) ON DELETE CASCADE,
-    FOREIGN KEY (room_id) REFERENCES Rooms(id) ON DELETE CASCADE
+    FOREIGN KEY (channel_id) REFERENCES Channels(id) ON DELETE CASCADE
 );
 
 CREATE TABLE Messages (
     id CHAR(36) PRIMARY KEY, -- UUIDは36文字の文字列として格納されます
     membership_id CHAR(73) NOT NULL,
-    room_id CHAR(36) NOT NULL,
+    channel_id CHAR(36) NOT NULL,
     action_tag_id CHAR(36) NOT NULL,
     text TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (membership_id) REFERENCES Memberships(id) ON DELETE CASCADE,
-    FOREIGN KEY (room_id) REFERENCES Rooms(id) ON DELETE CASCADE,
+    FOREIGN KEY (channel_id) REFERENCES Channels(id) ON DELETE CASCADE,
     FOREIGN KEY (action_tag_id) REFERENCES ActionTags(id) ON DELETE CASCADE
 );
