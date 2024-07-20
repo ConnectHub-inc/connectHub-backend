@@ -282,10 +282,10 @@ func TestMembershipUseCase_CreateMembership(t *testing.T) {
 					gomock.Any(),
 					[]repository.QueryCondition{
 						{
-							Field: "WorkspaceID", Value: workspaceID,
+							Field: "workspace_id", Value: workspaceID,
 						},
 						{
-							Field: "Private", Value: false,
+							Field: "private", Value: false,
 						},
 					},
 				).Return(channels, nil)
