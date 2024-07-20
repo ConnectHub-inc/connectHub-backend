@@ -75,6 +75,7 @@ type CreateMembershipParams struct {
 }
 
 func (muc *membershipUseCase) CreateMembership(ctx context.Context, params *CreateMembershipParams) error {
+	// TODO: 同一のトランザクション内で扱べきかどうか考慮する
 	err := muc.tr.Transaction(ctx, func(ctx context.Context) error {
 		membership, err := entity.NewMembership(params.UserID, params.WorkspaceID, params.Name, params.ProfileImageURL, params.IsAdmin)
 		if err != nil {
