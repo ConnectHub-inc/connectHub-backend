@@ -54,7 +54,7 @@ type CreateWorkspaceResponse struct {
 
 func (wh *workspaceHandler) CreateWorkspace(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	_, err := wh.auc.GetUserFromContext(ctx)
+	user, err := wh.auc.GetUserFromContext(ctx)
 	if err != nil {
 		log.Error("Failed to get UserInfo from context", log.Ferror(err))
 		http.Error(w, fmt.Sprintf("Failed to get UserInfo from context: %v", err), http.StatusInternalServerError)
@@ -77,14 +77,17 @@ func (wh *workspaceHandler) CreateWorkspace(w http.ResponseWriter, r *http.Reque
 		wh.mcr,
 	)
 
-	go hub.Run()
-	wh.hm.Add(hub.ID, hub)
-
 	if err = wh.wuc.CreateWorkspace(ctx, hub.ID, workspaceName); err != nil {
 		log.Error("Failed to create workspace", log.Ferror(err))
 		http.Error(w, fmt.Sprintf("Failed to create workspace: %v", err), http.StatusInternalServerError)
 		return
 	}
+
+	go hub.Run()
+	wh.hm.Add(hub.ID, hub)
+
+	membershipID := user.ID + "_" + hub.ID
+	hub.CreateDefaultChannels(ctx, membershipID)
 
 	w.Header().Set("Content-Type", "application/json")
 	if err = json.NewEncoder(w).Encode(CreateWorkspaceResponse{ID: hub.ID, Name: workspaceName}); err != nil {

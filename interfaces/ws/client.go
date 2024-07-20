@@ -265,7 +265,7 @@ func (client *Client) handleCreatePublicChannel(ctx context.Context, message ent
 		return
 	}
 
-	channel = client.hub.CreateChannel(ctx, membershipID, channelName, false)
+	channel = client.hub.CreateChannel(ctx, membershipID, channelName, "", false) // TODO: descriptionを追加する
 	if channel == nil {
 		log.Error("Failed to create channel", log.Fstring("channelName", channelName))
 		return

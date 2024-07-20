@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/tusmasoma/connectHub-backend/config"
+	"github.com/tusmasoma/connectHub-backend/entity"
 	"github.com/tusmasoma/connectHub-backend/internal/log"
 	"github.com/tusmasoma/connectHub-backend/repository"
 	"github.com/tusmasoma/connectHub-backend/usecase"
@@ -148,7 +149,13 @@ func (h *Hub) FindChannelByName(name string) *Channel {
 	return nil
 }
 
-func (h *Hub) CreateChannel(ctx context.Context, membershipID, channelName string, channelPrivate bool) *Channel {
+func (h *Hub) CreateDefaultChannels(ctx context.Context, membershipID string) {
+	for _, ch := range entity.DefaultChannels {
+		h.CreateChannel(ctx, membershipID, ch.Name, ch.Description, false)
+	}
+}
+
+func (h *Hub) CreateChannel(ctx context.Context, membershipID, channelName, channelDescription string, channelPrivate bool) *Channel {
 	channel := NewChannel(channelName, channelPrivate, h.pubsubRepo, h.messageCacheRepo)
 
 	if err := h.channelUseCase.CreateChannel(ctx, usecase.CreateChannelParams{
@@ -156,6 +163,7 @@ func (h *Hub) CreateChannel(ctx context.Context, membershipID, channelName strin
 		MembershipID: membershipID,
 		WorkspaceID:  h.ID,
 		Name:         channel.Name,
+		Description:  channelDescription,
 		Private:      channel.Private,
 	}); err != nil {
 		log.Error("Failed to create channel", log.Fstring("name", channelName))
