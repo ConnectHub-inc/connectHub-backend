@@ -47,9 +47,16 @@ type CreateWorkspaceRequest struct {
 	Name string `json:"name"`
 }
 
+type DefaultChannel struct {
+	ID      string `json:"id"`
+	Name    string `json:"name"`
+	Private bool   `json:"private"`
+}
+
 type CreateWorkspaceResponse struct {
-	ID   string `json:"workspace_id"`
-	Name string `json:"name"`
+	ID              string           `json:"workspace_id"`
+	Name            string           `json:"name"`
+	DefaultChannels []DefaultChannel `json:"default_channels"`
 }
 
 func (wh *workspaceHandler) CreateWorkspace(w http.ResponseWriter, r *http.Request) {
@@ -87,10 +94,22 @@ func (wh *workspaceHandler) CreateWorkspace(w http.ResponseWriter, r *http.Reque
 	wh.hm.Add(hub.ID, hub)
 
 	membershipID := user.ID + "_" + hub.ID
-	hub.CreateDefaultChannels(ctx, membershipID)
+	channels := hub.CreateDefaultChannels(ctx, membershipID)
+	defaultChannels := make([]DefaultChannel, len(channels))
+	for i, channel := range channels {
+		defaultChannels[i] = DefaultChannel{
+			ID:      channel.ID,
+			Name:    channel.Name,
+			Private: channel.Private,
+		}
+	}
 
 	w.Header().Set("Content-Type", "application/json")
-	if err = json.NewEncoder(w).Encode(CreateWorkspaceResponse{ID: hub.ID, Name: workspaceName}); err != nil {
+	if err = json.NewEncoder(w).Encode(CreateWorkspaceResponse{
+		ID:              hub.ID,
+		Name:            workspaceName,
+		DefaultChannels: defaultChannels,
+	}); err != nil {
 		log.Error("Failed to encode workspace to JSON", log.Ferror(err))
 		http.Error(w, "Failed to encode workspace to JSON", http.StatusInternalServerError)
 		w.WriteHeader(http.StatusInternalServerError)

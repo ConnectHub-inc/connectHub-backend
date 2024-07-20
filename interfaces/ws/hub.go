@@ -149,10 +149,15 @@ func (h *Hub) FindChannelByName(name string) *Channel {
 	return nil
 }
 
-func (h *Hub) CreateDefaultChannels(ctx context.Context, membershipID string) {
+func (h *Hub) CreateDefaultChannels(ctx context.Context, membershipID string) []*Channel {
+	var channels []*Channel
 	for _, ch := range entity.DefaultChannels {
-		h.CreateChannel(ctx, membershipID, ch.Name, ch.Description, false)
+		channel := h.CreateChannel(ctx, membershipID, ch.Name, ch.Description, false)
+		if channel != nil {
+			channels = append(channels, channel)
+		}
 	}
+	return channels
 }
 
 func (h *Hub) CreateChannel(ctx context.Context, membershipID, channelName, channelDescription string, channelPrivate bool) *Channel {
