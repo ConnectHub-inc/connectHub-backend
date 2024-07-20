@@ -85,10 +85,32 @@ func (h *Hub) Run() {
 }
 
 func (h *Hub) registerClient(client *Client) {
+	ctx := context.Background()
+
 	h.clients[client] = true
+
+	membershipID := client.UserID + "_" + h.ID
+	channels, err := h.channelUseCase.ListMembershipChannels(ctx, membershipID)
+	if err != nil {
+		log.Error("Failed to list membership channels", log.Fstring("membershipID", membershipID))
+		return
+	}
+
+	for _, ch := range channels {
+		channel := h.FindChannelByID(ch.ID)
+		if channel == nil {
+			log.Warn("Channel not found", log.Fstring("channelID", ch.ID))
+			continue
+		}
+		client.channels[channel] = true
+		channel.register <- client
+	}
 }
 
 func (h *Hub) unregisterClient(client *Client) {
+	for channel := range client.channels {
+		channel.unregister <- client
+	}
 	delete(h.clients, client)
 }
 

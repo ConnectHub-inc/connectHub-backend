@@ -88,12 +88,15 @@ func TestMembershipUseCase_ListMemberships(t *testing.T) {
 
 			ctrl := gomock.NewController(t)
 			mr := mock.NewMockMembershipRepository(ctrl)
+			mcr := mock.NewMockMembershipChannelRepository(ctrl)
+			cr := mock.NewMockChannelRepository(ctrl)
+			tr := mock.NewMockTransactionRepository(ctrl)
 
 			if tt.setup != nil {
 				tt.setup(mr)
 			}
 
-			usecase := NewMembershipUseCase(mr)
+			usecase := NewMembershipUseCase(mr, mcr, cr, tr)
 			getMemberships, err := usecase.ListMemberships(tt.arg.ctx, tt.arg.workspaceID)
 
 			if (err != nil) != (tt.wantErr != nil) {
@@ -179,12 +182,15 @@ func TestMembershipUseCase_ListChannelMemberships(t *testing.T) {
 
 			ctrl := gomock.NewController(t)
 			mr := mock.NewMockMembershipRepository(ctrl)
+			mcr := mock.NewMockMembershipChannelRepository(ctrl)
+			cr := mock.NewMockChannelRepository(ctrl)
+			tr := mock.NewMockTransactionRepository(ctrl)
 
 			if tt.setup != nil {
 				tt.setup(mr)
 			}
 
-			usecase := NewMembershipUseCase(mr)
+			usecase := NewMembershipUseCase(mr, mcr, cr, tr)
 			getMemberships, err := usecase.ListChannelMemberships(tt.arg.ctx, tt.arg.channelID)
 
 			if (err != nil) != (tt.wantErr != nil) {
@@ -206,11 +212,50 @@ func TestMembershipUseCase_CreateMembership(t *testing.T) {
 	userID := uuid.New().String()
 	workspaceID := uuid.New().String()
 	membershipID := userID + "_" + workspaceID
+	channel1ID := uuid.New().String()
+	channel2ID := uuid.New().String()
+	membership := entity.Membership{
+		ID:              membershipID,
+		UserID:          userID,
+		WorkspaceID:     workspaceID,
+		Name:            "test",
+		ProfileImageURL: "https://test.com",
+		IsAdmin:         false,
+	}
+	channels := []entity.Channel{
+		{
+			ID:          channel1ID,
+			WorkspaceID: workspaceID,
+			Name:        "test1",
+			Description: "test1",
+			Private:     false,
+		},
+		{
+			ID:          channel2ID,
+			WorkspaceID: workspaceID,
+			Name:        "test2",
+			Description: "test2",
+			Private:     false,
+		},
+	}
+	membershipChannels := []entity.MembershipChannel{
+		{
+			MembershipID: membershipID,
+			ChannelID:    channel1ID,
+		},
+		{
+			MembershipID: membershipID,
+			ChannelID:    channel2ID,
+		},
+	}
 
 	patterns := []struct {
 		name  string
 		setup func(
 			m *mock.MockMembershipRepository,
+			m1 *mock.MockMembershipChannelRepository,
+			m2 *mock.MockChannelRepository,
+			m3 *mock.MockTransactionRepository,
 		)
 		arg struct {
 			ctx    context.Context
@@ -220,17 +265,33 @@ func TestMembershipUseCase_CreateMembership(t *testing.T) {
 	}{
 		{
 			name: "success",
-			setup: func(m *mock.MockMembershipRepository) {
+			setup: func(
+				m *mock.MockMembershipRepository,
+				m1 *mock.MockMembershipChannelRepository,
+				m2 *mock.MockChannelRepository,
+				m3 *mock.MockTransactionRepository,
+			) {
+				m3.EXPECT().Transaction(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, fn func(ctx context.Context) error) error {
+					return fn(ctx)
+				})
 				m.EXPECT().Create(
 					gomock.Any(),
-					entity.Membership{
-						ID:              membershipID,
-						UserID:          userID,
-						WorkspaceID:     workspaceID,
-						Name:            "test",
-						ProfileImageURL: "https://test.com",
-						IsAdmin:         false,
+					membership,
+				).Return(nil)
+				m2.EXPECT().List(
+					gomock.Any(),
+					[]repository.QueryCondition{
+						{
+							Field: "workspace_id", Value: workspaceID,
+						},
+						{
+							Field: "private", Value: false,
+						},
 					},
+				).Return(channels, nil)
+				m1.EXPECT().BatchCreate(
+					gomock.Any(),
+					membershipChannels,
 				).Return(nil)
 			},
 			arg: struct {
@@ -256,12 +317,15 @@ func TestMembershipUseCase_CreateMembership(t *testing.T) {
 
 			ctrl := gomock.NewController(t)
 			mr := mock.NewMockMembershipRepository(ctrl)
+			mcr := mock.NewMockMembershipChannelRepository(ctrl)
+			cr := mock.NewMockChannelRepository(ctrl)
+			tr := mock.NewMockTransactionRepository(ctrl)
 
 			if tt.setup != nil {
-				tt.setup(mr)
+				tt.setup(mr, mcr, cr, tr)
 			}
 
-			usecase := NewMembershipUseCase(mr)
+			usecase := NewMembershipUseCase(mr, mcr, cr, tr)
 			err := usecase.CreateMembership(tt.arg.ctx, tt.arg.params)
 
 			if (err != nil) != (tt.wantErr != nil) {
@@ -350,12 +414,15 @@ func TestMembershipUseCase_UpdateMembership(t *testing.T) {
 
 			ctrl := gomock.NewController(t)
 			mr := mock.NewMockMembershipRepository(ctrl)
+			mcr := mock.NewMockMembershipChannelRepository(ctrl)
+			cr := mock.NewMockChannelRepository(ctrl)
+			tr := mock.NewMockTransactionRepository(ctrl)
 
 			if tt.setup != nil {
 				tt.setup(mr)
 			}
 
-			usecase := NewMembershipUseCase(mr)
+			usecase := NewMembershipUseCase(mr, mcr, cr, tr)
 			err := usecase.UpdateMembership(tt.arg.ctx, tt.arg.params, tt.arg.membership)
 
 			if (err != nil) != (tt.wantErr != nil) {

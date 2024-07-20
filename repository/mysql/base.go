@@ -145,7 +145,10 @@ func (b *base[T]) BatchCreate(ctx context.Context, entities []T) error {
 	if tx := TxFromCtx(ctx); tx != nil {
 		executor = tx
 	}
-
+	if len(entities) == 0 {
+		log.Warn("No entities to insert")
+		return nil
+	}
 	query, _, err := b.dialect.Insert(b.tableName).Rows(entities).ToSQL()
 	if err != nil {
 		log.Error("Failed to generate SQL query", log.Ferror(err))
