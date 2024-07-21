@@ -15,7 +15,7 @@ require (
 	github.com/gorilla/websocket v1.5.3
 	github.com/joho/godotenv v1.5.1
 	github.com/ory/dockertest v3.3.5+incompatible
-	github.com/sethvargo/go-envconfig v0.9.0
+	github.com/sethvargo/go-envconfig v1.1.0
 	github.com/slack-go/slack v0.13.1
 	github.com/stretchr/testify v1.9.0
 	go.uber.org/dig v1.17.1
