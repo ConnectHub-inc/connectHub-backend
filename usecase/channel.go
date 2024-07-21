@@ -15,14 +15,14 @@ type ChannelUseCase interface {
 }
 
 type channelUseCase struct {
-	rr  repository.ChannelRepository
+	cr  repository.ChannelRepository
 	mrr repository.MembershipChannelRepository
 	tr  repository.TransactionRepository
 }
 
-func NewChannelUseCase(rr repository.ChannelRepository, mrr repository.MembershipChannelRepository, tr repository.TransactionRepository) ChannelUseCase {
+func NewChannelUseCase(cr repository.ChannelRepository, mrr repository.MembershipChannelRepository, tr repository.TransactionRepository) ChannelUseCase {
 	return &channelUseCase{
-		rr:  rr,
+		cr:  cr,
 		mrr: mrr,
 		tr:  tr,
 	}
@@ -44,7 +44,7 @@ func (ruc *channelUseCase) CreateChannel(ctx context.Context, params CreateChann
 			log.Error("Failed to create channel", log.Ferror(err))
 			return err
 		}
-		if err = ruc.rr.Create(ctx, *channel); err != nil {
+		if err = ruc.cr.Create(ctx, *channel); err != nil {
 			log.Error("Failed to create channel", log.Fstring("channelID", channel.ID))
 			return err
 		}
@@ -74,7 +74,7 @@ func (ruc *channelUseCase) CreateChannel(ctx context.Context, params CreateChann
 }
 
 func (ruc *channelUseCase) ListMembershipChannels(ctx context.Context, membershipID string) ([]entity.Channel, error) {
-	channels, err := ruc.rr.ListMembershipChannels(ctx, membershipID)
+	channels, err := ruc.cr.ListMembershipChannels(ctx, membershipID)
 	if err != nil {
 		log.Error("Failed to list user workspace channels", log.Fstring("membershipID", membershipID))
 		return nil, err

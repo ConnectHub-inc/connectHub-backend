@@ -23,14 +23,14 @@ type MembershipHandler interface {
 
 type membershipHandler struct {
 	muc usecase.MembershipUseCase
-	ruc usecase.ChannelUseCase
+	cuc usecase.ChannelUseCase
 	auc usecase.AuthUseCase
 }
 
-func NewMembershipHandler(muc usecase.MembershipUseCase, ruc usecase.ChannelUseCase, auc usecase.AuthUseCase) MembershipHandler {
+func NewMembershipHandler(muc usecase.MembershipUseCase, cuc usecase.ChannelUseCase, auc usecase.AuthUseCase) MembershipHandler {
 	return &membershipHandler{
 		muc: muc,
-		ruc: ruc,
+		cuc: cuc,
 		auc: auc,
 	}
 }
@@ -59,7 +59,7 @@ func (mh *membershipHandler) GetMembership(w http.ResponseWriter, r *http.Reques
 		http.Error(w, "Failed to get membership", http.StatusInternalServerError)
 		return
 	}
-	channels, err := mh.ruc.ListMembershipChannels(ctx, membershipID)
+	channels, err := mh.cuc.ListMembershipChannels(ctx, membershipID)
 	if err != nil {
 		log.Error("Failed to list membership channels", log.Fstring("membershipID", membershipID))
 		http.Error(w, "Failed to list membership channels", http.StatusInternalServerError)

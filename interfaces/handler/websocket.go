@@ -19,11 +19,11 @@ var upgrader = websocket.Upgrader{
 }
 
 type WebsocketHandler struct {
-	hm  *ws.HubManager
-	auc usecase.AuthUseCase
-	psr repository.PubSubRepository
-	muc usecase.MessageUseCase
-	uru usecase.MembershipChannelUseCase
+	hm   *ws.HubManager
+	auc  usecase.AuthUseCase
+	psr  repository.PubSubRepository
+	muc  usecase.MessageUseCase
+	mcuc usecase.MembershipChannelUseCase
 }
 
 func NewWebsocketHandler(
@@ -31,14 +31,14 @@ func NewWebsocketHandler(
 	auc usecase.AuthUseCase,
 	psr repository.PubSubRepository,
 	muc usecase.MessageUseCase,
-	uru usecase.MembershipChannelUseCase,
+	mcuc usecase.MembershipChannelUseCase,
 ) *WebsocketHandler {
 	return &WebsocketHandler{
-		hm:  hm,
-		auc: auc,
-		psr: psr,
-		muc: muc,
-		uru: uru,
+		hm:   hm,
+		auc:  auc,
+		psr:  psr,
+		muc:  muc,
+		mcuc: mcuc,
 	}
 }
 
@@ -63,7 +63,7 @@ func (wsh *WebsocketHandler) WebSocket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	client := ws.NewClient(user.ID, conn, hub, wsh.psr, wsh.muc, wsh.uru)
+	client := ws.NewClient(user.ID, conn, hub, wsh.psr, wsh.muc, wsh.mcuc)
 
 	go client.WritePump()
 	go client.ReadPump()

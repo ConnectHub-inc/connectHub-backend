@@ -18,14 +18,12 @@ type UserHandler interface {
 
 type userHandler struct {
 	uuc usecase.UserUseCase
-	ruc usecase.ChannelUseCase
 	auc usecase.AuthUseCase
 }
 
-func NewUserHandler(uuc usecase.UserUseCase, ruc usecase.ChannelUseCase, auc usecase.AuthUseCase) UserHandler {
+func NewUserHandler(uuc usecase.UserUseCase, auc usecase.AuthUseCase) UserHandler {
 	return &userHandler{
 		uuc: uuc,
-		ruc: ruc,
 		auc: auc,
 	}
 }

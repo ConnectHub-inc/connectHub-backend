@@ -20,7 +20,7 @@ type workspaceHandler struct {
 	hm  *ws.HubManager
 	auc usecase.AuthUseCase
 	wuc usecase.WorkspaceUseCase
-	ruc usecase.ChannelUseCase
+	cuc usecase.ChannelUseCase
 	psr repository.PubSubRepository
 	mcr repository.MessageCacheRepository
 }
@@ -29,7 +29,7 @@ func NewWorkspaceHandler(
 	hm *ws.HubManager,
 	auc usecase.AuthUseCase,
 	wuc usecase.WorkspaceUseCase,
-	ruc usecase.ChannelUseCase,
+	cuc usecase.ChannelUseCase,
 	psr repository.PubSubRepository,
 	mcr repository.MessageCacheRepository,
 ) WorkspaceHandler {
@@ -37,7 +37,7 @@ func NewWorkspaceHandler(
 		hm:  hm,
 		auc: auc,
 		wuc: wuc,
-		ruc: ruc,
+		cuc: cuc,
 		psr: psr,
 		mcr: mcr,
 	}
@@ -72,7 +72,7 @@ func (wh *workspaceHandler) CreateWorkspace(w http.ResponseWriter, r *http.Reque
 	workspaceName := requestBody.Name
 	hub := ws.NewHub(
 		workspaceName,
-		wh.ruc,
+		wh.cuc,
 		wh.psr,
 		wh.mcr,
 	)

@@ -26,7 +26,7 @@ type Client struct {
 	send     chan []byte
 	psr      repository.PubSubRepository
 	muc      usecase.MessageUseCase
-	mruc     usecase.MembershipChannelUseCase
+	mcuc     usecase.MembershipChannelUseCase
 }
 
 func NewClient(
@@ -35,7 +35,7 @@ func NewClient(
 	hub *Hub,
 	psr repository.PubSubRepository,
 	muc usecase.MessageUseCase,
-	mruc usecase.MembershipChannelUseCase,
+	mcuc usecase.MembershipChannelUseCase,
 ) *Client {
 	return &Client{
 		ID:       uuid.New().String(),
@@ -46,7 +46,7 @@ func NewClient(
 		send:     make(chan []byte, config.ChannelBufferSize),
 		psr:      psr,
 		muc:      muc,
-		mruc:     mruc,
+		mcuc:     mcuc,
 	}
 }
 
@@ -305,7 +305,7 @@ func (client *Client) handleJoinPublicChannel(ctx context.Context, message entit
 		return
 	}
 
-	if err := client.mruc.CreateMembershipChannel(ctx, membershipID, channelID); err != nil {
+	if err := client.mcuc.CreateMembershipChannel(ctx, membershipID, channelID); err != nil {
 		log.Error("Failed to create membership channel", log.Fstring("membershipID", membershipID), log.Fstring("channelID", channelID))
 		return
 	}
@@ -342,7 +342,7 @@ func (client *Client) handleLeavePublicChannel(ctx context.Context, message enti
 		return
 	}
 
-	if err := client.mruc.DeleteMembershipChannel(ctx, membershipID, channelID); err != nil {
+	if err := client.mcuc.DeleteMembershipChannel(ctx, membershipID, channelID); err != nil {
 		log.Error("Failed to delete membership channel", log.Fstring("membershipID", membershipID), log.Fstring("channelID", channelID))
 		return
 	}
