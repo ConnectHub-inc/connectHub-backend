@@ -35,3 +35,19 @@ func NewChannel(id, workspaceID, name, description string, private bool) (*Chann
 		Private:     private,
 	}, nil
 }
+
+type DefaultChannel struct {
+	Name        string
+	Description string
+}
+
+var DefaultChannels = []DefaultChannel{
+	{
+		Name:        "general",
+		Description: "This is the general channel where everyone is included.",
+	},
+	{
+		Name:        "random",
+		Description: "This is the random channel for non-work-related discussions.",
+	},
+}

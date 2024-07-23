@@ -47,14 +47,21 @@ type CreateWorkspaceRequest struct {
 	Name string `json:"name"`
 }
 
+type DefaultChannel struct {
+	ID      string `json:"id"`
+	Name    string `json:"name"`
+	Private bool   `json:"private"`
+}
+
 type CreateWorkspaceResponse struct {
-	ID   string `json:"workspace_id"`
-	Name string `json:"name"`
+	ID              string           `json:"workspace_id"`
+	Name            string           `json:"name"`
+	DefaultChannels []DefaultChannel `json:"default_channels"`
 }
 
 func (wh *workspaceHandler) CreateWorkspace(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	_, err := wh.auc.GetUserFromContext(ctx)
+	user, err := wh.auc.GetUserFromContext(ctx)
 	if err != nil {
 		log.Error("Failed to get UserInfo from context", log.Ferror(err))
 		http.Error(w, fmt.Sprintf("Failed to get UserInfo from context: %v", err), http.StatusInternalServerError)
@@ -77,17 +84,32 @@ func (wh *workspaceHandler) CreateWorkspace(w http.ResponseWriter, r *http.Reque
 		wh.mcr,
 	)
 
-	go hub.Run()
-	wh.hm.Add(hub.ID, hub)
-
 	if err = wh.wuc.CreateWorkspace(ctx, hub.ID, workspaceName); err != nil {
 		log.Error("Failed to create workspace", log.Ferror(err))
 		http.Error(w, fmt.Sprintf("Failed to create workspace: %v", err), http.StatusInternalServerError)
 		return
 	}
 
+	go hub.Run()
+	wh.hm.Add(hub.ID, hub)
+
+	membershipID := user.ID + "_" + hub.ID
+	channels := hub.CreateDefaultChannels(ctx, membershipID)
+	defaultChannels := make([]DefaultChannel, len(channels))
+	for i, channel := range channels {
+		defaultChannels[i] = DefaultChannel{
+			ID:      channel.ID,
+			Name:    channel.Name,
+			Private: channel.Private,
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	if err = json.NewEncoder(w).Encode(CreateWorkspaceResponse{ID: hub.ID, Name: workspaceName}); err != nil {
+	if err = json.NewEncoder(w).Encode(CreateWorkspaceResponse{
+		ID:              hub.ID,
+		Name:            workspaceName,
+		DefaultChannels: defaultChannels,
+	}); err != nil {
 		log.Error("Failed to encode workspace to JSON", log.Ferror(err))
 		http.Error(w, "Failed to encode workspace to JSON", http.StatusInternalServerError)
 		w.WriteHeader(http.StatusInternalServerError)

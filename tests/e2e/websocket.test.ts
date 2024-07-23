@@ -10,6 +10,13 @@ describe("WebSocket E2E Tests with Go Server", () => {
   let channelID: string;
   let msgID: string;
   let membershipIDofMsg: string;
+  let defaultChannels: DefaultChannel[];
+
+  type DefaultChannel = {
+    id: string;
+    name: string;
+    private: boolean;
+  };
 
   // 全てのテストの前に実行されるセットアップ処理
   beforeAll(async () => {
@@ -39,6 +46,7 @@ describe("WebSocket E2E Tests with Go Server", () => {
         { headers }
       );
       const workspaceID = response2.data.workspace_id;
+      defaultChannels = response2.data.default_channels;
 
       // TODO: Membershipsの作成をする必要がある
       const response3 = await axios.post(
@@ -97,6 +105,45 @@ describe("WebSocket E2E Tests with Go Server", () => {
     ws.on("error", (error) => {
       console.error("FAIL: WebSocket connection", error);
       done(error); // エラー発生時はテスト失敗
+    });
+  });
+
+  // デフォルトチャンネルへの参加をテスト
+  test("TEST: Join Default Channel", (done) => {
+    const defaultChannel = defaultChannels[0];
+    const joinChannelMessage = {
+      action_tag: "JOIN_PUBLIC_CHANNEL",
+      target_id: defaultChannel.id,
+      sender_id: "",
+      content: {
+        id: "",
+        membership_id: "",
+        text: "",
+        created: "2024-06-11T15:48:00Z",
+        updated: null,
+      },
+    };
+
+    ws.once("message", (data) => {
+      const receivedMessage = JSON.parse(data.toString());
+      if (receivedMessage.action_tag === "JOIN_PUBLIC_CHANNEL") {
+        //expect(receivedMessage.content.text).toBe("");
+        console.log("SUCCESS: JOIN_PUBLIC_CHANNEL");
+        done();
+      }
+    });
+
+    if (ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify(joinChannelMessage));
+    } else {
+      ws.once("open", () => {
+        ws.send(JSON.stringify(joinChannelMessage));
+      });
+    }
+
+    ws.once("error", (error) => {
+      console.error("FAIL: JOIN_PUBLIC_CHANNEL", error);
+      done(error);
     });
   });
 
